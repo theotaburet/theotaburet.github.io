@@ -2596,7 +2596,11 @@ d-citation-list .references .title {
           var env = {
             callback: callback,
             container: container,
+<<<<<<< HEAD
             selector: 'd-code',
+=======
+            selector: 'code[class*="language-"], [class*="language-"] code, code[class*="lang-"], [class*="lang-"] code',
+>>>>>>> 5e56fc9a (Initial commit)
           };
 
           _.hooks.run("before-highlightall", env);

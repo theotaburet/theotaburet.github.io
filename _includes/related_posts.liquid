@@ -13,6 +13,7 @@
   {% endunless %}
 
   <li class="my-2">
+<<<<<<< HEAD
     {% if post.redirect == blank %}
       <a class="text-pink-700 underline font-semibold hover:text-pink-800" href="{{ post.url | relative_url }}">{{ post.title }}</a>
     {% elsif post.redirect contains '://' %}
@@ -23,9 +24,16 @@
     {% else %}
       <a class="text-pink-700 underline font-semibold hover:text-pink-800" href="{{ post.redirect | relative_url }}">{{ post.title }}</a>
     {% endif %}
+=======
+    <a class="text-pink-700 underline font-semibold hover:text-pink-800" href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a>
+>>>>>>> 5e56fc9a (Initial commit)
   </li>
 {% endfor %}
 {% if site.newsletter.enabled and site.footer_fixed %}
   <p class="mb-2" style="margin-top: 1.5rem !important">Subscribe to be notified of future articles:</p>
+<<<<<<< HEAD
   {% include newsletter.liquid left=true %}
+=======
+  {% include scripts/newsletter.liquid left=true %}
+>>>>>>> 5e56fc9a (Initial commit)
 {% endif %}

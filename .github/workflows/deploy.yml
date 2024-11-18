@@ -7,8 +7,11 @@ on:
       - main
     paths:
       - "assets/**"
+<<<<<<< HEAD
       - "_sass/**"
       - "_scripts/**"
+=======
+>>>>>>> 5e56fc9a (Initial commit)
       - "**.bib"
       - "**.html"
       - "**.js"
@@ -36,8 +39,11 @@ on:
       - main
     paths:
       - "assets/**"
+<<<<<<< HEAD
       - "_sass/**"
       - "_scripts/**"
+=======
+>>>>>>> 5e56fc9a (Initial commit)
       - "**.bib"
       - "**.html"
       - "**.js"
@@ -90,7 +96,10 @@ jobs:
           value: ${{ github.repository }}
       - name: Install and Build 🔧
         run: |
+<<<<<<< HEAD
           sudo apt-get update && sudo apt-get install -y imagemagick
+=======
+>>>>>>> 5e56fc9a (Initial commit)
           pip3 install --upgrade nbconvert
           export JEKYLL_ENV=production
           bundle exec jekyll build

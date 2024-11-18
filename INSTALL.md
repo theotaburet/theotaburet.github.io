@@ -1,14 +1,20 @@
 # Table of Contents
 
+<<<<<<< HEAD
 <!--ts-->
 
+=======
+>>>>>>> 5e56fc9a (Initial commit)
 - [Table of Contents](#table-of-contents)
 - [Installing and Deploying](#installing-and-deploying)
   - [Recommended Approach](#recommended-approach)
   - [Local setup on Windows](#local-setup-on-windows)
   - [Local setup using Docker (Recommended)](#local-setup-using-docker-recommended)
     - [Build your own docker image](#build-your-own-docker-image)
+<<<<<<< HEAD
     - [Have Bugs on Docker Image?](#have-bugs-on-docker-image)
+=======
+>>>>>>> 5e56fc9a (Initial commit)
   - [Local Setup with Development Containers](#local-setup-with-development-containers)
   - [Local Setup (Legacy, no longer supported)](#local-setup-legacy-no-longer-supported)
   - [Deployment](#deployment)
@@ -16,11 +22,17 @@
     - [For project pages](#for-project-pages)
     - [Enabling automatic deployment](#enabling-automatic-deployment)
     - [Manual deployment to GitHub Pages](#manual-deployment-to-github-pages)
+<<<<<<< HEAD
     - [Deploy on <a href="https://www.netlify.com/" rel="nofollow">Netlify</a>](https://www.netlify.com/)
     - [Deployment to another hosting server (non GitHub Pages)](#deployment-to-another-hosting-server-non-github-pages)
     - [Deployment to a separate repository (advanced users only)](#deployment-to-a-separate-repository-advanced-users-only)
   - [Upgrading from a previous version](#upgrading-from-a-previous-version)
   <!--te-->
+=======
+    - [Deployment to another hosting server (non GitHub Pages)](#deployment-to-another-hosting-server-non-github-pages)
+    - [Deployment to a separate repository (advanced users only)](#deployment-to-a-separate-repository-advanced-users-only)
+  - [Upgrading from a previous version](#upgrading-from-a-previous-version)
+>>>>>>> 5e56fc9a (Initial commit)
 
 # Installing and Deploying
 
@@ -29,7 +41,11 @@
 The recommended approach for using **al-folio** is to first create your own site using the template with as few changes as possible, and only when it is up and running customize it however you like. This way it is easier to pinpoint what causes a potential issue in case of a bug. The minimum steps required to create your own site are ([video tutorial here](assets/video/tutorial_al_folio.mp4)):
 
 1. Create a new repository using this template. For this, click on [Use this template -> Create a new repository](https://github.com/new?template_name=al-folio&template_owner=alshedivat) above the file list. If you plan to upload your site to `<your-github-username>.github.io`, note that the name of your repository :warning: **MUST BE** :warning: `<your-github-username>.github.io` or `<your-github-orgname>.github.io`, as stated in the [GitHub pages docs](https://docs.github.com/en/pages/getting-started-with-github-pages/about-github-pages#types-of-github-pages-sites).
+<<<<<<< HEAD
 2. In this new repository, go to [Settings -> Actions -> General -> Workflow permissions](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#configuring-the-default-github_token-permissions) and give `Read and write permissions` to GitHub Actions.
+=======
+2. In this new repository, go to `Settings -> Actions -> General -> Workflow permissions` and give `Read and write permissions` to GitHub Actions.
+>>>>>>> 5e56fc9a (Initial commit)
 3. Open file `_config.yml`, set `url` to `https://<your-github-username>.github.io` and leave `baseurl` **empty** (do NOT delete it), as `baseurl:`.
 4. Wait until the GitHub action with subtitle `Deploy site` finishes (check your repository **Actions** tab), which takes ~4 min. Now, in addition to the `main` branch, your repository has a newly built `gh-pages` branch.
 5. Finally, in the repository page go to `Settings -> Pages -> Build and deployment`, make sure that `Source` is set to `Deploy from a branch` and set the branch to `gh-pages` (NOT to main).
@@ -80,6 +96,7 @@ $ docker compose up --build
 
 If you want to use a specific docker version, you can do so by changing `latest` tag to `your_version` in `docker-compose.yaml`. For example, you might have created your website on `v0.10.0` and you want to stick with that.
 
+<<<<<<< HEAD
 ### Have Bugs on Docker Image?
 
 Sometimes, there might be some bugs in the current docker image. It might be version mismatch or anything. If you want to debug and easily solve the problem for yourself you can do the following steps:
@@ -110,6 +127,8 @@ bundle install
 
 Most likely, this will solve the problem but it shouldn't really happen. So, please open a bug report for us.
 
+=======
+>>>>>>> 5e56fc9a (Initial commit)
 ## Local Setup with Development Containers
 
 `al-folio` supports [Development Containers](https://containers.dev/supporting).
@@ -164,6 +183,7 @@ If you keep your site on another branch, open `.github/workflows/deploy.yml` **o
 
 If you need to manually re-deploy your website to GitHub pages, go to Actions, click "Deploy" in the left sidebar, then "Run workflow."
 
+<<<<<<< HEAD
 ### Deploy on [Netlify](https://www.netlify.com/)
 
 1. [Use this template -> Create a new repository](https://github.com/new?template_name=al-folio&template_owner=alshedivat).
@@ -184,6 +204,8 @@ If you need to manually re-deploy your website to GitHub pages, go to Actions, c
 
 5. Netlify: Click **Deploy** and wait for the site to be published. If you want to use your own domain name, follow the steps in [this documentation](https://docs.netlify.com/domains-https/custom-domains/).
 
+=======
+>>>>>>> 5e56fc9a (Initial commit)
 ### Deployment to another hosting server (non GitHub Pages)
 
 If you decide to not use GitHub Pages and host your page elsewhere, simply run:
@@ -245,7 +267,11 @@ If you installed **al-folio** as described above, you can manually update your c
 # Assuming the current directory is <your-repo-name>
 $ git remote add upstream https://github.com/alshedivat/al-folio.git
 $ git fetch upstream
+<<<<<<< HEAD
 $ git rebase v0.14.4
+=======
+$ git rebase v0.11.0
+>>>>>>> 5e56fc9a (Initial commit)
 ```
 
 If you have extensively customized a previous version, it might be trickier to upgrade.

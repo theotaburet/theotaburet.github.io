@@ -3,7 +3,11 @@
     <ul class="pagination pagination-lg justify-content-center">
       <li class="page-item {% unless paginator.previous_page %}disabled{% endunless %}">
         <a class="page-link" href="{{ paginator.previous_page_path | relative_url }}" tabindex="-1" aria-disabled="{{ paginator.previous_page }}"
+<<<<<<< HEAD
           >&lt;</a
+=======
+          >Newer</a
+>>>>>>> 5e56fc9a (Initial commit)
         >
       </li>
       {% if paginator.page_trail %}
@@ -14,7 +18,11 @@
         {% endfor %}
       {% endif %}
       <li class="page-item {% unless paginator.next_page %}disabled{% endunless %}">
+<<<<<<< HEAD
         <a class="page-link" href="{{ paginator.next_page_path | relative_url }}">&gt;</a>
+=======
+        <a class="page-link" href="{{ paginator.next_page_path | relative_url }}">Older</a>
+>>>>>>> 5e56fc9a (Initial commit)
       </li>
     </ul>
   </nav>

@@ -2,6 +2,7 @@
 
 Here we will give you some tips on how to customize the website. One important thing to note is that **ALL** the changes you make should be done on the **main** branch of your repository. The `gh-pages` branch is automatically overwritten every time you make a change to the main branch.
 
+<<<<<<< HEAD
 ## Table of Contents
 
 <!--ts-->
@@ -37,6 +38,8 @@ Here we will give you some tips on how to customize the website. One important t
   _ [Important Notes](#important-notes)
   <!--te-->
 
+=======
+>>>>>>> 5e56fc9a (Initial commit)
 ## Project structure
 
 The project is structured as follows, focusing on the main components that you will need to modify:
@@ -48,12 +51,19 @@ The project is structured as follows, focusing on the main components that you w
     │   └── 📄 resume.json: CV in JSON format (https://jsonresume.org/)
 ├── 📂 _bibliography/
 │   └── 📄 papers.bib: bibliography in BibTeX format
+<<<<<<< HEAD
 ├── 📂 _books/: contains the bookshelf pages
 ├── 📄 _config.yml: the configuration file of the template
 ├── 📂 _data/: contains some of the data used in the template
 │   ├── 📄 cv.yml: CV in YAML format, used when assets/json/resume.json is not found
 │   ├── 📄 repositories.yml: users and repositories info in YAML format
 │   └── 📄 socials.yml: your social media and contact info in YAML format
+=======
+├── 📄 _config.yml: the configuration file of the template
+├── 📂 _data/: contains some of the data used in the template
+│   ├── 📄 cv.yml: CV in YAML format, used when assets/json/resume.json is not found
+│   └── 📄 repositories.yml: users and repositories info in YAML format
+>>>>>>> 5e56fc9a (Initial commit)
 ├── 📂 _includes/: contains code parts that are included in the main HTML file
 │   └── 📄 news.liquid: defines the news section layout in the about page
 ├── 📂 _layouts/: contains the layouts to choose from in the frontmatter of the Markdown files
@@ -95,12 +105,19 @@ You can create new pages by adding new Markdown files in the [\_pages](_pages/) 
 
 ## Creating new blog posts
 
+<<<<<<< HEAD
 To create a new blog post, you can add a new Markdown file in the [\_posts](_posts/) directory, which is the [default location for posts in Jekyll](https://jekyllrb.com/docs/posts/). The [name of the file must follow](https://jekyllrb.com/docs/posts/#creating-posts) the format `YYYY-MM-DD-title.md`. The easiest way to do this is to copy an existing blog post and modify it. Note that some blog posts have optional fields in the [frontmatter](https://jekyllrb.com/docs/front-matter/) that are used to enable specific behaviors or functions.
 
 If you want to create blog posts that are not ready to be published, but you want to track it with git, you can create a [\_drafts](https://jekyllrb.com/docs/posts/#drafts) directory and store them there.
 
 Note that `posts` is also a collection, but it is a default collection created automatically by Jekyll. To access the posts, you can use the `site.posts` variable in your templates.
 
+=======
+To create a new blog post, you can add a new Markdown file in the [\_posts](_posts/) directory. The [name of the file must follow](https://jekyllrb.com/docs/posts/#creating-posts) the format `YYYY-MM-DD-title.md`. The easiest way to do this is to copy an existing blog post and modify it. Note that some blog posts have optional fields in the [frontmatter](https://jekyllrb.com/docs/front-matter/) that are used to enable specific behaviors or functions.
+
+If you want to create blog posts that are not ready to be published, but you want to track it with git, you can create a [\_drafts](https://jekyllrb.com/docs/posts/#drafts) directory and store them there.
+
+>>>>>>> 5e56fc9a (Initial commit)
 ## Creating new projects
 
 You can create new projects by adding new Markdown files in the [\_projects](_projects/) directory. The easiest way to do this is to copy an existing project and modify it.
@@ -111,6 +128,7 @@ You can add news in the about page by adding new Markdown files in the [\_news](
 
 ## Adding Collections
 
+<<<<<<< HEAD
 This Jekyll theme implements [collections](https://jekyllrb.com/docs/collections/) to let you break up your work into categories. The theme comes with three default collections: `news`, `projects`, and `books`. Items from the `news` collection are automatically displayed on the home page, while items from the `projects` collection are displayed on a responsive grid on projects page and items from the `books` collection are displayed on its own `bookshelf` page inside `submenus`.
 
 You can easily create your own collections, apps, short stories, courses, or whatever your creative work is. To do this, edit the collections in the [\_config.yml](_config.yml) file, create a corresponding folder, and create a landing page for your collection, similar to [\_pages/projects.md](_pages/projects.md).
@@ -119,6 +137,12 @@ If you wish to create a collection with support for categories and tags, like th
 
 To access the collections, you can use the `site.COLLECTION_NAME` variable in your templates.
 
+=======
+This Jekyll theme implements `collections` to let you break up your work into categories. The theme comes with two default collections: `news` and `projects`. Items from the `news` collection are automatically displayed on the home page. Items from the `projects` collection are displayed on a responsive grid on projects page.
+
+You can easily create your own collections, apps, short stories, courses, or whatever your creative work is. To do this, edit the collections in the [\_config.yml](_config.yml) file, create a corresponding folder, and create a landing page for your collection, similar to [\_pages/projects.md](_pages/projects.md).
+
+>>>>>>> 5e56fc9a (Initial commit)
 ## Adding a new publication
 
 To add publications create a new entry in the [\_bibliography/papers.bib](_bibliography/papers.bib) file. You can find the BibTeX entry of a publication in Google Scholar by clicking on the quotation marks below the publication title, then clicking on "BibTeX", or also in the conference page itself. By default, the publications will be sorted by year and the most recent will be displayed first. You can change this behavior and more in the `Jekyll Scholar` section in [\_config.yml](_config.yml) file.
@@ -158,7 +182,11 @@ If the entry matches one form of the last names and the first names, it will be 
     url: https://en.wikipedia.org/wiki/Carl_Philipp_Emanuel_Bach
 ```
 
+<<<<<<< HEAD
 If the entry matches one of the combinations of the last names and the first names, it will be highlighted and linked to the url provided. Note that the keys **MUST BE** lower cased and **MUST NOT** contain accents. This is because the keys are used to match the last names in the BibTeX entries, considering possible variations (see [related discussion](https://github.com/alshedivat/al-folio/discussions/2213)).
+=======
+If the entry matches one of the combinations of the last names and the first names, it will be highlighted and linked to the url provided. Note that the keys **MUST BE** lower cased and **MUST NOT** contain accents. This is because the keys are used to match the last names in the BibTeX entries, considering possible variations.
+>>>>>>> 5e56fc9a (Initial commit)
 
 ### Buttons (through custom bibtex keywords)
 
@@ -188,7 +216,11 @@ A variety of beautiful theme colors have been selected for you to choose from. T
 
 ## Adding social media information
 
+<<<<<<< HEAD
 You can add your social media links by adding the specified information in the [\_data/socials.yml](_data/socials.yml) file. This information will appear at the bottom of the `About` page and in the search results by default, but this could be changed to appear at the header of the page by setting `enable_navbar_social: true` and doesn't appear in the search by setting `socials_in_search: false`, both in [\_config.yml](_config.yml).
+=======
+You can add your social media links by adding the specified information at the `Social integration` section in the [\_config.yml](_config.yml) file. This information will appear at the bottom of the `About` page.
+>>>>>>> 5e56fc9a (Initial commit)
 
 ## Adding a newsletter
 
@@ -196,6 +228,7 @@ You can add a newsletter subscription form by adding the specified information a
 
 Depending on your specified footer behavior, the sign up form either will appear at the bottom of the `About` page and at the bottom of blogposts if `related_posts` are enabled, or in the footer at the bottom of each page.
 
+<<<<<<< HEAD
 ## Removing content
 
 Since this template have a lot of content, you may want to remove some of it. The easiest way to achieve this and avoid merge conflicts when updating your code (as [pointed by CheariX ](https://github.com/alshedivat/al-folio/pull/2933#issuecomment-2571271117)) is to add the unwanted files to the `exclude` section in your `_config.yml` file instead of actually deleting them, for example:
@@ -280,6 +313,8 @@ To remove the repositories, you can:
 - delete the repositories page [\_pages/repositories.md](_pages/repositories.md)
 - delete [\_includes/repository/](_includes/repository/) directory
 
+=======
+>>>>>>> 5e56fc9a (Initial commit)
 ## Adding Token for Lighthouse Badger
 
 To add secrets for [lighthouse-badger](https://github.com/alshedivat/al-folio/actions/workflows/lighthouse-badger.yml), create a [personal access token (PAT)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token) and add it as a [secret](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions#creating-encrypted-secrets-for-a-repository) named `LIGHTHOUSE_BADGER_TOKEN` to your repository. The [lighthouse-badger documentation](https://github.com/MyActionWay/lighthouse-badger-workflows#lighthouse-badger-easyyml) specifies using an environment variable, but using it as a secret is more secure and appropriate for a PAT.

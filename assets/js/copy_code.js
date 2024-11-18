@@ -8,7 +8,10 @@ codeBlocks.forEach(function (codeBlock) {
     codeBlock.querySelector("code:not(.language-echarts)") &&
     codeBlock.querySelector("code:not(.language-geojson)") &&
     codeBlock.querySelector("code:not(.language-mermaid)") &&
+<<<<<<< HEAD
     codeBlock.querySelector("code:not(.language-plotly)") &&
+=======
+>>>>>>> 5e56fc9a (Initial commit)
     codeBlock.querySelector("code:not(.language-vega_lite)")
   ) {
     // create copy button

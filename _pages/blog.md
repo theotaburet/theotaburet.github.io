@@ -85,7 +85,11 @@ pagination:
 
                     <p class="post-meta">
                       {{ read_time }} min read &nbsp; &middot; &nbsp;
+<<<<<<< HEAD
                       <a href="{{ year | prepend: '/blog/' | relative_url }}">
+=======
+                      <a href="{{ year | prepend: '/blog/' | prepend: site.baseurl}}">
+>>>>>>> 5e56fc9a (Initial commit)
                         <i class="fa-solid fa-calendar fa-sm"></i> {{ year }} </a>
                     </p>
                   </div>
@@ -148,13 +152,21 @@ pagination:
         {% endif %}
       </p>
       <p class="post-tags">
+<<<<<<< HEAD
         <a href="{{ year | prepend: '/blog/' | relative_url }}">
+=======
+        <a href="{{ year | prepend: '/blog/' | prepend: site.baseurl}}">
+>>>>>>> 5e56fc9a (Initial commit)
           <i class="fa-solid fa-calendar fa-sm"></i> {{ year }} </a>
 
           {% if tags != "" %}
           &nbsp; &middot; &nbsp;
             {% for tag in post.tags %}
+<<<<<<< HEAD
             <a href="{{ tag | slugify | prepend: '/blog/tag/' | relative_url }}">
+=======
+            <a href="{{ tag | slugify | prepend: '/blog/tag/' | prepend: site.baseurl}}">
+>>>>>>> 5e56fc9a (Initial commit)
               <i class="fa-solid fa-hashtag fa-sm"></i> {{ tag }}</a>
               {% unless forloop.last %}
                 &nbsp;
@@ -165,7 +177,11 @@ pagination:
           {% if categories != "" %}
           &nbsp; &middot; &nbsp;
             {% for category in post.categories %}
+<<<<<<< HEAD
             <a href="{{ category | slugify | prepend: '/blog/category/' | relative_url }}">
+=======
+            <a href="{{ category | slugify | prepend: '/blog/category/' | prepend: site.baseurl}}">
+>>>>>>> 5e56fc9a (Initial commit)
               <i class="fa-solid fa-tag fa-sm"></i> {{ category }}</a>
               {% unless forloop.last %}
                 &nbsp;

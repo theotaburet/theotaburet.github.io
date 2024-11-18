@@ -37,7 +37,10 @@
             sizes = "200px"
             class="preview z-depth-1 rounded"
             zoomable=true
+<<<<<<< HEAD
             avoid_scaling=true
+=======
+>>>>>>> 5e56fc9a (Initial commit)
             alt=entry.preview
           %}
         {% endif %}
@@ -74,15 +77,24 @@
             {% if coauthor.firstname contains author.first %}
               {%- assign coauthor_url = coauthor.url -%}
               {% break %}
+<<<<<<< HEAD
             {%- endif -%}
+=======
+            {% endif %}
+>>>>>>> 5e56fc9a (Initial commit)
           {% endfor %}
         {%- endif -%}
 
         {%- if forloop.length > 1 -%}
+<<<<<<< HEAD
           {% if forloop.first == false -%}
             {%- if forloop.length > 2 %}, {% elsif forloop.length == 2 %}  {% endif %}
           {%- endif %}
           {%- if forloop.last and author_array_limit == author_array_size %}and {% endif -%}
+=======
+          {% if forloop.first == false %},&nbsp;{% endif %}
+          {%- if forloop.last and author_array_limit == author_array_size %}and&nbsp;{% endif -%}
+>>>>>>> 5e56fc9a (Initial commit)
         {% endif %}
         {%- if author_is_self -%}
           <em>
@@ -313,13 +325,22 @@
           {% endif %}
           {% if site.enable_publication_badges.google_scholar and entry_has_google_scholar_badge %}
             <a
+<<<<<<< HEAD
               href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user={{ site.data.socials.scholar_userid }}&citation_for_view={{ site.data.socials.scholar_userid }}:{{ entry.google_scholar_id }}"
+=======
+              href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user={{ site.scholar_userid }}&citation_for_view={{ site.scholar_userid }}:{{ entry.google_scholar_id }}"
+>>>>>>> 5e56fc9a (Initial commit)
               aria-label="Google Scholar link"
               role="button"
             >
               <img
+<<<<<<< HEAD
                 src="https://img.shields.io/badge/scholar-{% google_scholar_citations site.data.socials.scholar_userid entry.google_scholar_id %}-4285F4?logo=googlescholar&labelColor=beige"
                 alt="{% google_scholar_citations site.data.socials.scholar_userid entry.google_scholar_id %} Google Scholar citations"
+=======
+                src="https://img.shields.io/badge/scholar-{% google_scholar_citations site.scholar_userid entry.google_scholar_id %}-4285F4?logo=googlescholar&labelColor=beige"
+                alt="{% google_scholar_citations site.scholar_userid entry.google_scholar_id %} Google Scholar citations"
+>>>>>>> 5e56fc9a (Initial commit)
               >
             </a>
           {% endif %}

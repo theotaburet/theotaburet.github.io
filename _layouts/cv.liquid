@@ -8,6 +8,7 @@ layout: default
         {{ page.title }}
         {% if page.cv_pdf %}
           <a
+<<<<<<< HEAD
             {% if page.cv_pdf contains '://' %}
               href="{{ page.cv_pdf }}"
             {% else %}
@@ -19,6 +20,14 @@ layout: default
           >
             <i class="fa-solid fa-file-pdf"></i>
           </a>
+=======
+            href="{{ page.cv_pdf | prepend: 'assets/pdf/' | relative_url}}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="float-right"
+            ><i class="fa-solid fa-file-pdf"></i
+          ></a>
+>>>>>>> 5e56fc9a (Initial commit)
         {% endif %}
       </h1>
       {% if page.description %}
@@ -59,6 +68,7 @@ layout: default
         {{ page.title }}
         {% if page.cv_pdf %}
           <a
+<<<<<<< HEAD
             {% if page.cv_pdf contains '://' %}
               href="{{ page.cv_pdf }}"
             {% else %}
@@ -70,6 +80,14 @@ layout: default
           >
             <i class="fa-solid fa-file-pdf"></i>
           </a>
+=======
+            href="{{ page.cv_pdf | prepend: 'assets/pdf/' | relative_url}}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="float-right"
+            ><i class="fa-solid fa-file-pdf"></i
+          ></a>
+>>>>>>> 5e56fc9a (Initial commit)
         {% endif %}
       </h1>
       {% if page.description %}

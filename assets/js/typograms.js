@@ -1,6 +1,10 @@
 // based on the original typograms code from https://github.com/google/typograms/blob/main/src/typograms.js
+<<<<<<< HEAD
 // only moved the css to its own file (_sass/_typograms.scss), commented the last line of the file (module.exports = create;)
 // and added the last function to the end of the file
+=======
+// only moved the css to its own file (_sass/_typograms.scss) and commented the last line of the file
+>>>>>>> 5e56fc9a (Initial commit)
 const ratio = 2;
 
 function grid(width, height) {
@@ -1321,6 +1325,7 @@ function around(diagram, [x, y]) {
 }
 
 // module.exports = create;
+<<<<<<< HEAD
 
 /* Create typogram as another node and hide the code block, appending the typogram node after it
 this is done to enable retrieving the code again when changing theme between light/dark */
@@ -1339,3 +1344,5 @@ document.addEventListener("readystatechange", () => {
     });
   }
 });
+=======
+>>>>>>> 5e56fc9a (Initial commit)

@@ -2,6 +2,7 @@
 
 Here are some frequently asked questions. If you have a different question, please check if it was not already answered in the Q&A section of the [GitHub Discussions](https://github.com/alshedivat/al-folio/discussions/categories/q-a). If not, feel free to ask a new question there.
 
+<<<<<<< HEAD
 ## Table of Contents
 
 <!--ts-->
@@ -25,6 +26,21 @@ Here are some frequently asked questions. If you have a different question, plea
   _ [What do all these GitHub actions/workflows mean?](#what-do-all-these-github-actionsworkflows-mean)
   _ [How can I use Google Search Console ID on the template?](#how-can-i-use-google-search-console-id-on-the-template)
   <!--te-->
+=======
+- [After I create a new repository from this template and setup the repo, I get a deployment error. Isn't the website supposed to correctly deploy automatically?](#after-i-create-a-new-repository-from-this-template-and-setup-the-repo-i-get-a-deployment-error-isnt-the-website-supposed-to-correctly-deploy-automatically)
+- [I am using a custom domain (e.g., `foo.com`). My custom domain becomes blank in the repository settings after each deployment. How do I fix that?](#i-am-using-a-custom-domain-eg-foocom-my-custom-domain-becomes-blank-in-the-repository-settings-after-each-deployment-how-do-i-fix-that)
+- [My webpage works locally. But after deploying, it fails to build and throws `Unknown tag 'toc'`. How do I fix that?](#my-webpage-works-locally-but-after-deploying-it-fails-to-build-and-throws-unknown-tag-toc-how-do-i-fix-that)
+- [My webpage works locally. But after deploying, it is not displayed correctly (CSS and JS are not loaded properly). How do I fix that?](#my-webpage-works-locally-but-after-deploying-it-is-not-displayed-correctly-css-and-js-are-not-loaded-properly-how-do-i-fix-that)
+- [Atom feed doesn't work. Why?](#atom-feed-doesnt-work-why)
+- [My site doesn't work when I enable `related_blog_posts`. Why?](#my-site-doesnt-work-when-i-enable-related_blog_posts-why)
+- [When trying to deploy, it's asking for github login credentials, which github disabled password authentication and it exits with an error. How to fix?](#when-trying-to-deploy-its-asking-for-github-login-credentials-which-github-disabled-password-authentication-and-it-exits-with-an-error-how-to-fix)
+- [When I manually run the Lighthouse Badger workflow, it fails with `Error: Input required and not supplied: token`. How do I fix that?](#when-i-manually-run-the-lighthouse-badger-workflow-it-fails-with-error-input-required-and-not-supplied-token-how-do-i-fix-that)
+- [My code runs fine locally, but when I create a commit and submit it, it fails with `prettier code formatter workflow run failed for main branch`. How do I fix that?](#my-code-runs-fine-locally-but-when-i-create-a-commit-and-submit-it-it-fails-with-prettier-code-formatter-workflow-run-failed-for-main-branch-how-do-i-fix-that)
+- [After I update my site with some new content, even a small change, the GitHub action throws an error or displays a warning. What happened?](#after-i-update-my-site-with-some-new-content-even-a-small-change-the-github-action-throws-an-error-or-displays-a-warning-what-happened)
+- [I am trying to deploy my site, but it fails with `Could not find gem 'jekyll-diagrams' in locally installed gems`. How do I fix that?](#i-am-trying-to-deploy-my-site-but-it-fails-with-could-not-find-gem-jekyll-diagrams-in-locally-installed-gems-how-do-i-fix-that)
+- [How can I update Font Awesome version on the template](#how-can-i-update-font-awesome-version-on-the-template)
+- [What do all these GitHub actions/workflows mean?](#what-do-all-these-github-actionsworkflows-mean)
+>>>>>>> 5e56fc9a (Initial commit)
 
 ---
 
@@ -125,24 +141,30 @@ Note that libraries tend to be deprecated and support for them dropped as they a
 
 ---
 
+<<<<<<< HEAD
 ### How can I update Academicons version on the template
 
 To update the Academicons version, you need to download the latest release from the [Academicons website](https://jpswalsh.github.io/academicons/). After downloading, extract the zip file and copy the files `academicons.ttf` and `academicons.woff` from the `fonts/` directory to `assets/fonts/` and the file `academicons.min.css` from the `css/` directory to `assets/css/`.
 
 ---
 
+=======
+>>>>>>> 5e56fc9a (Initial commit)
 ### How can I update Font Awesome version on the template
 
 To update the Font Awesome version, you need to download the latest release "for the web" from the [Font Awesome website](https://fontawesome.com/download). After downloading, extract the zip file and copy the `scss/` directory content to `_sass/font-awesome/` and the `webfonts/` content to `assets/webfonts/`.
 
 ---
 
+<<<<<<< HEAD
 ### How can I update Tabler Icons version on the template
 
 To update the Tabler Icons version, you need to download the latest release from the [Tabler Icons website](https://tabler.io/icons). After downloading, extract the zip file and copy the files `tabler-icons-filled.scss`, `tabler-icons-outline.scss`, and `tabler-icons.scss` from the `webfont/` directory to `_sass/tabler-icons/`, and all the files from `webfont/fonts/` to `assets/fonts/`.
 
 ---
 
+=======
+>>>>>>> 5e56fc9a (Initial commit)
 ### What do all these GitHub actions/workflows mean?
 
 GitHub actions are a way to automate tasks in the repository. They are defined in `.github/workflows/` directory. Each file in this directory is a workflow. Workflows are made up of one or more jobs, and each job runs on a virtual machine hosted by GitHub. You can see the status of the workflows in the `Actions` tab of your repository. For more information, check the [GitHub Actions documentation](https://docs.github.com/en/actions).
@@ -159,6 +181,7 @@ Currently we have the following workflows:
 - `lighthouse-badger.yml`: runs a [lighthouse](https://github.com/GoogleChrome/lighthouse) test for your site with the [lighthouse-badger-action](https://github.com/MyActionWay/lighthouse-badger-action), saving the results in the repository for easy inspecting, as can be seen [here](https://github.com/alshedivat/al-folio?tab=readme-ov-file#lighthouse-pagespeed-insights). For more information on how to enable this workflow, check our [FAQ question about it](https://github.com/alshedivat/al-folio/blob/main/FAQ.md#when-i-manually-run-the-lighthouse-badger-workflow-it-fails-with-error-input-required-and-not-supplied-token-how-do-i-fix-that)
 - `prettier-comment-on-pr.yml`: not working. For now, this action is disabled. It was supposed to run prettier on the PRs and comment on them with the changes needed. For more information, check [issue 2115](https://github.com/alshedivat/al-folio/issues/2115)
 - `prettier.yml`: runs [prettier](https://prettier.io/) on the code to ensure it is well formatted. For more information, check our [FAQ question about it](https://github.com/alshedivat/al-folio/blob/main/FAQ.md#my-code-runs-fine-locally-but-when-i-create-a-commit-and-submit-it-it-fails-with-prettier-code-formatter-workflow-run-failed-for-main-branch-how-do-i-fix-that)
+<<<<<<< HEAD
 
 ---
 
@@ -171,3 +194,5 @@ In the configuration file `_config.yml` the tag `google-site-verification` shoul
 - The string against `content` is the Google Search Console ID that can be used in the template. e.g. `google-site-verification: GoogleSearchConsoleID`. Now set the property `enable_google_verification: true`.
 
 It looks like the Domain type property in the Google Search Console to verify the ownership of all URLs across all subdomains with GitHub Pages does not work.
+=======
+>>>>>>> 5e56fc9a (Initial commit)

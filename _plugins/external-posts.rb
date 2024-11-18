@@ -62,7 +62,10 @@ module ExternalPosts
       doc.data['description'] = content[:summary]
       doc.data['date'] = content[:published]
       doc.data['redirect'] = url
+<<<<<<< HEAD
       doc.content = content[:content]
+=======
+>>>>>>> 5e56fc9a (Initial commit)
       site.collections['posts'].docs << doc
     end
 
@@ -91,12 +94,17 @@ module ExternalPosts
       parsed_html = Nokogiri::HTML(html)
 
       title = parsed_html.at('head title')&.text.strip || ''
+<<<<<<< HEAD
       description = parsed_html.at('head meta[name="description"]')&.attr('content')
       description ||= parsed_html.at('head meta[name="og:description"]')&.attr('content')
       description ||= parsed_html.at('head meta[property="og:description"]')&.attr('content')
 
       body_content = parsed_html.search('p').map { |e| e.text }
       body_content = body_content.join() || ''
+=======
+      description = parsed_html.at('head meta[name="description"]')&.attr('content') || ''
+      body_content = parsed_html.at('body')&.inner_html || ''
+>>>>>>> 5e56fc9a (Initial commit)
 
       {
         title: title,
