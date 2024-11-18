@@ -1,4 +1,4 @@
 User-agent: *
 Disallow:
 
-Sitemap: https://theotaburet.github.io/al-folio/sitemap.xml
+Sitemap: https://theotaburet.github.io/sitemap.xml
