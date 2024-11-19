@@ -1,97 +1,176 @@
+# - title: General Information
+#   type: map
+#   contents:
+#     - name: Full Name
+#       value: Théo TABURET
+#     - name: Date of Birth
+#       value: 19th May 1993
+#     - name: Languages
+#       value: French, English
+
+# - title: Education
+#   type: time_table
+#   contents:
+#     - title: PhD
+#       institution: Ecole Centrale de Lille, Villeneuve-d'Asq, France
+#       year: 2020
+#       description:
+#         - Description 1.
+#         - Description 2.
+#         - title: Description 3.
+#           contents:
+#             - Sub-description 1.
+#             - Sub-description 2.
+#     - title: Federal teaching diploma
+#       institution: Eidgenössische Technische Hochschule, Zurich, Switzerland
+#       year: 1900
+#       description:
+#         - Description 1.
+#         - Description 2.
+
+# - title: Experience
+#   type: time_table
+#   contents:
+#     - title: Professor of Theoretical Physics
+#       institution: Institute for Advanced Study, Princeton University
+#       year: 1933 - 1955
+#       description:
+#         - Description 1.
+#         - Description 2.
+#         - title: Description 3.
+#           contents:
+#             - Sub-description 1.
+#             - Sub-description 2.
+#     - title: Visiting Professor
+#       institution: California Institute of Technology, Pasadena, California, US
+#       year: 1933
+#       description:
+#         - Description 1.
+#         - Description 2.
+
+#     - title: Director
+#       institution: Kaiser Wilhelm Institute for Physics, Berlin, Germany.
+#       year: 1917-1933
+
+#     - title: Professor of Theoretical Physics
+#       institution: Karl-Ferdinand University, Prague, Czechoslovakia
+#       year: 1911 - 1917
+#       description:
+
+#     - title: Associate Professor of Theoretical Physics
+#       institution: University of Zurich, Zurich, Switzerland
+#       year: 1909 - 1911
+
+# - title: Open Source Projects
+#   type: time_table
+#   contents:
+#     - title: <a href="https://github.com/alshedivat/al-folio">al-folio</a>
+#       year: 2015-now
+#       description: A beautiful, simple, clean, and responsive Jekyll theme for academics.
+
+# - title: Honors and Awards
+#   type: time_table
+#   contents:
+#     - year: 1921
+#       items:
+#         - Nobel Prize in Physics
+#         - Matteucci Medal
+#     - year: 2029
+#       items:
+#         - Max Planck Medal
+
+# - title: Academic Interests
+#   type: nested_list
+#   contents:
+#     - title: Topic 1.
+#       items:
+#         - Description 1.
+#         - Description 2.
+#     - title: Topic 2.
+#       items:
+#         - Description 1.
+#         - Description 2.
+
+# - title: Other Interests
+#   type: list
+#   contents:
+#     - <u>Hobbies:</u> Bicyle, outdoors sports, running, woodworking, piano.
+
 - title: General Information
   type: map
   contents:
     - name: Full Name
-      value: Albert Einstein
+      value: Théo TABURET
     - name: Date of Birth
-      value: 14th March 1879
+      value: 19th May 1993
     - name: Languages
-      value: English, German
+      value: French (native), English (fluent)
 
 - title: Education
   type: time_table
   contents:
-    - title: PhD
-      institution: University of Zurich, Zurich, Switzerland
-      year: 1905
+    - title: PhD in Applied Mathematics (Steganography)
+      institution: Ecole Centrale de Lille, Villeneuve-d'Ascq, France
+      year: 2020
       description:
-        - Description 1.
-        - Description 2.
-        - title: Description 3.
+        - Explored sensor noise modeling for advanced natural steganography in the JPEG domain.
+        - Published key papers in IEEE TIFS, IWDW, and ACM IH&MMSec.
+        - title: Research Highlights
           contents:
-            - Sub-description 1.
-            - Sub-description 2.
-    - title: Federal teaching diploma
-      institution: Eidgenössische Technische Hochschule, Zurich, Switzerland
-      year: 1900
+            - Developed embedding schemes minimizing detection risk in color JPEG images.
+            - Proposed synchronization techniques for robust data hiding in digital pipelines.
+    - title: Master of Science in Digital Signal and Image Processing
+      institution: Cranfield University, Cranfield, UK
+      year: 2017
       description:
-        - Description 1.
-        - Description 2.
+        - Focused on advanced computer vision techniques and signal processing methods.
+        - Final project: Algorithm development for error detection in industrial applications.
+    - title: Engineering Degree (Generalist)
+      institution: Ecole Supérieure des Technologies Industrielles Avancées, Bidart, France
+      year: 2017
+      description:
+        - Interdisciplinary training in mechanics, electronics, and computing, completed through apprenticeship.
 
 - title: Experience
   type: time_table
   contents:
-    - title: Professor of Theoretical Physics
-      institution: Institute for Advanced Study, Princeton University
-      year: 1933 - 1955
+    - title: Postdoctoral Researcher in Computer Vision and Image Processing
+      institution: University of La Rochelle, L3i Laboratory / Yooz
+      year: 2021 - 2023
       description:
-        - Description 1.
-        - Description 2.
-        - title: Description 3.
+        - Designed deep learning models for fraud detection in enterprise documents.
+        - Developed Siamese CNN-based techniques to detect double compression and image tampering.
+        - title: Tools and Integration
           contents:
-            - Sub-description 1.
-            - Sub-description 2.
-    - title: Visiting Professor
-      institution: California Institute of Technology, Pasadena, California, US
-      year: 1933
+            - Integrated algorithms using FastAPI for deployment in production pipelines.
+            - Contributed to open-source datasets and reproducible implementations.
+    - title: Teaching Assistant
+      institution: University of La Rochelle & Excelia
+      year: 2022 - 2023
       description:
-        - Description 1.
-        - Description 2.
-
-    - title: Director
-      institution: Kaiser Wilhelm Institute for Physics, Berlin, Germany.
-      year: 1917-1933
-
-    - title: Professor of Theoretical Physics
-      institution: Karl-Ferdinand University, Prague, Czechoslovakia
-      year: 1911 - 1917
-      description:
-
-    - title: Associate Professor of Theoretical Physics
-      institution: University of Zurich, Zurich, Switzerland
-      year: 1909 - 1911
+        - Delivered courses in Web Technologies (L1/L2) and Computer Vision (M2).
+        - Led workshops and practical sessions on deep learning for image analysis.
 
 - title: Open Source Projects
   type: time_table
   contents:
-    - title: <a href="https://github.com/alshedivat/al-folio">al-folio</a>
-      year: 2015-now
-      description: A beautiful, simple, clean, and responsive Jekyll theme for academics.
-
-- title: Honors and Awards
-  type: time_table
-  contents:
-    - year: 1921
-      items:
-        - Nobel Prize in Physics
-        - Matteucci Medal
-    - year: 2029
-      items:
-        - Max Planck Medal
+    - title: <a href="https://github.com/your-profile">Python Natural Steganography</a>
+      year: 2024
+      description: Publicly released code accompanying my IEEE TIFS publication on natural steganography in the JPEG domain.
 
 - title: Academic Interests
   type: nested_list
   contents:
-    - title: Topic 1.
+    - title: Image Processing and Computer Vision
       items:
-        - Description 1.
-        - Description 2.
-    - title: Topic 2.
+        - Fraud detection in documents and financial records.
+        - Deep learning applications for anomaly detection and tampering identification.
+    - title: Steganography and Steganalysis
       items:
-        - Description 1.
-        - Description 2.
+        - Natural data hiding schemes for images.
+        - Sensor noise modeling for secure information embedding.
 
 - title: Other Interests
   type: list
   contents:
-    - <u>Hobbies:</u> Hobby 1, Hobby 2, etc.
+    - <u>Hobbies:</u> Biking, outdoor sports, solving riddles, organizing group activities, and playing piano.

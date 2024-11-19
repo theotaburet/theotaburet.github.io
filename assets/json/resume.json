@@ -1,157 +1,289 @@
 {
   "basics": {
-    "name": "Albert Einstein",
+    "name": "Théo TABURET",
     "label": "Scientist",
     "image": "",
-    "email": "albert@einstein.de",
-    "phone": "(912) 123-4567",
-    "url": "https://alshedivat.github.io/al-folio/",
-    "summary": "A German-born theoretical physicist, widely ranked among the greatest and most influential scientists of all time",
+    "email": "theo.taburet@protonmail.com",
+    "phone": "(33)665313939",
+    "url": "https://theotaburet.github.io",
+    "summary": "A random guy",
     "location": {
       "address": "2712 Broadway St",
-      "postalCode": "CA 94115",
-      "city": "San Francisco",
-      "countryCode": "US",
-      "region": "California"
+      "postalCode": "17000",
+      "city": "La Rochelle",
+      "countryCode": "France",
+      "region": "Charentes-Maritimes"
     },
     "profiles": [
       {
-        "network": "Twitter",
-        "username": "AlbertEinstein",
-        "url": "https://twitter.com/AlbertEinstein"
+        "network": "Linkedin",
+        "username": "theotaburet",
+        "url": "https://www.linkedin.com/in/theotaburet"
       }
     ]
   },
   "work": [
     {
-      "name": "Institute for Advanced Study, Princeton University",
-      "position": "Professor of Theoretical Physics",
-      "url": "https://example.com",
-      "startDate": "1933-01-01",
-      "endDate": "1955-01-01",
-      "summary": "Teaching at Palmer Physical Laboratory (now 302 Frist Campus Center). While not a professor at Princeton, I associated with the physics professors and continued to give lectures on campus.",
-      "highlights": ["Relativity"]
+      "name": "Université de La Rochelle - Laboratoire L3I / Yooz",
+      "position": "Postdoctoral Researcher in Computer Vision and Image Processing",
+      "url": "https://www.univ-larochelle.fr/",
+      "startDate": "2021-01-01",
+      "endDate": "2023-12-31",
+      "summary": "Detection of fraud in company documents using deep learning techniques. Focused on detecting double compression through Siamese CNN networks and steganalysis to identify image manipulations and anomalies.",
+      "highlights": [
+        "Fraud detection using deep learning",
+        "Double compression detection with Siamese CNNs",
+        "Integration of algorithms with FastAPI"
+      ]
+    },
+    {
+      "name": "Université de La Rochelle & Excelia",
+      "position": "Teaching Assistant (Lectures & Tutorials)",
+      "url": "https://www.univ-larochelle.fr/",
+      "startDate": "2022-01-01",
+      "endDate": "2023-12-31",
+      "summary": "Taught courses in web technologies (L1 & L2) and Computer Vision (M2) at both University of La Rochelle and Excelia.",
+      "highlights": [
+        "Web Technologies for L1 & L2 students",
+        "Introduction to Computer Vision for M2 students"
+      ]
+    },
+    {
+      "name": "Synerlink S.A.",
+      "position": "R&D Mechanical Engineering Apprentice",
+      "url": "https://www.synerlink.com/",
+      "startDate": "2014-01-01",
+      "endDate": "2017-12-31",
+      "summary": "Design and dimensioning of thermoforming molds, optimizing the process for production. Involved in R&D project management.",
+      "highlights": [
+        "Thermoforming mold design and optimization",
+        "R&D project management"
+      ]
     }
   ],
   "volunteer": [
     {
-      "organization": "People's Climate March",
-      "location": "Zurich, Switzerland",
-      "position": "Lead Organizer",
-      "url": "https://example.com",
-      "startDate": "2014-04-01",
-      "endDate": "2015-07-01",
-      "summary": "Lead organizer for the New York City branch of the People's Climate March, the largest climate march in history.",
-      "highlights": ["Awarded 'Climate Hero' award by Greenpeace for my efforts organizing the march.", "Men of the year 2014 by Time magazine"]
+      "organization": "Pignon des Charentes",
+      "position": "Co-Organizer & Founder",
+      "location": "La Rochelle, France",
+      "url": "https://www.instagram.com/pignon_des_charentes/",
+      "startDate": "2023-06-01",
+      "endDate": "Present",
+      "summary": "Pignon des Charentes is an organization that organizes unique bike treasure hunts using riddles, leading participants through the city to a final gathering point where they can relax and socialize. As a co-organizer, I am responsible for creating visual content, designing the riddles, and hosting the event, ensuring a fun and engaging experience for participants.",
+      "highlights": [
+        "Promoting cycling in urban spaces",
+        "Introducing participants to the city from a fresh perspective",
+        "Providing a fun after-work activity for companies with a cool vibe",
+        "Fostering community connections",
+        "Inspiring new cycling enthusiasts"
+      ]
     }
   ],
   "education": [
     {
-      "institution": "University of Zurich, Zurich, Switzerland",
-      "location": "Zurich, Switzerland",
-      "url": "https://www.uzh.ch/",
-      "area": "Software Development",
+      "institution": "École Centrale de Lille - Laboratoire CRISTAL",
+      "location": "Lille, France",
+      "url": "https://www.centralelille.fr/",
+      "area": "Applied Mathematics (Steganography)",
       "studyType": "PhD",
-      "startDate": "1905-01-01",
-      "endDate": "1905-01-01",
-      "score": "10",
-      "courses": ["Theory of Relativity"]
-    }
-  ],
-  "awards": [
+      "startDate": "2017-01-01",
+      "endDate": "2020-12-31",
+      "score": "N/A",
+      "courses": [
+        "Steganography methods based on sensor noise"
+      ]
+    },
     {
-      "title": "Nobel Prize in Physics",
-      "date": "1921-11-01",
-      "awarder": "Royal Swedish Academy of Sciences",
-      "url": "https://www.nobelprize.org/prizes/physics/1921/einstein/biographical/",
-      "summary": "The Nobel Prizes are five separate prizes that, according to Alfred Nobel's will of 1895, are awarded to 'those who, during the preceding year, have conferred the greatest benefit to humankind.'"
+      "institution": "Cranfield University",
+      "location": "Cranfield, UK",
+      "url": "https://www.cranfield.ac.uk/",
+      "area": "Digital Signal and Image Processing",
+      "studyType": "Master of Science",
+      "startDate": "2016-01-01",
+      "endDate": "2017-12-31",
+      "score": "N/A",
+      "courses": [
+        "Digital Signal Processing",
+        "Image Analysis"
+      ]
+    },
+    {
+      "institution": "École Supérieure des Technologies Industrielles Avancées",
+      "location": "Bidart, France",
+      "url": "https://www.estia.fr/",
+      "area": "General Engineering",
+      "studyType": "Engineering Degree",
+      "startDate": "2014-01-01",
+      "endDate": "2017-12-31",
+      "score": "N/A",
+      "courses": [
+        "Multidisciplinary engineering (mechanical, electronics, and computer science)"
+      ]
     }
   ],
   "certificates": [
     {
-      "name": "Machine Learning",
-      "date": "2018-01-01",
-      "issuer": "Stanford University",
-      "url": "https://example.com",
-      "icon": "fa-solid fa-location-dot"
+      "name": "Python",
+      "date": "2021-01-01",
+      "issuer": "France Université Numerique",
+      "url": "",
+      "icon": "fa-brands fa-python"
     },
     {
-      "name": "Quantum Computing",
-      "date": "2018-01-01",
-      "issuer": "Stanford University",
-      "url": "https://example.com",
-      "icon": "fa-solid fa-tag"
-    },
-    {
-      "name": "Quantum Information",
-      "date": "2018-01-01",
-      "issuer": "Stanford University",
-      "url": "https://example.com",
-      "icon": "fa-solid fa-envelope"
-    },
-    {
-      "name": "Quantum Cryptography",
-      "date": "2018-01-01",
-      "issuer": "Stanford University",
-      "url": "https://example.com",
-      "icon": "fa-solid fa-hashtag"
-    },
-    {
-      "name": "Quantum Communication",
-      "date": "2018-01-01",
-      "issuer": "Stanford University",
-      "url": "https://example.com",
-      "icon": "fa-solid fa-calendar"
-    },
-    {
-      "name": "Quantum Teleportation",
-      "date": "2018-01-01",
-      "issuer": "Stanford University",
-      "url": "https://example.com",
-      "icon": "fa-solid fa-clipboard-check"
+      "name": "Scikit-learn",
+      "date": "2021-01-01",
+      "issuer": "France Université Numerique",
+      "url": "",
+      "icon": "fa-solid fa-chart-line"
     }
   ],
   "publications": [
-    {
-      "name": "Zur Elektrody/namik bewegter Körper",
-      "publisher": "Annalen der Physik",
-      "releaseDate": "1905-06-30",
-      "url": "https://en.wikisource.org/wiki/Translation:On_the_Electrodynamics_of_Moving_Bodies",
-      "summary": "It concerned an interpretation of the Michelson–Morley experiment and the properties of light and time. Special relativity incorporates the principle that the speed of light is the same for all inertial observers regardless of the state of motion of the source."
-    },
-    {
-      "name": "Über einen die Erzeugung und Verwandlung des Lichtes betreffenden heuristischen Gesichtspunkt",
-      "publisher": "Annalen der Physik",
-      "releaseDate": "1905-03-18",
-      "url": "https://de.wikisource.org/wiki/Über_einen_die_Erzeugung_und_Verwandlung_des_Lichtes_betreffenden_heuristischen_Gesichtspunkt",
-      "summary": "In the second paper, he applied the quantum theory to light to explain the photoelectric effect. In particular, he used the idea of light quanta (photons) to explain experimental results, but stressed the importance of the experimental results. The importance of his work on the photoelectric effect earned him the Nobel Prize in Physics in 1921."
-    },
-    {
-      "name": "Die Grundlage der allgemeinen Relativitätstheorie",
-      "publisher": "Annalen der Physik",
-      "releaseDate": "1916-03-20",
-      "url": "https://de.wikisource.org/wiki/Die_Grundlage_der_allgemeinen_Relativitätstheorie",
-      "summary": "The publication of the theory of general relativity made him internationally famous. He was professor of physics at the universities of Zurich (1909–1911) and Prague (1911–1912), before he returned to ETH Zurich (1912–1914)."
-    }
+      {
+        "name": "An empirical study of steganography and steganalysis of color images in the JPEG domain",
+        "publisher": "Springer International Publishing",
+        "releaseDate": "2019-01-01",
+        "url": "https://link.springer.com/chapter/10.1007/978-3-030-36660-5_25",
+        "summary": "This paper presents an empirical study on the performance of steganography and steganalysis in the JPEG domain, focusing on the analysis of color images."
+      },
+      {
+        "name": "A natural steganography embedding scheme dedicated to color sensors in the JPEG domain",
+        "publisher": "Society for Imaging Science and Technology",
+        "releaseDate": "2019-01-01",
+        "url": "https://www.ingenta.com",
+        "summary": "This work introduces a natural steganography scheme specifically designed for color sensors in the JPEG compression domain, providing a new approach to embedding and detection."
+      },
+      {
+        "name": "Stéganographie naturelle pour images JPEG",
+        "publisher": "GRESTI'19",
+        "releaseDate": "2020-01-01",
+        "url": "https://www.gresti.fr/",
+        "summary": "This paper discusses natural steganography methods applied to JPEG images, focusing on the extraction of hidden information while preserving image quality."
+      },
+      {
+        "name": "Computing dependencies between DCT coefficients for natural steganography in JPEG domain",
+        "publisher": "ACM Workshop on Information Hiding and Multimedia Security",
+        "releaseDate": "2019-01-01",
+        "url": "https://dl.acm.org/doi/10.1145/3316699.3328682",
+        "summary": "The study investigates dependencies between Discrete Cosine Transform (DCT) coefficients for use in natural steganography in the JPEG domain, improving the security and robustness of steganographic methods."
+      },
+      {
+        "name": "Natural steganography in JPEG domain with a linear development pipeline",
+        "publisher": "IEEE",
+        "releaseDate": "2020-01-01",
+        "url": "https://ieeexplore.ieee.org/document/8966579",
+        "summary": "This article presents a linear development pipeline for natural steganography in the JPEG domain, aimed at simplifying the process and enhancing detection resistance."
+      },
+      {
+        "name": "JPEG steganography and synchronization of DCT coefficients for a given development pipeline",
+        "publisher": "ACM Workshop on Information Hiding and Multimedia Security",
+        "releaseDate": "2020-01-01",
+        "url": "https://dl.acm.org/doi/10.1145/3383522.3383542",
+        "summary": "The paper explores techniques for synchronizing DCT coefficients in JPEG steganography, improving efficiency and reducing the likelihood of detection."
+      },
+      {
+        "name": "Jeu de données de tickets de caisse pour la détection de fraude documentaire",
+        "publisher": "ATALA",
+        "releaseDate": "2023-01-01",
+        "url": "https://www.atala.org/",
+        "summary": "This paper introduces a dataset of receipt images for use in document fraud detection, facilitating research in the area of document verification and forensics."
+      },
+      {
+        "name": "Document Forgery Detection in the Context of Double JPEG Compression",
+        "publisher": "Springer Nature Switzerland Cham",
+        "releaseDate": "2022-01-01",
+        "url": "https://link.springer.com/chapter/10.1007/978-3-030-79093-7_7",
+        "summary": "The study addresses document forgery detection in the context of double JPEG compression, exploring methods to detect tampered documents using the specific characteristics of image compression."
+      },
+      {
+        "name": "Receipt Dataset for Document Forgery Detection",
+        "publisher": "Springer Nature Switzerland Cham",
+        "releaseDate": "2023-01-01",
+        "url": "https://link.springer.com/chapter/10.1007/978-3-031-21906-2_42",
+        "summary": "This work presents a specialized receipt dataset designed for document forgery detection, a key resource for advancing fraud detection techniques in digital forensics."
+      },
+      {
+        "name": "Méthodes de stéganographie fondées sur la prise en compte du bruit de capteur",
+        "publisher": "Ecole centrale de Lille",
+        "releaseDate": "2020-01-01",
+        "url": "https://www.ec-lille.fr",
+        "summary": "This PhD thesis proposes steganographic methods that account for sensor noise in image processing, offering novel solutions to improve the robustness and imperceptibility of steganographic techniques."
+      },
+      {
+        "name": "Python Implementation of Natural Steganography: Notebooks accompanying the paper published in IEEE TIFS",
+        "publisher": "IEEE",
+        "releaseDate": "2024-01-01",
+        "url": "https://ieeexplore.ieee.org/document/9723365",
+        "summary": "This publication provides Python code and notebooks that demonstrate the implementation of natural steganography methods, supporting the research published in IEEE Transactions on Information Forensics and Security."
+      }
   ],
   "skills": [
     {
-      "name": "Physics",
-      "level": "Master",
-      "icon": "fa-solid fa-hashtag",
+      "name": "Machine Learning",
+      "level": "Expert",
+      "icon": "fa-solid fa-brain",
       "keywords": [
-        "Quantum Mechanics",
-        "Quantum Computing",
-        "Quantum Information",
-        "Quantum Cryptography",
-        "Quantum Communication",
-        "Quantum Teleportation"
+        "Deep Learning",
+        "Convolutional Neural Networks (CNN)",
+        "Anomaly Detection",
+        "Object Detection",
+        "Segmentation",
+        "Fraud Detection"
+      ]
+    },
+    {
+      "name": "Computer Vision",
+      "level": "Expert",
+      "icon": "fa-solid fa-eye",
+      "keywords": [
+        "Image Processing",
+        "Steganography",
+        "Image Manipulation Detection",
+        "Object Tracking",
+        "Image Segmentation"
+      ]
+    },
+    {
+      "name": "Programming Languages",
+      "level": "Advanced",
+      "icon": "fa-solid fa-code",
+      "keywords": [
+        "Python",
+        "C/C++",
+        "HTML/CSS/JS",
+        "SQL",
+        "MATLAB",
+        "Bash"
+      ]
+    },
+    {
+      "name": "Frameworks and Libraries",
+      "level": "Advanced",
+      "icon": "fa-solid fa-cogs",
+      "keywords": [
+        "PyTorch",
+        "TensorFlow",
+        "Keras",
+        "OpenCV",
+        "FastAPI",
+        "scikit-learn"
+      ]
+    },
+    {
+      "name": "Development Tools",
+      "level": "Advanced",
+      "icon": "fa-solid fa-tools",
+      "keywords": [
+        "Git",
+        "Docker",
+        "CI/CD Pipelines",
+        "GitHub Actions",
+        "GitLab CI/CD"
       ]
     }
   ],
   "languages": [
     {
-      "language": "German",
+      "language": "French",
       "fluency": "Native speaker",
       "icon": ""
     },
@@ -163,38 +295,43 @@
   ],
   "interests": [
     {
-      "name": "Physics",
+      "name": "Puzzles",
       "icon": "fa-solid fa-tag",
       "keywords": [
-        "Quantum Mechanics",
-        "Quantum Computing",
-        "Quantum Information",
-        "Quantum Cryptography",
-        "Quantum Communication",
-        "Quantum Teleportation"
+        "Riddles",
+        "Brain Teasers",
+        "Problem Solving"
       ]
-    }
-  ],
-  "references": [
-    {
-      "name": "Professor John Doe",
-      "icon": "fa-solid fa-laptop",
-      "reference": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam condimentum, diam quis convallis euismod, arcu mi ullamcorper lorem, a vestibulum nunc magna at sem. Sed in risus ac felis varius blandit. D"
     },
     {
-      "name": "Professor John Doe",
-      "icon": "fa-solid fa-thumbtack",
-      "reference": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam condimentum, diam quis convallis euismod, arcu mi ullamcorper lorem, a vestibulum nunc magna at sem. Sed in risus ac felis varius blandit. D"
+      "name": "Cycling",
+      "icon": "fa-solid fa-bicycle",
+      "keywords": [
+        "Bikepacking",
+        "Road Cycling",
+        "Mountain Biking",
+        "Cycling Events"
+      ]
+    },
+    {
+      "name": "Outdoor Sports",
+      "icon": "fa-solid fa-tree",
+      "keywords": [
+        "Hiking",
+        "Trail Running",
+        "Climbing",
+        "Adventure Sports"
+      ]
     }
   ],
   "projects": [
     {
-      "name": "Quantum Computing",
-      "summary": "Quantum computing is the use of quantum-mechanical phenomena such as superposition and entanglement to perform computation. Computers that perform quantum computations are known as quantum computers.",
-      "highlights": ["Quantum Teleportation", "Quantum Cryptography"],
-      "startDate": "2018-01-01",
-      "endDate": "2018-01-01",
-      "url": "https://example.com"
+      "name": "Ravitools",
+      "summary": "Ravitools enhances GPX files by adding offline-accessible points of interest such as water sources, restaurants, and campsites, tailored for long-distance cyclists.",
+      "highlights": ["Offline POI integration", "Customizable routes"],
+      "startDate": "2024-10-01",
+      "endDate": "Present",
+      "url": "https://github.com/theotaburet/Ravitools"
     }
   ]
 }

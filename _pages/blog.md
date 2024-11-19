@@ -1,7 +1,8 @@
 ---
 layout: default
 permalink: /blog/
-title: blog
+title: Blog
+description: I may post in the future.
 nav: true
 nav_order: 1
 pagination:
@@ -15,7 +16,7 @@ pagination:
     before: 1 # The number of links before the current page
     after: 3 # The number of links after the current page
 ---
-
+<!-- 
 <div class="post">
 
 {% assign blog_name_size = site.blog_name | size %}
@@ -193,4 +194,4 @@ pagination:
 {% include pagination.liquid %}
 {% endif %}
 
-</div>
+</div> -->
