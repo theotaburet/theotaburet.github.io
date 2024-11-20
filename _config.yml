@@ -2,6 +2,7 @@
 # Site settings
 # -----------------------------------------------------------------------------
 
+<<<<<<< HEAD
 title: blank # the website title (if blank, full name will be used instead)
 <<<<<<< HEAD
 first_name: You
@@ -14,6 +15,9 @@ contact_note: >
 email: you@example.com
 >>>>>>> 5e56fc9a (Initial commit)
 =======
+=======
+title: Portfolio # the website title (if blank, full name will be used instead)
+>>>>>>> cb456f59 (Update _config.yml)
 first_name: Théo
 middle_name:
 last_name: TABURET
