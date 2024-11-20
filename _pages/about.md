@@ -28,18 +28,22 @@ Hi there! I'm Théo TABURET, and I'm passionate about the fascinating worlds of 
 ## My Interests
 
 ### Computer Vision
+
 - 🖼️ Working on projects that involve image recognition, object detection, and more.
 - 🤖 Exploring the intersection of artificial intelligence and visual data.
 
 ### Steganography
+
 - 🔍 Researching new methods and techniques for hiding information securely.
 - 🛡️ Combining cryptography and steganography for enhanced data protection.
 
 ### Photography
+
 - 📷 Experimenting with different styles and techniques.
 - 🌄 Sharing my travel and adventure experiences through photos.
 
 ### Bicycles Trips
+
 - 🚴‍♀️ Planning and undertaking long-distance cycling tours.
 - 🗺️ Mapping routes and exploring new destinations on two wheels.
 
