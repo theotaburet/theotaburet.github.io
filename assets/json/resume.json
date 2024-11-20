@@ -43,10 +43,7 @@
       "startDate": "2022-01-01",
       "endDate": "2023-12-31",
       "summary": "Taught courses in web technologies (L1 & L2) and Computer Vision (M2) at both University of La Rochelle and Excelia.",
-      "highlights": [
-        "Web Technologies for L1 & L2 students",
-        "Introduction to Computer Vision for M2 students"
-      ]
+      "highlights": ["Web Technologies for L1 & L2 students", "Introduction to Computer Vision for M2 students"]
     },
     {
       "name": "Synerlink S.A.",
@@ -55,10 +52,7 @@
       "startDate": "2014-01-01",
       "endDate": "2017-12-31",
       "summary": "Design and dimensioning of thermoforming molds, optimizing the process for production. Involved in R&D project management.",
-      "highlights": [
-        "Thermoforming mold design and optimization",
-        "R&D project management"
-      ]
+      "highlights": ["Thermoforming mold design and optimization", "R&D project management"]
     }
   ],
   "volunteer": [
@@ -89,9 +83,7 @@
       "startDate": "2017-01-01",
       "endDate": "2020-12-31",
       "score": "N/A",
-      "courses": [
-        "Steganography methods based on sensor noise"
-      ]
+      "courses": ["Steganography methods based on sensor noise"]
     },
     {
       "institution": "Cranfield University",
@@ -102,10 +94,7 @@
       "startDate": "2016-01-01",
       "endDate": "2017-12-31",
       "score": "N/A",
-      "courses": [
-        "Digital Signal Processing",
-        "Image Analysis"
-      ]
+      "courses": ["Digital Signal Processing", "Image Analysis"]
     },
     {
       "institution": "École Supérieure des Technologies Industrielles Avancées",
@@ -116,9 +105,7 @@
       "startDate": "2014-01-01",
       "endDate": "2017-12-31",
       "score": "N/A",
-      "courses": [
-        "Multidisciplinary engineering (mechanical, electronics, and computer science)"
-      ]
+      "courses": ["Multidisciplinary engineering (mechanical, electronics, and computer science)"]
     }
   ],
   "certificates": [
@@ -138,147 +125,114 @@
     }
   ],
   "publications": [
-      {
-        "name": "An empirical study of steganography and steganalysis of color images in the JPEG domain",
-        "publisher": "Springer International Publishing",
-        "releaseDate": "2019-01-01",
-        "url": "https://link.springer.com/chapter/10.1007/978-3-030-36660-5_25",
-        "summary": "This paper presents an empirical study on the performance of steganography and steganalysis in the JPEG domain, focusing on the analysis of color images."
-      },
-      {
-        "name": "A natural steganography embedding scheme dedicated to color sensors in the JPEG domain",
-        "publisher": "Society for Imaging Science and Technology",
-        "releaseDate": "2019-01-01",
-        "url": "https://www.ingenta.com",
-        "summary": "This work introduces a natural steganography scheme specifically designed for color sensors in the JPEG compression domain, providing a new approach to embedding and detection."
-      },
-      {
-        "name": "Stéganographie naturelle pour images JPEG",
-        "publisher": "GRESTI'19",
-        "releaseDate": "2020-01-01",
-        "url": "https://www.gresti.fr/",
-        "summary": "This paper discusses natural steganography methods applied to JPEG images, focusing on the extraction of hidden information while preserving image quality."
-      },
-      {
-        "name": "Computing dependencies between DCT coefficients for natural steganography in JPEG domain",
-        "publisher": "ACM Workshop on Information Hiding and Multimedia Security",
-        "releaseDate": "2019-01-01",
-        "url": "https://dl.acm.org/doi/10.1145/3316699.3328682",
-        "summary": "The study investigates dependencies between Discrete Cosine Transform (DCT) coefficients for use in natural steganography in the JPEG domain, improving the security and robustness of steganographic methods."
-      },
-      {
-        "name": "Natural steganography in JPEG domain with a linear development pipeline",
-        "publisher": "IEEE",
-        "releaseDate": "2020-01-01",
-        "url": "https://ieeexplore.ieee.org/document/8966579",
-        "summary": "This article presents a linear development pipeline for natural steganography in the JPEG domain, aimed at simplifying the process and enhancing detection resistance."
-      },
-      {
-        "name": "JPEG steganography and synchronization of DCT coefficients for a given development pipeline",
-        "publisher": "ACM Workshop on Information Hiding and Multimedia Security",
-        "releaseDate": "2020-01-01",
-        "url": "https://dl.acm.org/doi/10.1145/3383522.3383542",
-        "summary": "The paper explores techniques for synchronizing DCT coefficients in JPEG steganography, improving efficiency and reducing the likelihood of detection."
-      },
-      {
-        "name": "Jeu de données de tickets de caisse pour la détection de fraude documentaire",
-        "publisher": "ATALA",
-        "releaseDate": "2023-01-01",
-        "url": "https://www.atala.org/",
-        "summary": "This paper introduces a dataset of receipt images for use in document fraud detection, facilitating research in the area of document verification and forensics."
-      },
-      {
-        "name": "Document Forgery Detection in the Context of Double JPEG Compression",
-        "publisher": "Springer Nature Switzerland Cham",
-        "releaseDate": "2022-01-01",
-        "url": "https://link.springer.com/chapter/10.1007/978-3-030-79093-7_7",
-        "summary": "The study addresses document forgery detection in the context of double JPEG compression, exploring methods to detect tampered documents using the specific characteristics of image compression."
-      },
-      {
-        "name": "Receipt Dataset for Document Forgery Detection",
-        "publisher": "Springer Nature Switzerland Cham",
-        "releaseDate": "2023-01-01",
-        "url": "https://link.springer.com/chapter/10.1007/978-3-031-21906-2_42",
-        "summary": "This work presents a specialized receipt dataset designed for document forgery detection, a key resource for advancing fraud detection techniques in digital forensics."
-      },
-      {
-        "name": "Méthodes de stéganographie fondées sur la prise en compte du bruit de capteur",
-        "publisher": "Ecole centrale de Lille",
-        "releaseDate": "2020-01-01",
-        "url": "https://www.ec-lille.fr",
-        "summary": "This PhD thesis proposes steganographic methods that account for sensor noise in image processing, offering novel solutions to improve the robustness and imperceptibility of steganographic techniques."
-      },
-      {
-        "name": "Python Implementation of Natural Steganography: Notebooks accompanying the paper published in IEEE TIFS",
-        "publisher": "IEEE",
-        "releaseDate": "2024-01-01",
-        "url": "https://ieeexplore.ieee.org/document/9723365",
-        "summary": "This publication provides Python code and notebooks that demonstrate the implementation of natural steganography methods, supporting the research published in IEEE Transactions on Information Forensics and Security."
-      }
+    {
+      "name": "An empirical study of steganography and steganalysis of color images in the JPEG domain",
+      "publisher": "Springer International Publishing",
+      "releaseDate": "2019-01-01",
+      "url": "https://link.springer.com/chapter/10.1007/978-3-030-36660-5_25",
+      "summary": "This paper presents an empirical study on the performance of steganography and steganalysis in the JPEG domain, focusing on the analysis of color images."
+    },
+    {
+      "name": "A natural steganography embedding scheme dedicated to color sensors in the JPEG domain",
+      "publisher": "Society for Imaging Science and Technology",
+      "releaseDate": "2019-01-01",
+      "url": "https://www.ingenta.com",
+      "summary": "This work introduces a natural steganography scheme specifically designed for color sensors in the JPEG compression domain, providing a new approach to embedding and detection."
+    },
+    {
+      "name": "Stéganographie naturelle pour images JPEG",
+      "publisher": "GRESTI'19",
+      "releaseDate": "2020-01-01",
+      "url": "https://www.gresti.fr/",
+      "summary": "This paper discusses natural steganography methods applied to JPEG images, focusing on the extraction of hidden information while preserving image quality."
+    },
+    {
+      "name": "Computing dependencies between DCT coefficients for natural steganography in JPEG domain",
+      "publisher": "ACM Workshop on Information Hiding and Multimedia Security",
+      "releaseDate": "2019-01-01",
+      "url": "https://dl.acm.org/doi/10.1145/3316699.3328682",
+      "summary": "The study investigates dependencies between Discrete Cosine Transform (DCT) coefficients for use in natural steganography in the JPEG domain, improving the security and robustness of steganographic methods."
+    },
+    {
+      "name": "Natural steganography in JPEG domain with a linear development pipeline",
+      "publisher": "IEEE",
+      "releaseDate": "2020-01-01",
+      "url": "https://ieeexplore.ieee.org/document/8966579",
+      "summary": "This article presents a linear development pipeline for natural steganography in the JPEG domain, aimed at simplifying the process and enhancing detection resistance."
+    },
+    {
+      "name": "JPEG steganography and synchronization of DCT coefficients for a given development pipeline",
+      "publisher": "ACM Workshop on Information Hiding and Multimedia Security",
+      "releaseDate": "2020-01-01",
+      "url": "https://dl.acm.org/doi/10.1145/3383522.3383542",
+      "summary": "The paper explores techniques for synchronizing DCT coefficients in JPEG steganography, improving efficiency and reducing the likelihood of detection."
+    },
+    {
+      "name": "Jeu de données de tickets de caisse pour la détection de fraude documentaire",
+      "publisher": "ATALA",
+      "releaseDate": "2023-01-01",
+      "url": "https://www.atala.org/",
+      "summary": "This paper introduces a dataset of receipt images for use in document fraud detection, facilitating research in the area of document verification and forensics."
+    },
+    {
+      "name": "Document Forgery Detection in the Context of Double JPEG Compression",
+      "publisher": "Springer Nature Switzerland Cham",
+      "releaseDate": "2022-01-01",
+      "url": "https://link.springer.com/chapter/10.1007/978-3-030-79093-7_7",
+      "summary": "The study addresses document forgery detection in the context of double JPEG compression, exploring methods to detect tampered documents using the specific characteristics of image compression."
+    },
+    {
+      "name": "Receipt Dataset for Document Forgery Detection",
+      "publisher": "Springer Nature Switzerland Cham",
+      "releaseDate": "2023-01-01",
+      "url": "https://link.springer.com/chapter/10.1007/978-3-031-21906-2_42",
+      "summary": "This work presents a specialized receipt dataset designed for document forgery detection, a key resource for advancing fraud detection techniques in digital forensics."
+    },
+    {
+      "name": "Méthodes de stéganographie fondées sur la prise en compte du bruit de capteur",
+      "publisher": "Ecole centrale de Lille",
+      "releaseDate": "2020-01-01",
+      "url": "https://www.ec-lille.fr",
+      "summary": "This PhD thesis proposes steganographic methods that account for sensor noise in image processing, offering novel solutions to improve the robustness and imperceptibility of steganographic techniques."
+    },
+    {
+      "name": "Python Implementation of Natural Steganography: Notebooks accompanying the paper published in IEEE TIFS",
+      "publisher": "IEEE",
+      "releaseDate": "2024-01-01",
+      "url": "https://ieeexplore.ieee.org/document/9723365",
+      "summary": "This publication provides Python code and notebooks that demonstrate the implementation of natural steganography methods, supporting the research published in IEEE Transactions on Information Forensics and Security."
+    }
   ],
   "skills": [
     {
       "name": "Machine Learning",
       "level": "Expert",
       "icon": "fa-solid fa-brain",
-      "keywords": [
-        "Deep Learning",
-        "Convolutional Neural Networks (CNN)",
-        "Anomaly Detection",
-        "Object Detection",
-        "Segmentation",
-        "Fraud Detection"
-      ]
+      "keywords": ["Deep Learning", "Convolutional Neural Networks (CNN)", "Anomaly Detection", "Object Detection", "Segmentation", "Fraud Detection"]
     },
     {
       "name": "Computer Vision",
       "level": "Expert",
       "icon": "fa-solid fa-eye",
-      "keywords": [
-        "Image Processing",
-        "Steganography",
-        "Image Manipulation Detection",
-        "Object Tracking",
-        "Image Segmentation"
-      ]
+      "keywords": ["Image Processing", "Steganography", "Image Manipulation Detection", "Object Tracking", "Image Segmentation"]
     },
     {
       "name": "Programming Languages",
       "level": "Advanced",
       "icon": "fa-solid fa-code",
-      "keywords": [
-        "Python",
-        "C/C++",
-        "HTML/CSS/JS",
-        "SQL",
-        "MATLAB",
-        "Bash"
-      ]
+      "keywords": ["Python", "C/C++", "HTML/CSS/JS", "SQL", "MATLAB", "Bash"]
     },
     {
       "name": "Frameworks and Libraries",
       "level": "Advanced",
       "icon": "fa-solid fa-cogs",
-      "keywords": [
-        "PyTorch",
-        "TensorFlow",
-        "Keras",
-        "OpenCV",
-        "FastAPI",
-        "scikit-learn"
-      ]
+      "keywords": ["PyTorch", "TensorFlow", "Keras", "OpenCV", "FastAPI", "scikit-learn"]
     },
     {
       "name": "Development Tools",
       "level": "Advanced",
       "icon": "fa-solid fa-tools",
-      "keywords": [
-        "Git",
-        "Docker",
-        "CI/CD Pipelines",
-        "GitHub Actions",
-        "GitLab CI/CD"
-      ]
+      "keywords": ["Git", "Docker", "CI/CD Pipelines", "GitHub Actions", "GitLab CI/CD"]
     }
   ],
   "languages": [
@@ -297,31 +251,17 @@
     {
       "name": "Puzzles",
       "icon": "fa-solid fa-tag",
-      "keywords": [
-        "Riddles",
-        "Brain Teasers",
-        "Problem Solving"
-      ]
+      "keywords": ["Riddles", "Brain Teasers", "Problem Solving"]
     },
     {
       "name": "Cycling",
       "icon": "fa-solid fa-bicycle",
-      "keywords": [
-        "Bikepacking",
-        "Road Cycling",
-        "Mountain Biking",
-        "Cycling Events"
-      ]
+      "keywords": ["Bikepacking", "Road Cycling", "Mountain Biking", "Cycling Events"]
     },
     {
       "name": "Outdoor Sports",
       "icon": "fa-solid fa-tree",
-      "keywords": [
-        "Hiking",
-        "Trail Running",
-        "Climbing",
-        "Adventure Sports"
-      ]
+      "keywords": ["Hiking", "Trail Running", "Climbing", "Adventure Sports"]
     }
   ],
   "projects": [
