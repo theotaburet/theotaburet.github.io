@@ -1,14 +1,14 @@
 {
   "basics": {
     "name": "Théo TABURET",
-    "label": "Scientist",
+    "label": "PhD | Computer Vision & Applied Mathematics",
     "image": "",
     "email": "theo.taburet@protonmail.com",
     "phone": "(33)665313939",
     "url": "https://theotaburet.github.io",
-    "summary": "A random guy",
+    "summary": "",
     "location": {
-      "address": "2712 Broadway St",
+      "address": "",
       "postalCode": "17000",
       "city": "La Rochelle",
       "countryCode": "France",
@@ -129,50 +129,50 @@
       "name": "An empirical study of steganography and steganalysis of color images in the JPEG domain",
       "publisher": "Springer International Publishing",
       "releaseDate": "2019-01-01",
-      "url": "https://link.springer.com/chapter/10.1007/978-3-030-36660-5_25",
-      "summary": "This paper presents an empirical study on the performance of steganography and steganalysis in the JPEG domain, focusing on the analysis of color images."
+      "url": "https://hal.science/hal-01904482/file/iwdw_version.pdf",
+      "summary": "This paper provides an empirical analysis of JPEG steganography and steganalysis on color images, identifying optimal strategies for embedding data and analyzing security. Key findings include that embedding strategies should consider statistical dependencies between color channels, with most payloads concentrated in the luminance channel for JPEG quality factors (QF) of 75 and 95. Additionally, concatenated GFR features excel for QF=75 and QF=95, while SCRMQ1 features in the YCbCr domain perform best for QF=100; future work will explore other color sampling mechanisms and deep learning approaches for color JPEG images."
     },
     {
       "name": "A natural steganography embedding scheme dedicated to color sensors in the JPEG domain",
       "publisher": "Society for Imaging Science and Technology",
       "releaseDate": "2019-01-01",
-      "url": "https://www.ingenta.com",
-      "summary": "This work introduces a natural steganography scheme specifically designed for color sensors in the JPEG compression domain, providing a new approach to embedding and detection."
+      "url": "https://hal.science/hal-02005407/file/EI-2019.pdf",
+      "summary": "This study highlights the complexities and insights gained from implementing Natural Steganography (NS) in the JPEG domain. While NS offers advantages in capacity and security, its practical application requires sophisticated mechanisms, such as handling dependencies between DCT coefficients using computationally intensive methods like 4×64 lattices and covariance matrix decomposition. Key takeaways include the importance of accounting for correlations in color sensor images, the impact of demosaicking algorithms on detectability, and the heightened security of NS for low JPEG quality factors, even with simpler alphabet sizes and varying demosaicking techniques."
     },
     {
       "name": "Stéganographie naturelle pour images JPEG",
       "publisher": "GRESTI'19",
       "releaseDate": "2020-01-01",
-      "url": "https://www.gresti.fr/",
-      "summary": "This paper discusses natural steganography methods applied to JPEG images, focusing on the extraction of hidden information while preserving image quality."
+      "url": "https://hal.science/hal-02165880/document",
+      "summary": "Ce papier résume les progrès récents réalisés en stéganographie naturelle, notamment la faisabilité d’une insertion qui préserve les dépendances entre coefficients DCT dans un cas particulier. Il suggère que des approches similaires pourraient être appliquées à d’autres développements linéaires. Les travaux futurs se concentreront sur ces extensions et sur l’étude de stéganalyses adaptées à des réseaux de neurones."
     },
     {
       "name": "Computing dependencies between DCT coefficients for natural steganography in JPEG domain",
       "publisher": "ACM Workshop on Information Hiding and Multimedia Security",
       "releaseDate": "2019-01-01",
-      "url": "https://dl.acm.org/doi/10.1145/3316699.3328682",
-      "summary": "The study investigates dependencies between Discrete Cosine Transform (DCT) coefficients for use in natural steganography in the JPEG domain, improving the security and robustness of steganographic methods."
+      "url": "https://hal.science/hal-02165866/document",
+      "summary": "This paper extends previous work on Natural Steganography in the JPEG domain and color sensors by deriving an explicit form of the covariance matrix of the stego signal in the DCT domain for bilinear demosaicking. The closed-form covariance matrix allows embedding simulations with empirical security comparable to the photo-site domain, but for non-linear demosaicking, Monte Carlo sampling and scaling are more effective. Future research will explore non-Gaussian models for non-linear algorithms and applications of the covariance matrix to improve synchronization in cost-based steganography."
     },
     {
       "name": "Natural steganography in JPEG domain with a linear development pipeline",
       "publisher": "IEEE",
       "releaseDate": "2020-01-01",
-      "url": "https://ieeexplore.ieee.org/document/8966579",
-      "summary": "This article presents a linear development pipeline for natural steganography in the JPEG domain, aimed at simplifying the process and enhancing detection resistance."
+      "url": "https://hal.science/hal-02910206/file/TIFS_final.pdf",
+      "summary": "This paper advances image processing and steganography by deriving the covariance matrix of stego signal components in the DCT domain, revealing medium-range correlations within and across 8-connected blocks. Using this analytical model, a J-Cov-NS embedding scheme generates stego signals mimicking photonic noise, achieving high security (PE ≥ 40%) and capacity (>2 bpnzAC), but requires significant computational complexity with 4×64 lattices. Future work will address the impact of non-linear developments, simplify lattice usage, and extend the model to color stego images by accounting for inter-channel correlations."
     },
     {
       "name": "JPEG steganography and synchronization of DCT coefficients for a given development pipeline",
       "publisher": "ACM Workshop on Information Hiding and Multimedia Security",
       "releaseDate": "2020-01-01",
-      "url": "https://dl.acm.org/doi/10.1145/3383522.3383542",
-      "summary": "The paper explores techniques for synchronizing DCT coefficients in JPEG steganography, improving efficiency and reducing the likelihood of detection."
+      "url": "https://hal.science/hal-02553023/document",
+      "summary": "This paper introduces a synchronization mechanism for JPEG steganography that enhances classical additive cost-based embedding schemes by exploiting correlations between DCT coefficients in photonic noise images. The method synchronizes embedding across 8 lattices of disjoint DCT coefficients, accounting for intra-block and inter-block correlations via multivariate Gaussian distributions with a tailored covariance matrix. Results show a 7% improvement in practical security at an embedding rate of 0.28 bpnzAC with JPEG QF95."
     },
     {
       "name": "Jeu de données de tickets de caisse pour la détection de fraude documentaire",
       "publisher": "ATALA",
       "releaseDate": "2023-01-01",
-      "url": "https://www.atala.org/",
-      "summary": "This paper introduces a dataset of receipt images for use in document fraud detection, facilitating research in the area of document verification and forensics."
+      "url": "https://aclanthology.org/2023.jeptalnrecital-international.16.pdf",
+      "summary": "Cet article présente un jeu de données public de 988 tickets conçu pour la détection de documents fraudés, incluant des images, leurs transcriptions, des annotations des zones modifiées, et des détails sur les techniques de falsification. Ce jeu de données est destiné à des tâches de classification et de localisation, offrant une ressource précieuse pour la recherche sur la détection des faux documents. Il ouvre la voie à des approches TALN et multimodales en intégrant non seulement des aspects de vision par ordinateur, mais aussi l’analyse de la cohérence et de la plausibilité du contenu, jusque-là limitées par un manque de données réalistes."
     },
     {
       "name": "Document Forgery Detection in the Context of Double JPEG Compression",
@@ -256,12 +256,12 @@
     {
       "name": "Cycling",
       "icon": "fa-solid fa-bicycle",
-      "keywords": ["Bikepacking", "Road Cycling", "Mountain Biking", "Cycling Events"]
+      "keywords": ["Bikepacking", "Road Cycling", "Gravel Cycling", "Cycling Events"]
     },
     {
       "name": "Outdoor Sports",
       "icon": "fa-solid fa-tree",
-      "keywords": ["Hiking", "Trail Running", "Climbing", "Adventure Sports"]
+      "keywords": ["Hiking", "Trail Running", "Adventure Sports"]
     }
   ],
   "projects": [
