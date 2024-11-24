@@ -1,7 +1,7 @@
 ---
 layout: page
-title: PDC
-description: Pignon des Charentes 🎉
+title: Pignon des Charentes
+description: Pignon des Charentes est une initiative locale dynamique qui rassemble les amoureux du vélo à La Rochelle. À travers son compte Instagram, elle met en avant les courses d'orientation à vélo, notamment les célèbres Binouze Bikers. Ces événements conviviaux et sportifs permettent aux cyclistes de tous niveaux de découvrir la région de manière ludique tout en partageant leur passion commune.
 img: assets/img/6.jpg
 importance: 4
 category: fun
