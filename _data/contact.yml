@@ -1,0 +1,18 @@
+- type: github
+  icon: "fab fa-github"
+
+- type: linkedin
+  icon: "fab fa-linkedin"
+  url: "https://www.linkedin.com/in/theotaburet"
+
+- type: google-scholar
+  icon: "fas fa-graduation-cap"
+  url: "https://scholar.google.com/citations?user=qc6CJjYAAAAJ"
+
+- type: email
+  icon: "fas fa-envelope"
+  noblank: true # open link in current tab
+
+- type: rss
+  icon: "fas fa-rss"
+  noblank: true
