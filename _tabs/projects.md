@@ -23,4 +23,11 @@ payload is statistically indistinguishable from photonic noise that was always
 there. The work derives a closed-form covariance matrix of the stego signal in the
 DCT domain, reaching high security (P<sub>E</sub> ≥ 40%) at over 2 bpnzAC.
 
+The scheme splits the DCT coefficients into four interleaved lattices and embeds
+into them in order, so that each lattice can be conditioned on the ones already
+written. Hover a cell below to see what it depends on:
+
+<div id="dct-grid"></div>
+<script src="{{ '/assets/js/block-dependency-grid.js' | relative_url }}"></script>
+
 See the [publications]({{ '/publications/' | relative_url }}) page for the papers.

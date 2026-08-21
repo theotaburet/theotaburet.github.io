@@ -1,6 +1,7 @@
 ---
 icon: fas fa-info-circle
 order: 1
+permalink: /
 ---
 
 I'm **Théo Taburet**, a computer vision researcher based in La Rochelle, France.
