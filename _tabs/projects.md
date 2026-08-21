@@ -34,7 +34,7 @@ yourself.
 
 I built it for bike rides.
 
-<p class="stack"><span>Rust</span><span>axum</span><span>WebAssembly</span><span>TypeScript</span><span>Astro</span><span>iroh / QUIC</span><span>Opus</span><span>Web Audio</span><span>PWA</span></p>
+<p class="stack"><span>Rust</span><span>axum</span><span>WebAssembly</span><span>TypeScript</span><span>Astro</span><span>Opus</span><span>Web Audio</span><span>PWA</span></p>
 
 ## Ravitools
 
