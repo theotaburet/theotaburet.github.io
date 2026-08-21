@@ -118,7 +118,7 @@
     sw.className = "dg-swatch";
     sw.style.backgroundColor = COLORS[entry[0]];
     item.appendChild(sw);
-    item.appendChild(document.createTextNode(entry[0] + " — " + entry[1]));
+    item.appendChild(document.createTextNode(entry[0] + ": " + entry[1]));
     legend.appendChild(item);
   });
 

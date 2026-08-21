@@ -1,7 +1,7 @@
 # theotaburet.github.io
 
 Personal site, built with [Chirpy](https://github.com/cotes2020/jekyll-theme-chirpy).
-Pushing to `main` builds and deploys via GitHub Actions — no local toolchain needed.
+Pushing to `main` builds and deploys via GitHub Actions; no local toolchain needed.
 
 ## Where things live
 
@@ -27,7 +27,7 @@ template documents the front matter and the Chirpy-specific markdown (callouts,
 maths, image options). Files in `_drafts/` are never published.
 
 Posts are reachable from **Archives**, **Categories**, and **Tags**. There is no
-blog index at `/` because that slot is the About page — see below.
+blog index at `/` because that slot is the About page. See below.
 
 ## Restoring a blog home page
 
@@ -47,7 +47,7 @@ to the post feed:
 
 ## Previewing locally (optional)
 
-Needs Ruby 3.x — the macOS system Ruby (2.6) is too old.
+Needs Ruby 3.x; the macOS system Ruby (2.6) is too old.
 
 ```bash
 brew install rbenv && rbenv install 3.4.1 && rbenv local 3.4.1
@@ -62,7 +62,7 @@ Not required: the Actions build is the source of truth and takes ~40s.
 `assets/css/jekyll-theme-chirpy.scss` overrides Chirpy's palette. The accent is the
 vermilion from the DCT lattice figure (`$sig-light` / `$sig-dark`), with the lattice
 amber as the only secondary; neutrals are warmed to match. To change the whole
-accent, edit those two variables — everything else is derived from them.
+accent, edit those two variables; everything else is derived from them.
 
 The overrides mirror Chirpy's own `:root[data-bs-theme=…]` selectors so the
 light/dark toggle keeps working in both directions. Both accent values are checked

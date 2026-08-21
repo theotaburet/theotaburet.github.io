@@ -3,13 +3,13 @@ icon: fas fa-file-lines
 order: 2
 ---
 
-Download as PDF — [English]({{ '/assets/pdf/CV_TABURET_Theo_English.pdf' | relative_url }}) · [Français]({{ '/assets/pdf/CV_TABURET_Theo_French.pdf' | relative_url }})
+Download as PDF: [English]({{ '/assets/pdf/CV_TABURET_Theo_English.pdf' | relative_url }}) · [Français]({{ '/assets/pdf/CV_TABURET_Theo_French.pdf' | relative_url }})
 
 ## Experience
 
 ### Postdoctoral Researcher in Computer Vision and Image Processing
 
-**[Université de La Rochelle — Laboratoire L3I](https://www.univ-larochelle.fr/) / Yooz** · 2021–2023
+**[Université de La Rochelle, Laboratoire L3I](https://www.univ-larochelle.fr/) / Yooz** · 2021–2023
 
 Detection of fraud in company documents using deep learning. Focused on detecting
 double compression through Siamese CNNs, and on steganalysis to identify image
@@ -37,7 +37,7 @@ production. Involved in R&D project management.
 
 ### PhD, Applied Mathematics (Steganography)
 
-**[École Centrale de Lille](https://www.centralelille.fr/) — Laboratoire CRISTAL**, Lille, France · 2017–2020
+**[École Centrale de Lille](https://www.centralelille.fr/), Laboratoire CRISTAL**, Lille, France · 2017–2020
 
 Thesis: *Méthodes de stéganographie fondées sur la prise en compte du bruit de capteur.*
 
@@ -49,7 +49,7 @@ Thesis: *Méthodes de stéganographie fondées sur la prise en compte du bruit d
 
 **[ESTIA](https://www.estia.fr/)**, Bidart, France · 2014–2017
 
-Multidisciplinary engineering — mechanical, electronics, and computer science.
+Multidisciplinary engineering: mechanical, electronics, and computer science.
 
 ## Skills
 
@@ -63,13 +63,13 @@ Multidisciplinary engineering — mechanical, electronics, and computer science.
 
 ## Projects
 
-### diapason — [diapason.fm](https://diapason.fm)
+### diapason
 
-*2026 – present* · [Source](https://github.com/theotaburet/diapason)
+*2026 – present* · [diapason.fm](https://diapason.fm) · [Source](https://github.com/theotaburet/diapason)
 
-Synchronised audio broadcast to any number of phones over the web: a Rust/axum
-server, a WebAssembly client, and a clock-sync stack (probe bursts, skew
-regression, peer fusion) that holds a room in phase across 4G and screen locks.
+Turns a group of phones into one sound system. One person picks the sound,
+everyone nearby scans a QR code and hears the same instant of the same track, in
+phase, with nothing to install. Rust server, WebAssembly client, live in production.
 
 ### Ravitools
 
@@ -79,7 +79,7 @@ GPX enrichment with offline points of interest for long-distance cyclists.
 
 ## Volunteering
 
-### Co-Organiser & Founder — [Pignon des Charentes](https://www.instagram.com/pignon_des_charentes/)
+### Co-Organiser & Founder, [Pignon des Charentes](https://www.instagram.com/pignon_des_charentes/)
 
 La Rochelle, France · 2023–present
 
@@ -93,5 +93,5 @@ French (native) · English (fluent)
 
 ## Certificates
 
-- Python — France Université Numérique, 2021
-- Scikit-learn — France Université Numérique, 2021
+- Python, France Université Numérique, 2021
+- Scikit-learn, France Université Numérique, 2021

@@ -15,8 +15,8 @@
 /* ---------------------------------------------------------------------------
    Palette
    Lifted from the DCT lattice figure on the Projects page, which uses four
-   traditional colours to mark the four embedding lattices. The D lattice —
-   the one that depends on everything before it — is the vermilion below, and
+   traditional colours to mark the four embedding lattices. The D lattice,
+   the one that depends on everything before it, is the vermilion below, and
    it does duty here as the site's single accent. The B lattice amber is the
    only secondary. Everything else stays neutral, warmed a few degrees so the
    accent sits in the same family as the page around it.
@@ -109,7 +109,7 @@ $amber: #f8b862;
 }
 
 /* ---------------------------------------------------------------------------
-   Stack chips — the tech behind a project, on the Projects page.
+   Stack chips: the tech behind a project, on the Projects page.
    --------------------------------------------------------------------------- */
 
 .stack {
