@@ -18,6 +18,10 @@ portable speaker, in sync. The phone is the link between the station and whateve
 speaker it drives, over Bluetooth or a cable. The more people join, the louder and
 wider the result.
 
+The hard part is not sending the audio, it is agreeing on when to play it. Phones
+keep their own time and mobile networks are unpredictable, so holding a group tight
+enough that the speakers fuse into one instead of smearing is where the work went.
+
 You create a station and get a six-character code and a QR. You point it at
 whatever you want to play, which can be a link, a playlist, your microphone, or
 just whatever your computer is playing already. Everyone else scans the code,
