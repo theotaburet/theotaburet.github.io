@@ -10,7 +10,6 @@ order: 4
 <div class="deploys">
 <span><a href="https://diapason.fm">diapason.fm</a> <em class="env">production</em></span>
 <span><a href="https://diapason.studio">diapason.studio</a> <em class="env">staging</em></span>
-<span><a href="https://github.com/theotaburet/diapason">Source</a> <em class="env">GitHub</em></span>
 </div>
 
 One person picks the music, and everyone around them plays it out loud on their own
