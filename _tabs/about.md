@@ -24,9 +24,9 @@ invoices, and double-compressed JPEGs.
 ## What I'm building
 
 [**diapason**](https://diapason.fm) is your own radio, broadcast from a phone. One
-person picks the music, everyone around scans a QR code and hears it on their own
-phone at the same moment, with nothing to install. A Rust server, a WebAssembly
-client, and a lot of care about clocks.
+person picks the music, everyone around scans a QR code and plays it out loud on
+their own portable speaker, in sync, with nothing to install. A Rust server, a
+WebAssembly client, and a lot of care about clocks.
 [More about it]({{ '/projects/' | relative_url }}).
 
 ## Away from the screen

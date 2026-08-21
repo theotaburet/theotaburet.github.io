@@ -13,22 +13,23 @@ order: 4
 <span><a href="https://github.com/theotaburet/diapason">Source</a> <em class="env">GitHub</em></span>
 </div>
 
-One person picks the music, and everyone around them hears it on their own phone,
-at the same moment. Not roughly at the same time: close enough that a dozen phones
-sound like one thing rather than a dozen phones slightly out of step.
+One person picks the music, and everyone around them plays it out loud on their own
+portable speaker, in sync. The phone is the link between the station and whatever
+speaker it drives, over Bluetooth or a cable. The more people join, the louder and
+wider the result.
 
 You create a station and get a six-character code and a QR. You point it at
 whatever you want to play, which can be a link, a playlist, your microphone, or
-just whatever your computer is playing already. Everyone else scans the code and
-they're in. People who show up late land in time with the rest.
+just whatever your computer is playing already. Everyone else scans the code,
+connects their speaker, and they're in. People who show up late land in time with
+the rest.
 
 There is nothing to install and no account to create, because it all runs in the
 browser. It keeps playing when a phone locks its screen or drops from Wi-Fi to 4G.
-If you want, you can let listeners vote on what comes next instead of choosing
-everything yourself.
+You can let listeners vote on what comes next instead of picking everything
+yourself.
 
-I built it for bike rides, where nobody wants to carry a speaker and everyone is
-already holding a phone.
+I built it for bike rides.
 
 <p class="stack"><span>Rust</span><span>axum</span><span>WebAssembly</span><span>TypeScript</span><span>Astro</span><span>iroh / QUIC</span><span>Opus</span><span>Web Audio</span><span>PWA</span></p>
 
