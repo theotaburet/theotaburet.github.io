@@ -67,9 +67,9 @@ Multidisciplinary engineering: mechanical, electronics, and computer science.
 
 *2026 – present* · [diapason.fm](https://diapason.fm) · [Source](https://github.com/theotaburet/diapason)
 
-Turns a group of phones into one sound system. One person picks the sound,
-everyone nearby scans a QR code and hears the same instant of the same track, in
-phase, with nothing to install. Rust server, WebAssembly client, live in production.
+One person picks the music, everyone nearby scans a QR code and hears it on their
+own phone at the same moment. Runs in the browser, nothing to install. Rust server,
+WebAssembly client, in production.
 
 ### Ravitools
 

@@ -13,34 +13,22 @@ order: 4
 <span><a href="https://github.com/theotaburet/diapason">Source</a> <em class="env">GitHub</em></span>
 </div>
 
-A group of phones is already a sound system. It just has no way to agree on what
-to play, or when. diapason is that missing piece: one person picks the sound, and
-everyone around hears the same instant of the same track, in phase, on the phone
-already in their pocket.
+One person picks the music, and everyone around them hears it on their own phone,
+at the same moment. Not roughly at the same time: close enough that a dozen phones
+sound like one thing rather than a dozen phones slightly out of step.
 
-No app to install. No account to create. A web page and a QR code.
+You create a station and get a six-character code and a QR. You point it at
+whatever you want to play, which can be a link, a playlist, your microphone, or
+just whatever your computer is playing already. Everyone else scans the code and
+they're in. People who show up late land in time with the rest.
 
-### Three steps
+There is nothing to install and no account to create, because it all runs in the
+browser. It keeps playing when a phone locks its screen or drops from Wi-Fi to 4G.
+If you want, you can let listeners vote on what comes next instead of choosing
+everything yourself.
 
-1. **Create a station.** You get a six-character code and a QR.
-2. **Pick a source.** A link, a playlist, your microphone, or whatever your computer
-   happens to be playing. diapason takes it from there.
-3. **Everyone scans.** They're in, in phase, within seconds. People who arrive late
-   land in time with everyone else without interrupting anything.
-
-### Where it earns its keep
-
-- **Group rides.** A dozen cyclists, one soundtrack, nobody carrying a speaker.
-- **Walks and parties.** Any room becomes multi-speaker without hardware, and it
-  gets louder simply by more people joining.
-- **Anywhere silent is the rule.** Shared listening without filling the space with
-  sound.
-
-### Made for real conditions
-
-Playback survives a locked screen, a walk out of Wi-Fi range onto 4G, and the
-server restarting underneath it. The room can run as a benevolent dictatorship, or
-as a democracy where listeners vote on what plays next.
+I built it for bike rides, where nobody wants to carry a speaker and everyone is
+already holding a phone.
 
 <p class="stack"><span>Rust</span><span>axum</span><span>WebAssembly</span><span>TypeScript</span><span>Astro</span><span>iroh / QUIC</span><span>Opus</span><span>Web Audio</span><span>PWA</span></p>
 
