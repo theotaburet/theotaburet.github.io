@@ -21,6 +21,13 @@ invoices, and double-compressed JPEGs.
 - **Computer vision** — image processing, steganography and steganalysis, manipulation detection
 - **Tooling** — Python, PyTorch, OpenCV, FastAPI, Docker, CI/CD
 
+## What I'm building
+
+[**diapason**](https://diapason.fm) — your own radio, broadcast from a phone. One
+person picks the sound, everyone around scans a QR code and hears the same instant
+of the same track, in phase, with no install. A Rust server, a WebAssembly client,
+and a lot of care about clocks. [How it works]({{ '/projects/' | relative_url }}).
+
 ## Away from the screen
 
 I ride bikes, usually for longer than is reasonable. I co-founded
@@ -28,6 +35,9 @@ I ride bikes, usually for longer than is reasonable. I co-founded
 riddle-based bike treasure hunts around La Rochelle. I also built
 [Ravitools](https://github.com/theotaburet/Ravitools) to solve a problem I kept
 having on long routes: knowing where the next water source is when you have no signal.
+
+Both of those and diapason are the same itch, really: making a group of people
+share something at the same time, in the same place.
 
 And I take photographs.
 

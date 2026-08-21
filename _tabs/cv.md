@@ -61,6 +61,22 @@ Multidisciplinary engineering — mechanical, electronics, and computer science.
 | **Frameworks** | PyTorch · TensorFlow · Keras · OpenCV · FastAPI · scikit-learn |
 | **Tooling** | Git · Docker · CI/CD · GitHub Actions · GitLab CI/CD |
 
+## Projects
+
+### diapason — [diapason.fm](https://diapason.fm)
+
+*2026 – present* · [Source](https://github.com/theotaburet/diapason)
+
+Synchronised audio broadcast to any number of phones over the web: a Rust/axum
+server, a WebAssembly client, and a clock-sync stack (probe bursts, skew
+regression, peer fusion) that holds a room in phase across 4G and screen locks.
+
+### Ravitools
+
+*2024 – present* · [Source](https://github.com/theotaburet/Ravitools)
+
+GPX enrichment with offline points of interest for long-distance cyclists.
+
 ## Volunteering
 
 ### Co-Organiser & Founder — [Pignon des Charentes](https://www.instagram.com/pignon_des_charentes/)

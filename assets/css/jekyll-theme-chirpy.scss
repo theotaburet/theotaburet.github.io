@@ -1,0 +1,158 @@
+---
+---
+
+@use 'abstracts/variables' with (
+  $theme: '{{ site.theme_mode }}'
+);
+
+/* prettier-ignore */
+@use 'main
+{%- if jekyll.environment == 'production' -%}
+  .bundle
+{%- endif -%}
+';
+
+/* ---------------------------------------------------------------------------
+   Palette
+   Lifted from the DCT lattice figure on the Projects page, which uses four
+   traditional colours to mark the four embedding lattices. The D lattice —
+   the one that depends on everything before it — is the vermilion below, and
+   it does duty here as the site's single accent. The B lattice amber is the
+   only secondary. Everything else stays neutral, warmed a few degrees so the
+   accent sits in the same family as the page around it.
+   --------------------------------------------------------------------------- */
+
+$sig-light: #c4321a; // 5.5:1 on white, 5.2:1 on the warmed sidebar
+$sig-dark: #ff7a5c; // 6.7:1 on the dark page background
+$amber: #f8b862;
+
+@mixin accent-light {
+  --link-color: #{$sig-light};
+  --link-underline-color: rgb(196 50 26 / 25%);
+
+  /* Sidebar */
+  --site-title-color: #{$sig-light};
+  --sidebar-bg: #faf7f4;
+  --sidebar-border-color: #efeae5;
+  --sidebar-active-color: #{$sig-light};
+  --sidebar-hover-bg: rgb(196 50 26 / 7%);
+
+  /* Surfaces, warmed to match */
+  --main-border-color: #f2efec;
+  --highlight-bg-color: #faf7f4;
+  --search-tag-bg: #f7f3ef;
+  --tb-odd-bg: #fdfbf9;
+  --blockquote-border-color: rgb(248 184 98 / 55%);
+
+  /* Accents on interactive bits */
+  --toc-highlight: #{$sig-light};
+  --btn-share-hover-color: #{$sig-light};
+  --checkbox-checked-color: #{$sig-light};
+  --categories-icon-hover-color: #{$sig-light};
+  --tag-hover: rgb(196 50 26 / 10%);
+  --footnote-target-bg: rgb(248 184 98 / 30%);
+
+  /* Chips */
+  --chip-bg: rgb(196 50 26 / 6%);
+  --chip-border: rgb(196 50 26 / 18%);
+  --chip-text: #8f2512;
+}
+
+@mixin accent-dark {
+  --link-color: #{$sig-dark};
+  --link-underline-color: rgb(255 122 92 / 35%);
+
+  /* Sidebar */
+  --site-title-color: #{$sig-dark};
+  --sidebar-bg: #1f1c1b;
+  --sidebar-border-color: #2a2624;
+  --sidebar-active-color: #{$sig-dark};
+  --sidebar-hover-bg: #2a2320;
+
+  /* Surfaces */
+  --blockquote-border-color: rgb(248 184 98 / 40%);
+
+  /* Accents on interactive bits */
+  --toc-highlight: #{$sig-dark};
+  --btn-share-hover-color: #{$sig-dark};
+  --checkbox-checked-color: #{$sig-dark};
+  --categories-icon-hover-color: #{$sig-dark};
+  --tag-hover: rgb(255 122 92 / 15%);
+  --footnote-target-bg: rgb(255 122 92 / 18%);
+
+  /* Chips */
+  --chip-bg: rgb(255 122 92 / 10%);
+  --chip-border: rgb(255 122 92 / 24%);
+  --chip-text: #ffb0a0;
+}
+
+/* Mirrors the theme's own selectors so the toggle keeps working in both
+   directions, including when the visitor has not chosen a mode. */
+:root[data-bs-theme='light'] {
+  @include accent-light;
+}
+
+:root[data-bs-theme='dark'] {
+  @include accent-dark;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-bs-theme]) {
+    @include accent-light;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-bs-theme]) {
+    @include accent-dark;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Stack chips — the tech behind a project, on the Projects page.
+   --------------------------------------------------------------------------- */
+
+.stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.7rem 0 1.4rem;
+  padding: 0;
+  list-style: none;
+
+  > span {
+    padding: 0.34rem 0.62rem;
+    border: 1px solid var(--chip-border);
+    border-radius: 999px;
+    background: var(--chip-bg);
+    color: var(--chip-text);
+    font-size: 0.78rem;
+    line-height: 1;
+    white-space: nowrap;
+  }
+}
+
+/* A project's live deployments, set apart from body links. */
+.deploys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.1rem;
+  margin: 0 0 1.2rem;
+  font-size: 0.9rem;
+
+  > span {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.35rem;
+  }
+
+  a {
+    font-weight: 600;
+  }
+
+  .env {
+    color: var(--text-muted-color);
+    font-size: 0.82rem;
+    font-style: normal;
+  }
+}

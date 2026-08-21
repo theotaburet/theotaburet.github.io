@@ -8,6 +8,7 @@ Pushing to `main` builds and deploys via GitHub Actions — no local toolchain n
 | What | File |
 |---|---|
 | Site title, tagline, avatar, social links | `_config.yml` |
+| Colours and custom CSS | `assets/css/jekyll-theme-chirpy.scss` |
 | Sidebar contact icons | `_data/contact.yml` |
 | Landing page (served at `/`) | `_tabs/about.md` |
 | CV | `_tabs/cv.md` |
@@ -55,6 +56,21 @@ bundle exec jekyll s
 ```
 
 Not required: the Actions build is the source of truth and takes ~40s.
+
+## Colours
+
+`assets/css/jekyll-theme-chirpy.scss` overrides Chirpy's palette. The accent is the
+vermilion from the DCT lattice figure (`$sig-light` / `$sig-dark`), with the lattice
+amber as the only secondary; neutrals are warmed to match. To change the whole
+accent, edit those two variables — everything else is derived from them.
+
+The overrides mirror Chirpy's own `:root[data-bs-theme=…]` selectors so the
+light/dark toggle keeps working in both directions. Both accent values are checked
+against WCAG AA on their backgrounds (5.5:1 light, 6.7:1 dark); if you swap them,
+re-check.
+
+Two helper classes are defined there: `.stack` for the tech chips under a project,
+and `.deploys` for a project's live links.
 
 ## The DCT lattice figure
 
