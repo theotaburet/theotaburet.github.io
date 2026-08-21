@@ -53,7 +53,9 @@
     "color:#fff;font-weight:700;font-size:.8rem;border-radius:3px;cursor:pointer;" +
     "transition:opacity .15s,outline-color .15s;outline:2px solid transparent}" +
     "#dct-grid .dg-dim{opacity:.15}" +
-    "#dct-grid .dg-active{outline-color:var(--link-color,currentColor);outline-width:3px}" +
+    // Outlines the hovered cell against the *cell* colour, not the page, so it
+    // stays visible on all four lattices in both themes.
+    "#dct-grid .dg-active{outline-color:var(--heading-color,currentColor);outline-width:3px}" +
     "#dct-grid .dg-legend{display:flex;flex-wrap:wrap;gap:.25rem 1rem;justify-content:center;" +
     "margin-top:1rem;font-size:.85rem}" +
     "#dct-grid .dg-legend span{display:flex;align-items:center;gap:.4rem}" +
