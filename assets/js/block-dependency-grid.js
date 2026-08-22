@@ -7,12 +7,15 @@
 
   var N = 8;
   var COLORS = { A: "#a0d8ef", B: "#f8b862", C: "#8db255", D: "#d3381c" };
-  var LEGEND = [
-    ["A", "independent"],
-    ["B", "depends on A"],
-    ["C", "depends on A, B"],
-    ["D", "depends on A, B, C"]
-  ];
+  // Labels default to English; the French page overrides them with data-legend
+  // (four entries, pipe separated) and data-hint on the container.
+  var LEGEND_TEXT = (
+    root.dataset.legend ||
+    "independent|depends on A|depends on A, B|depends on A, B, C"
+  ).split("|");
+  var LEGEND = ["A", "B", "C", "D"].map(function (k, i) {
+    return [k, LEGEND_TEXT[i]];
+  });
   // Each lattice may only depend on the ones before it in the A < B < C < D order.
   var PRECEDES = { A: "", B: "A", C: "AB", D: "ABC" };
 
@@ -108,7 +111,8 @@
 
   var hint = document.createElement("p");
   hint.className = "dg-hint";
-  hint.textContent = "Hover a cell to see everything it depends on.";
+  hint.textContent =
+    root.dataset.hint || "Hover a cell to see everything it depends on.";
 
   var legend = document.createElement("div");
   legend.className = "dg-legend";

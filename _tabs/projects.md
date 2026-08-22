@@ -3,6 +3,8 @@ icon: fas fa-diagram-project
 order: 4
 ---
 
+<p class="langbar"><a href="{{ '/fr/projets/' | relative_url }}">Français</a></p>
+
 ## diapason
 
 *Your own radio, broadcast from a phone.*

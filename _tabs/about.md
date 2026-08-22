@@ -4,6 +4,8 @@ order: 1
 permalink: /
 ---
 
+<p class="langbar"><a href="{{ '/fr/' | relative_url }}">Français</a></p>
+
 I'm **Théo Taburet**, a computer vision researcher based in La Rochelle, France.
 
 I hold a PhD in applied mathematics from École Centrale de Lille, where I worked on
