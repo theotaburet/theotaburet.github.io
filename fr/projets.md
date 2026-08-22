@@ -1,5 +1,6 @@
 ---
 layout: page
+lang: fr-FR
 title: Projets
 permalink: /fr/projets/
 ---
