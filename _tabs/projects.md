@@ -50,7 +50,7 @@ to know when the next tap is.
 
 ## Natural steganography in the JPEG domain
 
-*PhD research, 2017–2020*
+*PhD research, 2017-2020*
 
 Steganographic embedding that models the sensor noise of a camera, so a hidden
 payload is statistically indistinguishable from photonic noise that was always
