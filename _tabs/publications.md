@@ -3,8 +3,6 @@ icon: fas fa-book
 order: 3
 ---
 
-<p class="langbar"><a href="{{ '/fr/publications/' | relative_url }}">Français</a></p>
-
 Also on [Google Scholar](https://scholar.google.com/citations?user=qc6CJjYAAAAJ).
 
 ## 2024

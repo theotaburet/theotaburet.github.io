@@ -109,8 +109,20 @@ $amber: #f8b862;
 }
 
 /* ---------------------------------------------------------------------------
-   Language bar. The sidebar only ever lists one language's tabs, so the
-   French pages carry their own navigation here alongside the switch.
+   Language switch, injected into the sidebar bottom row by lang-switch.js.
+   Text rather than an icon, because a flag is a country and not a language.
+   --------------------------------------------------------------------------- */
+
+.lang-switch {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+
+/* ---------------------------------------------------------------------------
+   In-page navigation for the French pages. The sidebar tabs are always the
+   English ones, so /fr/ carries its own list.
    --------------------------------------------------------------------------- */
 
 .langbar {

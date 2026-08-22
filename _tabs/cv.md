@@ -4,8 +4,6 @@ order: 2
 title: CV
 ---
 
-<p class="langbar"><a href="{{ '/fr/cv/' | relative_url }}">Français</a></p>
-
 Download as PDF: [English]({{ '/assets/pdf/CV_TABURET_Theo_English.pdf' | relative_url }}) · [Français]({{ '/assets/pdf/CV_TABURET_Theo_French.pdf' | relative_url }})
 
 ## Experience

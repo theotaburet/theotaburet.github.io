@@ -10,15 +10,18 @@ Pushing to `main` builds and deploys via GitHub Actions; no local toolchain need
 | Site title, tagline, avatar, social links | `_config.yml` |
 | Colours and custom CSS | `assets/css/jekyll-theme-chirpy.scss` |
 | Sidebar contact icons | `_data/contact.yml` |
-| Landing page (served at `/`) | `_tabs/about.md` |
+| Landing page (served at `/`) | `index.md` |
 | CV | `_tabs/cv.md` |
 | Publications | `_tabs/publications.md` |
 | Projects | `_tabs/projects.md` |
+| French versions of all four | `fr/` |
+| Language switch | `assets/js/lang-switch.js` |
 | CV PDFs | `assets/pdf/` |
 | Images | `assets/img/` |
 
-Nav order is the `order:` field in each tab's front matter: about 1, cv 2,
-publications 3, projects 4, then categories 5, tags 6, archives 7.
+Nav order is the `order:` field in each tab's front matter: cv 2, publications 3,
+projects 4, then categories 5, tags 6, archives 7. The About page is not a tab;
+it is `index.md` and the sidebar reaches it through the built-in Home entry.
 
 ## Writing a post
 
@@ -31,17 +34,9 @@ blog index at `/` because that slot is the About page. See below.
 
 ## Restoring a blog home page
 
-`/` currently serves `_tabs/about.md` via its `permalink: /`. To hand the root back
-to the post feed:
-
-1. Remove `permalink: /` from `_tabs/about.md`
-2. Recreate `index.html` at the repo root:
-
-   ```
-   ---
-   layout: home
-   ---
-   ```
+`/` currently serves `index.md`, the About page. To hand the root back to the post
+feed, change its front matter to `layout: home` and move the prose into
+`_tabs/about.md` with `icon: fas fa-info-circle` and `order: 1`.
 
 `paginate: 10` is still set in `_config.yml`, so pagination resumes on its own.
 
@@ -77,3 +72,20 @@ and `.deploys` for a project's live links.
 `assets/js/block-dependency-grid.js` renders the interactive grid on the Projects
 page. Plain JS, no dependencies. It looks for `<div id="dct-grid"></div>` and does
 nothing if that element is absent.
+
+## French pages
+
+`fr/` holds a hand-written translation of each of the four pages. Nothing links the
+two versions automatically: edit a page and its counterpart stays as it was.
+
+Each French page carries `lang: fr-FR` in its front matter. Chirpy reads `page.lang`
+for the `<html lang>` attribute and for its own UI strings, so those pages also get
+the French theme chrome from `_data/locales/fr-FR.yml` in the gem.
+
+`assets/js/lang-switch.js` puts the FR/EN button in the sidebar. It holds the page
+pairs in a `PAIRS` map; add a page to that map or the switch will not appear on it.
+The script is loaded through `_includes/metadata-hook.html`, an empty placeholder
+Chirpy provides for exactly this, so no theme file is forked.
+
+The in-page `.langbar` on the French pages is their navigation, not a switch: the
+sidebar tabs are always the English ones.

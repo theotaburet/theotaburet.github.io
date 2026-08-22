@@ -5,7 +5,7 @@ title: CV
 permalink: /fr/cv/
 ---
 
-<p class="langbar"><a href="{{ '/fr/' | relative_url }}">À propos</a> · <a class="here" href="{{ '/fr/cv/' | relative_url }}">CV</a> · <a href="{{ '/fr/publications/' | relative_url }}">Publications</a> · <a href="{{ '/fr/projets/' | relative_url }}">Projets</a> · <a href="{{ '/cv/' | relative_url }}">English</a></p>
+<p class="langbar"><a href="{{ '/fr/' | relative_url }}">À propos</a> · <a class="here" href="{{ '/fr/cv/' | relative_url }}">CV</a> · <a href="{{ '/fr/publications/' | relative_url }}">Publications</a> · <a href="{{ '/fr/projets/' | relative_url }}">Projets</a></p>
 
 Télécharger en PDF : [Français]({{ '/assets/pdf/CV_TABURET_Theo_French.pdf' | relative_url }}) · [English]({{ '/assets/pdf/CV_TABURET_Theo_English.pdf' | relative_url }})
 
