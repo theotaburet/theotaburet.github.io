@@ -5,8 +5,6 @@ title: À propos
 permalink: /fr/
 ---
 
-<p class="langbar"><a class="here" href="{{ '/fr/' | relative_url }}">À propos</a> · <a href="{{ '/fr/cv/' | relative_url }}">CV</a> · <a href="{{ '/fr/publications/' | relative_url }}">Publications</a> · <a href="{{ '/fr/projets/' | relative_url }}">Projets</a></p>
-
 Je suis **Théo Taburet**, chercheur en vision par ordinateur, basé à La Rochelle.
 
 J'ai soutenu une thèse de mathématiques appliquées à l'École Centrale de Lille, sur la

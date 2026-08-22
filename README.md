@@ -82,10 +82,15 @@ Each French page carries `lang: fr-FR` in its front matter. Chirpy reads `page.l
 for the `<html lang>` attribute and for its own UI strings, so those pages also get
 the French theme chrome from `_data/locales/fr-FR.yml` in the gem.
 
-`assets/js/lang-switch.js` puts the FR/EN button in the sidebar. It holds the page
-pairs in a `PAIRS` map; add a page to that map or the switch will not appear on it.
-The script is loaded through `_includes/metadata-hook.html`, an empty placeholder
-Chirpy provides for exactly this, so no theme file is forked.
+`assets/js/lang-switch.js` does two things: it puts the FR/EN button in the sidebar,
+and on French pages it repoints the sidebar tabs at their French counterparts, since
+Chirpy renders the tab list from `_tabs/` on every page. Both read the same `PAIRS`
+map at the top of the file; add a page there or it gets neither.
 
-The in-page `.langbar` on the French pages is their navigation, not a switch: the
-sidebar tabs are always the English ones.
+The script is loaded through `_includes/metadata-hook.html`, an empty placeholder
+Chirpy provides for exactly this, so no theme file is forked and gem upgrades apply
+cleanly. The cost is that the French sidebar is built client side: with JavaScript
+off, a French page shows the English tabs. The links still work.
+
+Categories, Tags and Archives are English only and stay pointed at the English
+pages.

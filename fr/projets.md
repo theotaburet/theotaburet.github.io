@@ -5,8 +5,6 @@ title: Projets
 permalink: /fr/projets/
 ---
 
-<p class="langbar"><a href="{{ '/fr/' | relative_url }}">À propos</a> · <a href="{{ '/fr/cv/' | relative_url }}">CV</a> · <a href="{{ '/fr/publications/' | relative_url }}">Publications</a> · <a class="here" href="{{ '/fr/projets/' | relative_url }}">Projets</a></p>
-
 ## diapason
 
 *Votre propre radio, diffusée depuis un téléphone.*

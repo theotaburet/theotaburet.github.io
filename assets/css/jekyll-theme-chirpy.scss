@@ -121,31 +121,6 @@ $amber: #f8b862;
 }
 
 /* ---------------------------------------------------------------------------
-   In-page navigation for the French pages. The sidebar tabs are always the
-   English ones, so /fr/ carries its own list.
-   --------------------------------------------------------------------------- */
-
-.langbar {
-  margin: -0.5rem 0 1.8rem;
-  color: var(--text-muted-color);
-  font-size: 0.85rem;
-
-  a {
-    color: var(--text-muted-color);
-    text-decoration: none;
-
-    &:hover {
-      color: var(--link-color);
-    }
-
-    &.here {
-      color: var(--heading-color);
-      font-weight: 600;
-    }
-  }
-}
-
-/* ---------------------------------------------------------------------------
    Stack chips: the tech behind a project, on the Projects page.
    --------------------------------------------------------------------------- */
 

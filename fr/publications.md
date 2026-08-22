@@ -5,8 +5,6 @@ title: Publications
 permalink: /fr/publications/
 ---
 
-<p class="langbar"><a href="{{ '/fr/' | relative_url }}">À propos</a> · <a href="{{ '/fr/cv/' | relative_url }}">CV</a> · <a class="here" href="{{ '/fr/publications/' | relative_url }}">Publications</a> · <a href="{{ '/fr/projets/' | relative_url }}">Projets</a></p>
-
 Également sur [Google Scholar](https://scholar.google.com/citations?user=qc6CJjYAAAAJ).
 
 ## 2024
