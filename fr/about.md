@@ -5,7 +5,14 @@ title: À propos
 permalink: /fr/
 ---
 
+<div class="lede wide-page">
+<h1>Je cache des choses dans les images. Puis je pars les chercher.</h1>
+<div class="lede-body" markdown="1">
+<p class="eyebrow"><span class="emo">🔍</span> Théo&nbsp;Taburet &middot; vision&nbsp;par&nbsp;ordinateur &middot; La&nbsp;Rochelle</p>
+
 Je suis **Théo Taburet**, chercheur en vision par ordinateur, basé à La Rochelle.
+</div>
+</div>
 
 J'ai soutenu une thèse de mathématiques appliquées à l'École Centrale de Lille, sur la
 **stéganographie** : l'art de cacher de l'information dans une image sans laisser de

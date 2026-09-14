@@ -4,7 +4,17 @@ order: 2
 title: CV
 ---
 
+<div class="lede wide-page">
+<h1>Where I have worked, what on, and what came out of it.</h1>
+<div class="lede-body" markdown="1">
+<p class="eyebrow"><span class="emo">🎓</span> Théo&nbsp;Taburet &middot; curriculum&nbsp;vitae &middot; La&nbsp;Rochelle</p>
+
+Postdoctoral research in image forensics, a PhD in steganography, and the
+engineering that came before both.
+
 Download as PDF: [English]({{ '/assets/pdf/CV_TABURET_Theo_English.pdf' | relative_url }}) · [Français]({{ '/assets/pdf/CV_TABURET_Theo_French.pdf' | relative_url }})
+</div>
+</div>
 
 ## Experience
 

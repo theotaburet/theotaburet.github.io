@@ -5,7 +5,37 @@ title: Projets
 permalink: /fr/projets/
 ---
 
-## diapason
+<div class="lede wide-page">
+<h1>Trois choses sur lesquelles je reviens toujours.</h1>
+<div class="lede-body" markdown="1">
+<p class="eyebrow"><span class="emo">🧰</span> Travaux&nbsp;choisis &middot; Théo&nbsp;Taburet &middot; signal,&nbsp;images&nbsp;et&nbsp;vélo</p>
+
+Une radio qu'on emporte, une carte qui sait où trouver de l'eau, et une façon de
+cacher un message dans le grain d'une photographie. Elles ont moins en commun
+qu'il n'y paraît, sauf que chacune est partie d'un problème que j'avais.
+</div>
+</div>
+
+<div class="project-cards">
+<a class="project-card" href="#diapason">
+<span class="project-card__media"><img src="/assets/img/projects/diapason.jpg" alt="" loading="lazy"></span>
+<h3><span class="emo">📻</span> diapason</h3>
+<p>Votre propre radio, diffusée depuis un téléphone et jouée en synchro sur toutes les enceintes autour.</p>
+</a>
+<a class="project-card" href="#ravitools">
+<span class="project-card__media"><img src="/assets/img/projects/ravitools.jpg" alt="" loading="lazy"></span>
+<h3><span class="emo">🚲</span> Ravitools</h3>
+<p>Des fichiers GPX enrichis en points d'eau, de ravitaillement et de bivouac, utilisables hors ligne.</p>
+</a>
+<a class="project-card" href="#stego">
+<span class="project-card__media"><img src="/assets/img/projects/steganography.jpg" alt="" loading="lazy"></span>
+<h3><span class="emo">🌾</span> Stéganographie naturelle</h3>
+<p>Un schéma d'insertion qui imite le bruit du capteur, rendant la charge statistiquement invisible. Thèse.</p>
+</a>
+</div>
+
+
+## 📻 diapason {#diapason}
 
 *Votre propre radio, diffusée depuis un téléphone.*
 
@@ -39,7 +69,7 @@ Je l'ai construit pour les sorties vélo.
 
 <p class="stack"><span>Rust</span><span>axum</span><span>WebAssembly</span><span>TypeScript</span><span>Astro</span><span>Opus</span><span>Web Audio</span><span>PWA</span></p>
 
-## Ravitools
+## 🚲 Ravitools {#ravitools}
 
 <div class="deploys">
 <span><a href="https://github.com/theotaburet/Ravitools">Source</a> <em class="env">GitHub</em></span>
@@ -51,7 +81,7 @@ exactement là où ils ont le plus besoin de savoir où est le prochain robinet.
 
 <p class="stack"><span>Python</span><span>GPX</span><span>OpenStreetMap</span></p>
 
-## Stéganographie naturelle dans le domaine JPEG
+## 🌾 Stéganographie naturelle dans le domaine JPEG {#stego}
 
 *Travaux de thèse, 2017-2020*
 

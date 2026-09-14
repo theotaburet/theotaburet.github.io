@@ -5,7 +5,17 @@ title: CV
 permalink: /fr/cv/
 ---
 
+<div class="lede wide-page">
+<h1>Où j'ai travaillé, sur quoi, et ce qui en est sorti.</h1>
+<div class="lede-body" markdown="1">
+<p class="eyebrow"><span class="emo">🎓</span> Théo&nbsp;Taburet &middot; curriculum&nbsp;vitae &middot; La&nbsp;Rochelle</p>
+
+Un post-doctorat en investigation d'image, une thèse en stéganographie, et
+l'ingénierie qui a précédé les deux.
+
 Télécharger en PDF : [Français]({{ '/assets/pdf/CV_TABURET_Theo_French.pdf' | relative_url }}) · [English]({{ '/assets/pdf/CV_TABURET_Theo_English.pdf' | relative_url }})
+</div>
+</div>
 
 ## Expérience
 

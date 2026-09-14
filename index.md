@@ -3,7 +3,14 @@ layout: page
 title: About
 ---
 
+<div class="lede wide-page">
+<h1>I hide things in photographs. Then I go looking for them.</h1>
+<div class="lede-body" markdown="1">
+<p class="eyebrow"><span class="emo">🔍</span> Théo&nbsp;Taburet &middot; computer&nbsp;vision &middot; La&nbsp;Rochelle</p>
+
 I'm **Théo Taburet**, a computer vision researcher based in La Rochelle, France.
+</div>
+</div>
 
 I hold a PhD in applied mathematics from École Centrale de Lille, where I worked on
 **steganography**: the art of hiding information inside images without leaving a

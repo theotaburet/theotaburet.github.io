@@ -3,7 +3,37 @@ icon: fas fa-diagram-project
 order: 4
 ---
 
-## diapason
+<div class="lede wide-page">
+<h1>Three things I keep coming back to.</h1>
+<div class="lede-body" markdown="1">
+<p class="eyebrow"><span class="emo">🧰</span> Selected&nbsp;work &middot; Théo&nbsp;Taburet &middot; signal,&nbsp;images&nbsp;and&nbsp;bicycles</p>
+
+A radio you carry, a map that knows where the water is, and a way of hiding a
+message in the grain of a photograph. They have less in common than they look,
+except that each one started as a problem I had personally.
+</div>
+</div>
+
+<div class="project-cards">
+<a class="project-card" href="#diapason">
+<span class="project-card__media"><img src="/assets/img/projects/diapason.jpg" alt="" loading="lazy"></span>
+<h3><span class="emo">📻</span> diapason</h3>
+<p>Your own radio, broadcast from a phone and played in sync on every speaker around you.</p>
+</a>
+<a class="project-card" href="#ravitools">
+<span class="project-card__media"><img src="/assets/img/projects/ravitools.jpg" alt="" loading="lazy"></span>
+<h3><span class="emo">🚲</span> Ravitools</h3>
+<p>GPX files enriched with offline water, food and campsite points for long-distance cyclists.</p>
+</a>
+<a class="project-card" href="#stego">
+<span class="project-card__media"><img src="/assets/img/projects/steganography.jpg" alt="" loading="lazy"></span>
+<h3><span class="emo">🌾</span> Natural steganography</h3>
+<p>Embedding that mimics sensor noise, so the payload is statistically invisible. PhD research.</p>
+</a>
+</div>
+
+
+## 📻 diapason {#diapason}
 
 *Your own radio, broadcast from a phone.*
 
@@ -36,7 +66,7 @@ I built it for bike rides.
 
 <p class="stack"><span>Rust</span><span>axum</span><span>WebAssembly</span><span>TypeScript</span><span>Astro</span><span>Opus</span><span>Web Audio</span><span>PWA</span></p>
 
-## Ravitools
+## 🚲 Ravitools {#ravitools}
 
 <div class="deploys">
 <span><a href="https://github.com/theotaburet/Ravitools">Source</a> <em class="env">GitHub</em></span>
@@ -48,7 +78,7 @@ to know when the next tap is.
 
 <p class="stack"><span>Python</span><span>GPX</span><span>OpenStreetMap</span></p>
 
-## Natural steganography in the JPEG domain
+## 🌾 Natural steganography in the JPEG domain {#stego}
 
 *PhD research, 2017-2020*
 
