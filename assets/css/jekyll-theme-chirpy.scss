@@ -56,6 +56,9 @@ $amber: #f8b862;
   --chip-bg: rgb(196 50 26 / 6%);
   --chip-border: rgb(196 50 26 / 18%);
   --chip-text: #8f2512;
+
+  /* Graph paper behind everything */
+  --paper-line: rgb(40 34 32 / 7%);
 }
 
 @mixin accent-dark {
@@ -84,6 +87,9 @@ $amber: #f8b862;
   --chip-bg: rgb(255 122 92 / 10%);
   --chip-border: rgb(255 122 92 / 24%);
   --chip-text: #ffb0a0;
+
+  /* Graph paper behind everything */
+  --paper-line: rgb(255 245 240 / 7%);
 }
 
 /* Mirrors the theme's own selectors so the toggle keeps working in both
@@ -167,4 +173,485 @@ $amber: #f8b862;
     font-size: 0.82rem;
     font-style: normal;
   }
+}
+
+/* ---------------------------------------------------------------------------
+   Wide pages.
+   Chirpy puts no class on <body>, so the hook is a class on the page's own
+   opening block: anything carrying .wide-page opts into the full-width grid.
+   No layout is copied out of the gem, which keeps the theme upgradeable.
+   --------------------------------------------------------------------------- */
+
+#main-wrapper:has(.wide-page) {
+  > .container {
+    max-width: none;
+    padding-inline: clamp(1.15rem, 4vw, 4.5rem);
+  }
+
+  main {
+    width: 100%;
+    max-width: none;
+    flex: 0 0 100%;
+  }
+
+  /* The TOC panel has nothing to index on these pages. */
+  #panel-wrapper {
+    display: none;
+  }
+
+  /* The masthead carries the page's own title, so the theme's heading above it
+     would be a second one saying the same thing in a smaller voice. */
+  .dynamic-title {
+    display: none;
+  }
+
+  /* The grid goes full width for the masthead and for the media under it.
+     Running prose does not follow it out there: a 1300px line is unreadable
+     whatever it says. */
+  .content > p,
+  .content > ul,
+  .content > ol,
+  .content > blockquote,
+  .content > h2,
+  .content > h3,
+  .content > h4,
+  .content > .table-wrapper {
+    max-width: 46rem;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Editorial blocks: a mono eyebrow, a large display heading, body text set
+   beside it rather than under it. Collapses to one column below 62rem.
+   --------------------------------------------------------------------------- */
+
+/* The masthead strapline. Same face as the display type rather than a mono
+   label, set small and uppercase, so it reads as part of the letterhead. */
+.eyebrow {
+  margin: 0 0 1.5rem;
+  color: var(--text-color);
+  font-size: clamp(0.9rem, 1.15vw, 1.25rem);
+  font-weight: 400;
+  line-height: 1.18;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.lede {
+  position: relative;
+  /* Its own stacking context, so the band below can sit behind this block's
+     text and still in front of the field. */
+  isolation: isolate;
+  display: grid;
+  gap: 1.5rem 4rem;
+  align-items: start;
+  margin: 0 0 clamp(2.5rem, 6vw, 5rem);
+  padding-bottom: clamp(1.6rem, 3.5vw, 2.6rem);
+  border-bottom: 1px solid var(--main-border-color);
+
+  /* A band, not a block: it carries the page background out to the edges of
+     the content area and up past whatever padding the theme leaves above it,
+     so the graph paper starts under the rule instead of running behind the
+     title. 100vh is simply more than enough to reach the top. */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -100vh calc(-1 * clamp(1.15rem, 4vw, 4.5rem)) 0;
+    z-index: -1;
+    background-color: var(--main-bg);
+  }
+
+  @media (min-width: 62rem) {
+    /* Their proportions: the title takes a shade under 60% of the measure and
+       the strapline column the rest. */
+    grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+
+    .lede-body {
+      padding-left: 4rem;
+      border-left: 1px solid var(--main-border-color);
+      margin-left: -2rem;
+    }
+
+    /* Justified, so the line squares off against the rule on both sides. Not
+       the last line: three short words stretched across the column is a canyon,
+       and the copy cannot be hand-fitted on four pages in two languages. */
+    .eyebrow {
+      text-align: justify;
+    }
+  }
+
+  h1,
+  h2 {
+    margin: 0;
+    border-bottom: 0; /* Chirpy underlines h2 by default. */
+    font-size: clamp(2.2rem, 5vw, 4.1rem);
+    font-weight: 400;
+    /* Leading below 1 : the lines knit together into a block. */
+    line-height: 0.92;
+    letter-spacing: -0.035em;
+    text-transform: uppercase;
+  }
+
+  .lede-body {
+    /* Stretched rather than sized to its text, so the rule beside it runs the
+       full height of the band. */
+    align-self: stretch;
+
+    > :first-child {
+      margin-top: 0;
+    }
+
+    > :last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   The decoding field sits behind the whole site. Chirpy paints its background
+   on <body>, so that moves up to <html> and the canvas slots in between.
+   --------------------------------------------------------------------------- */
+html {
+  background-color: var(--main-bg);
+}
+
+body {
+  background-color: transparent;
+}
+
+#field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  /* The window hears the pointer instead, so nothing here blocks a click. */
+  pointer-events: none;
+  /* The paper the cells are drawn on. Same 10px pitch as CELL in field.js, so
+     every square lands exactly in a square of the grid. */
+  background-image:
+    repeating-linear-gradient(to right, var(--paper-line) 0 1px, transparent 1px 10px),
+    repeating-linear-gradient(to bottom, var(--paper-line) 0 1px, transparent 1px 10px);
+}
+
+/* Both panels are opaque slabs by default, which would hide the field under
+   the two widest parts of the page. */
+#sidebar,
+#topbar-wrapper {
+  background-color: transparent;
+  backdrop-filter: blur(9px) saturate(115%);
+}
+
+#sidebar::before,
+#topbar-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--sidebar-bg);
+  opacity: 0.82;
+}
+
+/* ---------------------------------------------------------------------------
+   Photo wall. CSS multi-column rather than a JS masonry library, so every
+   frame keeps its own aspect ratio and nothing has to be measured.
+   --------------------------------------------------------------------------- */
+
+.photo-wall {
+  column-count: 3;
+  column-gap: clamp(0.6rem, 1.4vw, 1.1rem);
+  margin: 0 0 2rem;
+
+  @media (max-width: 56rem) {
+    column-count: 2;
+  }
+
+  @media (max-width: 34rem) {
+    column-count: 1;
+  }
+
+  /* Chirpy wraps content images in <p>; neutralise it so the columns break
+     between frames and never inside one. */
+  p {
+    margin: 0;
+  }
+
+  p,
+  img {
+    break-inside: avoid;
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 0 0 clamp(0.6rem, 1.4vw, 1.1rem);
+    border-radius: 2px;
+    transition: filter 0.3s ease;
+  }
+
+  /* The rest of the wall steps out of focus rather than going see-through:
+     a half-transparent photograph reads as a rendering fault, an unfocused
+     one reads as depth of field. */
+  &:hover img {
+    filter: blur(3px);
+  }
+
+  img:hover {
+    filter: none;
+  }
+
+  @media (hover: none) {
+    &:hover img,
+    img:hover {
+      filter: none;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Project cards: a visual index at the top of the Projects page, linking
+   down to the prose that was already there.
+   --------------------------------------------------------------------------- */
+
+.project-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: clamp(1rem, 2.2vw, 1.8rem);
+  margin: 0 0 clamp(3rem, 7vw, 5.5rem);
+}
+
+.project-card {
+  display: flex;
+  flex-direction: column;
+  color: inherit;
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    color: inherit;
+    text-decoration: none;
+
+    /* Pulls into focus and settles back to its own size. */
+    .project-card__media img {
+      transform: scale(1);
+      filter: none;
+    }
+
+    h3 {
+      color: var(--link-color);
+    }
+  }
+
+  &__media {
+    overflow: hidden;
+    border-radius: 2px;
+    aspect-ratio: 4 / 3;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      /* Blurred, not faded. Scaled up by more than the blur radius so the
+         softened edge never shows the frame through it. */
+      filter: blur(6px);
+      transform: scale(1.15);
+      transition: transform 0.45s ease, filter 0.35s ease;
+    }
+  }
+
+  h3 {
+    margin: 0.85rem 0 0.35rem;
+    font-size: 1.12rem;
+    font-weight: 600;
+    transition: color 0.2s ease;
+  }
+
+  p {
+    margin: 0;
+    color: var(--text-muted-color);
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+}
+
+@media (hover: none) {
+  .project-card__media img {
+    filter: none;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .photo-wall img,
+  .project-card__media img,
+  .project-card h3 {
+    transition: none;
+  }
+
+  .project-card__media img {
+    transform: none;
+  }
+}
+
+
+/* ---------------------------------------------------------------------------
+   Pointer. The native cursor steps aside for a dot and a trailing ring, both
+   in difference blending so they stay legible over photographs. Coarse
+   pointers and reduced motion never get either, and the rules below only bite
+   once the script has said it is running.
+   --------------------------------------------------------------------------- */
+.cursor-dot,
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2000;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: difference;
+  will-change: transform;
+}
+
+.cursor-dot {
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  background-color: #fff;
+  transition: opacity 0.2s, width 0.18s, height 0.18s, margin 0.18s,
+    border-radius 0.18s;
+}
+
+.cursor-ring {
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border: 1px solid rgb(255 255 255 / 70%);
+  transition: opacity 0.2s, width 0.22s, height 0.22s, margin 0.22s,
+    border-color 0.22s, border-radius 0.22s;
+}
+
+html.cursor-on {
+  .cursor-dot,
+  .cursor-ring {
+    opacity: 1;
+  }
+}
+
+/* Over anything actionable the ring opens up and the dot shrinks into it. */
+html[data-cursor="link"] {
+  .cursor-dot {
+    width: 4px;
+    height: 4px;
+    margin: -2px 0 0 -2px;
+  }
+
+  .cursor-ring {
+    width: 54px;
+    height: 54px;
+    margin: -27px 0 0 -27px;
+    border-color: rgb(255 255 255 / 95%);
+  }
+}
+
+/* Over a picture the ring squares off into a viewfinder six grid cells across,
+   so even the pointer is built out of the lattice the rest of the page is on.
+   The dot goes, because a crop frame with a dot in the middle reads as a
+   target rather than a frame. */
+html[data-cursor="media"] {
+  .cursor-dot {
+    opacity: 0;
+  }
+
+  .cursor-ring {
+    width: 60px;
+    height: 60px;
+    margin: -30px 0 0 -30px;
+    border-radius: 0;
+    border-color: rgb(255 255 255 / 95%);
+  }
+}
+
+/* Over running text the ring gets out of the way and the dot stretches into a
+   caret, which is the one pointer shape a reader already knows. */
+html[data-cursor="text"] {
+  .cursor-dot {
+    width: 2px;
+    height: 22px;
+    margin: -11px 0 0 -1px;
+    border-radius: 0;
+  }
+
+  .cursor-ring {
+    opacity: 0;
+  }
+}
+
+html.has-cursor {
+  /* Hiding the real cursor is only safe once its replacement is on screen. */
+  &.cursor-on,
+  &.cursor-on * {
+    cursor: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Scroll reveals. The script adds .to-reveal up front and .is-in when the
+   element arrives, so nothing is ever left invisible if the script fails.
+   --------------------------------------------------------------------------- */
+.to-reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.55s ease, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.to-reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Footer. Blocks fall and stack above the copyright line.
+   --------------------------------------------------------------------------- */
+.footer-blocks {
+  display: block;
+  /* The full content column — the viewport less the sidebar — and flush with
+     the bottom edge, so the stack rests on the end of the page. No walls
+     drawn: the blocks sit in the squares of the graph paper, which is the
+     frame. */
+  width: 100%;
+  margin: clamp(2rem, 5vw, 3.5rem) 0 0;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor-dot,
+  .cursor-ring {
+    display: none;
+  }
+
+  .to-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Emoji accents. Kept off the text's own font metrics so they never drag a
+   heading's baseline around, and never inherit its weight.
+   --------------------------------------------------------------------------- */
+.emo {
+  display: inline-block;
+  margin-right: 0.1em;
+  font-family: 'apple color emoji', 'segoe ui emoji', 'noto color emoji', sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1;
+  vertical-align: -0.06em;
+}
+
+.eyebrow .emo {
+  font-size: 0.95rem;
+  vertical-align: -0.18em;
 }
