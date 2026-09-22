@@ -92,7 +92,7 @@ au long cours.
 
 ## Bénévolat
 
-### Cofondateur et co-organisateur, [Pignon des Charentes](https://www.instagram.com/pignon_des_charentes/)
+### Cofondateur et co-organisateur, [Pignon des Charentes](https://www.instagram.com/pignon_des_charentes/){: data-cursor="wheel"}
 
 La Rochelle · depuis 2023
 

@@ -15,21 +15,21 @@ except that each one started as a problem I had personally.
 </div>
 
 <div class="project-cards">
-<a class="project-card" href="#diapason">
-<span class="project-card__media"><img src="/assets/img/projects/diapason.jpg" alt="" loading="lazy"></span>
-<h3><span class="emo">📻</span> diapason</h3>
+<div class="project-card" data-cursor="fork">
+<a class="project-card__media" href="#diapason" tabindex="-1" aria-hidden="true"><img src="/assets/img/projects/diapason.jpg" alt="" loading="lazy"></a>
+<h3><a href="#diapason"><span class="emo">📻</span> diapason</a></h3>
 <p>Your own radio, broadcast from a phone and played in sync on every speaker around you.</p>
-</a>
-<a class="project-card" href="#ravitools">
-<span class="project-card__media"><img src="/assets/img/projects/ravitools.jpg" alt="" loading="lazy"></span>
-<h3><span class="emo">🚲</span> Ravitools</h3>
+</div>
+<div class="project-card" data-cursor="wheel">
+<a class="project-card__media" href="#ravitools" tabindex="-1" aria-hidden="true"><img src="/assets/img/projects/ravitools.jpg" alt="" loading="lazy"></a>
+<h3><a href="#ravitools"><span class="emo">🚲</span> Ravitools</a></h3>
 <p>GPX files enriched with offline water, food and campsite points for long-distance cyclists.</p>
-</a>
-<a class="project-card" href="#stego">
-<span class="project-card__media"><img src="/assets/img/projects/steganography.jpg" alt="" loading="lazy"></span>
-<h3><span class="emo">🌾</span> Natural steganography</h3>
+</div>
+<div class="project-card" data-cursor="grain">
+<a class="project-card__media" href="#stego" tabindex="-1" aria-hidden="true"><img src="/assets/img/projects/steganography.jpg" alt="" loading="lazy"></a>
+<h3><a href="#stego"><span class="emo">🌾</span> Natural steganography</a></h3>
 <p>Embedding that mimics sensor noise, so the payload is statistically invisible. PhD research.</p>
-</a>
+</div>
 </div>
 
 
@@ -37,7 +37,7 @@ except that each one started as a problem I had personally.
 
 *Your own radio, broadcast from a phone.*
 
-<div class="deploys">
+<div class="deploys" data-cursor="fork">
 <span><a href="https://diapason.fm">diapason.fm</a> <em class="env">production</em></span>
 <span><a href="https://diapason.studio">diapason.studio</a> <em class="env">staging</em></span>
 </div>
@@ -68,7 +68,7 @@ I built it for bike rides.
 
 ## 🚲 Ravitools {#ravitools}
 
-<div class="deploys">
+<div class="deploys" data-cursor="wheel">
 <span><a href="https://github.com/theotaburet/Ravitools">Source</a> <em class="env">GitHub</em></span>
 </div>
 
@@ -93,7 +93,7 @@ The scheme splits the DCT coefficients into four interleaved lattices and embeds
 into them in order, so that each lattice can be conditioned on the ones already
 written. Hover a cell below to see what it depends on:
 
-<div id="dct-grid"></div>
+<div id="dct-grid" data-cursor="grain"></div>
 <script src="{{ '/assets/js/block-dependency-grid.js' | relative_url }}"></script>
 
 See the [publications]({{ '/publications/' | relative_url }}) page for the papers.

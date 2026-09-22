@@ -90,7 +90,7 @@ GPX enrichment with offline points of interest for long-distance cyclists.
 
 ## Volunteering
 
-### Co-Organiser & Founder, [Pignon des Charentes](https://www.instagram.com/pignon_des_charentes/)
+### Co-Organiser & Founder, [Pignon des Charentes](https://www.instagram.com/pignon_des_charentes/){: data-cursor="wheel"}
 
 La Rochelle, France · since 2023
 

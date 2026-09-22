@@ -36,15 +36,59 @@
     // Most specific first, and the first match wins: a project card is an <a>,
     // but what you want to know about it is that it is a picture.
     var KINDS = [
-      ["media", ".project-card, .photo-wall img, .content img, #dct-grid, .footer-blocks"],
       ["link", "a, button, input, textarea, select, summary, label"],
       ["text", "p, li, h1, h2, h3, h4, blockquote, figcaption, td"]
     ];
 
+    // The two things a kind can ask for beyond a shape, both keyed by the
+    // kind's name. Adding a cursor is a block in the stylesheet and, only if
+    // it wants one of these, one line here — nothing below knows what a wheel
+    // or a fork is.
+    var RIGID = { wheel: 26 }; // rolls; the radius in px, matching the CSS
+    // Stirs the background: how often, and what to draw. field.js owns the
+    // shapes; this only says which one and how big.
+    var PULSE = {
+      // A train of rings, each wider than the last and then back to the
+      // middle, so the diapason radiates rather than merely glows. Six steps
+      // run a little over the life of a cell, which is what keeps a new ring
+      // off one that is still lit.
+      fork: {
+        every: 340,
+        detail: function (n) {
+          return { shape: "ring", r: 3 + (n % 6) * 2 };
+        }
+      },
+      // The page it belongs to is about hiding a payload in sensor noise.
+      grain: {
+        every: 200,
+        detail: function () {
+          return { shape: "grain", r: 6, n: 10 };
+        }
+      }
+    };
+
     var root = document.documentElement;
     var kind = "";
+    var spin = 0; // radians the wheel has rolled so far
+    var beat = null; // the timer behind PULSE, running only while hovered
+    var wave = 0; // how far into its train the current pulse is
+
+    // Asks the background field to answer, without either script reaching into
+    // the other: field.js listens for this and decides for itself what a pulse
+    // looks like.
+    function pulse() {
+      if (document.hidden) return; // a hidden tab still runs timers
+      var p = PULSE[kind];
+      if (!p) return;
+      var d = p.detail(wave++);
+      d.x = tx;
+      d.y = ty;
+      window.dispatchEvent(new CustomEvent("field:pulse", { detail: d }));
+    }
 
     window.addEventListener("pointermove", function (e) {
+      // One radian per radius travelled, which is what rolling is.
+      if (RIGID[kind]) spin += (e.clientX - tx) / RIGID[kind];
       tx = e.clientX;
       ty = e.clientY;
       if (!shown) {
@@ -55,6 +99,13 @@
       }
       var found = "";
       if (e.target && e.target.closest) {
+        // The page names its own cursor wherever it wants a particular one,
+        // so the script carries no list of what this site is about. Scoped
+        // under body because <html> is where the answer is written: an
+        // unscoped match would find the attribute this handler set on the
+        // last move and never let go of it.
+        var tag = e.target.closest("body [data-cursor]");
+        found = tag ? tag.getAttribute("data-cursor") : "";
         for (var i = 0; i < KINDS.length && !found; i++) {
           if (e.target.closest(KINDS[i][1])) found = KINDS[i][0];
         }
@@ -65,18 +116,40 @@
       kind = found;
       if (kind) root.setAttribute("data-cursor", kind);
       else root.removeAttribute("data-cursor");
+
+      // A kind that stirs the field gets a timer for exactly as long as the
+      // pointer is on it. The field's rule is that it stays still unless
+      // asked; a hover is a small ask, and it stops being made the moment you
+      // move away.
+      if (beat) beat = window.clearInterval(beat);
+      if (PULSE[kind]) {
+        wave = 0; // every train starts from the middle
+        pulse();
+        beat = window.setInterval(pulse, PULSE[kind].every);
+      }
     });
 
     document.addEventListener("pointerleave", function () {
       document.documentElement.classList.remove("cursor-on");
       shown = false;
+      if (beat) beat = window.clearInterval(beat);
     });
 
     (function follow() {
-      rx += (tx - rx) * 0.18;
-      ry += (ty - ry) * 0.18;
+      var r = RIGID[kind];
+      if (r) {
+        // A rim that trails behind its own hub is not a wheel. The lag that
+        // gives the ring its weight everywhere else has to go here.
+        rx = tx;
+        ry = ty;
+      } else {
+        rx += (tx - rx) * 0.18;
+        ry += (ty - ry) * 0.18;
+      }
       dot.style.transform = "translate3d(" + tx + "px," + ty + "px,0)";
-      ring.style.transform = "translate3d(" + rx + "px," + ry + "px,0)";
+      ring.style.transform =
+        "translate3d(" + rx + "px," + ry + "px,0)" +
+        (r ? " rotate(" + spin + "rad)" : "");
       window.requestAnimationFrame(follow);
     })();
   })();
@@ -139,6 +212,25 @@
   })();
 
   /* -------------------------------------------------------------------------
+     The colophon. The theme parks it under the article, where it falls
+     between the end of the text and the top of the well and belongs to
+     neither. It says who the site is, so it goes where the site's name is.
+     Moved rather than overridden: the theme ships it inside a template this
+     site does not otherwise need a copy of.
+     ---------------------------------------------------------------------- */
+  (function credit() {
+    var tail = document.getElementById("tail-wrapper");
+    var note = tail && tail.querySelector("footer");
+    var icons = document.querySelector("#sidebar .sidebar-bottom");
+    if (!note || !icons) return;
+    // The theme's classes lay it out as a wide two-column band; in a 300px
+    // column it is two short lines.
+    note.className = "sidebar-credit";
+    icons.parentNode.insertBefore(note, icons);
+    tail.parentNode.remove(); // the empty row it was sitting in
+  })();
+
+  /* -------------------------------------------------------------------------
      Footer. A Tetris well as wide as the content column, playing itself on
      the same 10px lattice as the background field: the blocks land in the
      squares of the graph paper, not between them.
@@ -148,11 +240,19 @@
      look, again, like a stack that never clears.
      ---------------------------------------------------------------------- */
   (function blocks() {
-    // Last element of the content area, so the well rests on the very bottom
-    // edge of the page rather than sitting above the copyright line. Not on
-    // <body>: this is the viewport minus the sidebar, which is exactly what
-    // #main-wrapper already measures.
-    var host = document.getElementById("main-wrapper") || document.body;
+    // Last element of the content column, so the well rests on the very bottom
+    // edge of the page. It hangs inside .container and not on #main-wrapper,
+    // which the theme lays out as a flex row: a canvas dropped in there
+    // becomes a second column and squeezes the whole page into a strip.
+    var host =
+      document.querySelector("#main-wrapper > .container") || document.body;
+
+    // What it is measured against, which is deliberately not what it hangs
+    // from. The container is a different width on every page — the wide ones
+    // drop its max-width altogether — and a well that changes size from one
+    // page to the next reads as a mistake rather than as an edge. The wrapper
+    // is the page: everything the sidebar leaves, the same on all of them.
+    var bleed = document.getElementById("main-wrapper") || host;
 
     var COLORS = ["#a0d8ef", "#f8b862", "#8db255", "#d3381c"];
     // Pitch and inset both match CELL and GAP in field.js. Change one and the
@@ -266,12 +366,23 @@
     }
 
     function size() {
-      width = Math.max(CELL * 8, Math.round(host.clientWidth));
+      canvas.style.marginLeft = "0px";
+      var page = bleed.getBoundingClientRect();
+      // Floored, and the offset below left fractional: a page 1704.5 wide
+      // rounded up is a canvas half a pixel too wide for it, which is a
+      // horizontal scrollbar on every page.
+      width = Math.max(CELL * 8, Math.floor(page.width));
       var dpr = window.devicePixelRatio || 1;
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(ROWS * CELL * dpr);
       canvas.style.width = width + "px";
       canvas.style.height = ROWS * CELL + "px";
+      // Now pull it back out over the container's own margins, so it runs the
+      // full width of the page rather than the width of the text. Measured
+      // rather than computed from a breakpoint: the container's inset is a
+      // max-width and two paddings that each change on their own.
+      canvas.style.marginLeft =
+        page.left - canvas.getBoundingClientRect().left + "px";
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       align();
       // The last column has to fit whole once the shift is taken off.
@@ -426,6 +537,26 @@
     }
 
     function collapse() {
+      // The well and the background are on the same lattice, so a line goes
+      // out into the page rather than merely vanishing: the row lands behind
+      // the well as the row it was, full width, and fades there. A ring here
+      // read as something popping at random instead of as the line that went.
+      // Off screen it seeds rows that are never drawn, which costs nothing
+      // and is why it needs no guard.
+      var box = canvas.getBoundingClientRect();
+      lit.forEach(function (row) {
+        window.dispatchEvent(
+          new CustomEvent("field:pulse", {
+            detail: {
+              shape: "line",
+              x: box.left + width / 2,
+              y: box.top + row * CELL + CELL / 2,
+              w: width
+            }
+          })
+        );
+      });
+
       // Highest index first, so the rows below keep their numbers.
       for (var i = lit.length - 1; i >= 0; i--) {
         board.splice(lit[i], 1);

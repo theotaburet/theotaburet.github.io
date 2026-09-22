@@ -59,6 +59,12 @@ $amber: #f8b862;
 
   /* Graph paper behind everything */
   --paper-line: rgb(40 34 32 / 7%);
+
+  /* The pointer: the page's own ink, so it is the opposite of the ground it
+     is on whichever mode the visitor is in, and a hairline of the ground
+     itself under it for the photographs it has to cross. */
+  --cursor-color: #282220;
+  --cursor-halo: rgb(255 255 255 / 45%);
 }
 
 @mixin accent-dark {
@@ -74,6 +80,10 @@ $amber: #f8b862;
 
   /* Surfaces */
   --blockquote-border-color: rgb(248 184 98 / 40%);
+
+  /* The pointer */
+  --cursor-color: #f7f3ef;
+  --cursor-halo: rgb(0 0 0 / 45%);
 
   /* Accents on interactive bits */
   --toc-highlight: #{$sig-dark};
@@ -124,6 +134,42 @@ $amber: #f8b862;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-decoration: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Colophon, moved out of the page foot and into the sidebar by site.js.
+   Aligned on the icon row below it, which is what it now reads as a caption
+   for.
+   --------------------------------------------------------------------------- */
+
+.sidebar-credit {
+  width: 100%;
+  padding: 0 1rem 0.9rem 2rem;
+  color: var(--sidebar-muted-color);
+  font-size: 0.68rem;
+  line-height: 1.5;
+
+  @media all and (min-width: 1650px) {
+    padding-left: 2.75rem;
+  }
+
+  /* The theme centres every paragraph in a footer, which was right when this
+     was a band across the page. Here it is a caption for the icon row under
+     it, so it lines up with that instead. */
+  p {
+    margin-bottom: 0.1rem;
+    text-align: left;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid var(--sidebar-border-color);
+
+    &:hover {
+      color: var(--sidebar-active-color);
+    }
+  }
 }
 
 /* ---------------------------------------------------------------------------
@@ -420,6 +466,11 @@ body {
 }
 
 .project-card {
+  /* Not an <a>: the theme wraps every content image in a lightbox link, and an
+     <a> inside an <a> is the one nesting a browser refuses to parse — it
+     closes the outer one early and the card falls apart. The heading carries
+     the link instead and stretches over the whole card. */
+  position: relative;
   display: flex;
   flex-direction: column;
   color: inherit;
@@ -463,6 +514,18 @@ body {
     font-size: 1.12rem;
     font-weight: 600;
     transition: color 0.2s ease;
+
+    a {
+      color: inherit;
+      text-decoration: none;
+
+      /* The card is the target, not just the two words of the title. */
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+      }
+    }
   }
 
   p {
@@ -495,9 +558,14 @@ body {
 
 /* ---------------------------------------------------------------------------
    Pointer. The native cursor steps aside for a dot and a trailing ring, both
-   in difference blending so they stay legible over photographs. Coarse
-   pointers and reduced motion never get either, and the rules below only bite
-   once the script has said it is running.
+   in the page's ink: dark on the light theme, light on the dark one. It used
+   to invert whatever was behind it instead, which is the complement of the
+   background by definition and yet the one thing that fails on a mid grey —
+   invert 128 and you get 127, so the pointer vanished over exactly the
+   photographs it was meant to survive. A flat opposite of the page always
+   reads; over a photograph it is the drop shadow below that carries it.
+   Coarse pointers and reduced motion never get either, and the rules below
+   only bite once the script has said it is running.
    --------------------------------------------------------------------------- */
 .cursor-dot,
 .cursor-ring {
@@ -508,7 +576,6 @@ body {
   border-radius: 50%;
   pointer-events: none;
   opacity: 0;
-  mix-blend-mode: difference;
   will-change: transform;
 }
 
@@ -516,7 +583,10 @@ body {
   width: 7px;
   height: 7px;
   margin: -3.5px 0 0 -3.5px;
-  background-color: #fff;
+  background-color: var(--cursor-color);
+  /* A hairline of the page's own ground under it. Not decoration: it is what
+     keeps the pointer off a photograph that happens to match it. */
+  box-shadow: 0 0 0 1px var(--cursor-halo);
   transition: opacity 0.2s, width 0.18s, height 0.18s, margin 0.18s,
     border-radius 0.18s;
 }
@@ -525,7 +595,8 @@ body {
   width: 34px;
   height: 34px;
   margin: -17px 0 0 -17px;
-  border: 1px solid rgb(255 255 255 / 70%);
+  border: 1px solid var(--cursor-color);
+  box-shadow: 0 0 0 1px var(--cursor-halo);
   transition: opacity 0.2s, width 0.22s, height 0.22s, margin 0.22s,
     border-color 0.22s, border-radius 0.22s;
 }
@@ -549,25 +620,6 @@ html[data-cursor="link"] {
     width: 54px;
     height: 54px;
     margin: -27px 0 0 -27px;
-    border-color: rgb(255 255 255 / 95%);
-  }
-}
-
-/* Over a picture the ring squares off into a viewfinder six grid cells across,
-   so even the pointer is built out of the lattice the rest of the page is on.
-   The dot goes, because a crop frame with a dot in the middle reads as a
-   target rather than a frame. */
-html[data-cursor="media"] {
-  .cursor-dot {
-    opacity: 0;
-  }
-
-  .cursor-ring {
-    width: 60px;
-    height: 60px;
-    margin: -30px 0 0 -30px;
-    border-radius: 0;
-    border-color: rgb(255 255 255 / 95%);
   }
 }
 
@@ -583,6 +635,100 @@ html[data-cursor="text"] {
 
   .cursor-ring {
     opacity: 0;
+  }
+}
+
+/* Over anything to do with bicycles the ring becomes a front wheel and the
+   pointer becomes its hub: a rim, sixteen spokes, nothing else. The script
+   turns it by how far it has actually travelled, so it rolls rather than
+   spins, and it stops trailing behind the dot — a wheel is one rigid thing. */
+html[data-cursor='wheel'] {
+  .cursor-dot {
+    /* The hub, and the one part of a wheel that does not turn. */
+    width: 6px;
+    height: 6px;
+    margin: -3px 0 0 -3px;
+  }
+
+  .cursor-ring {
+    /* 52 across, so the radius is the 26 the script rolls it by. Change one
+       and the wheel skids. */
+    width: 52px;
+    height: 52px;
+    margin: -26px 0 0 -26px;
+    border-width: 2px;
+    /* Sixteen hairlines from the centre, punched back out to a ring so the
+       hub stays clear. One gradient rather than sixteen elements, and they
+       taper towards the middle the way real spokes appear to. */
+    background: repeating-conic-gradient(
+      var(--cursor-color) 0deg 1.5deg,
+      transparent 1.5deg 22.5deg
+    );
+    mask-image: radial-gradient(closest-side, transparent 17%, #000 21%);
+    transition: opacity 0.2s, width 0.22s, height 0.22s, margin 0.22s;
+  }
+}
+
+/* Over the steganography work the ring is sampled rather than solid — the
+   lattice the whole page is about, seen in the pointer — and the pointer
+   scatters grain into the background behind it: the payload hidden in the
+   sensor noise, which is the subject. */
+html[data-cursor='grain'] {
+  .cursor-dot {
+    width: 5px;
+    height: 5px;
+    margin: -2.5px 0 0 -2.5px;
+  }
+
+  .cursor-ring {
+    width: 46px;
+    height: 46px;
+    margin: -23px 0 0 -23px;
+    border-style: dotted;
+    border-width: 2px;
+  }
+}
+
+/* Over the diapason the pointer becomes one, humming, and the background
+   field answers it for as long as you stay — see PULSE in site.js. */
+html[data-cursor='fork'] {
+  .cursor-dot {
+    opacity: 0;
+  }
+
+  .cursor-ring {
+    width: 28px;
+    height: 46px;
+    margin: -23px 0 0 -14px;
+    border: 0;
+    border-radius: 0;
+    transition: opacity 0.2s;
+  }
+
+  /* The hum goes on a child, not on the ring: the ring's transform is the
+     pointer position, rewritten every frame by the script, and a CSS
+     animation on it would win the cascade and park the fork in the corner. */
+  .cursor-ring::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    /* A mask rather than a picture: a data URI cannot read a custom property,
+       and the fork has to be the same ink as the rest of the pointer. */
+    background-color: var(--cursor-color);
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 42'%3E%3Cpath d='M6 2V16a6 6 0 0 0 12 0V2' fill='none' stroke='white' stroke-width='3'/%3E%3Cpath d='M12 22v14' stroke='white' stroke-width='3'/%3E%3Ccircle cx='12' cy='38' r='3' fill='white'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+    animation: fork-hum 0.11s linear infinite;
+  }
+}
+
+@keyframes fork-hum {
+  0%,
+  100% {
+    transform: translateX(-0.7px);
+  }
+
+  50% {
+    transform: translateX(0.7px);
   }
 }
 
@@ -614,10 +760,10 @@ html.has-cursor {
    --------------------------------------------------------------------------- */
 .footer-blocks {
   display: block;
-  /* The full content column — the viewport less the sidebar — and flush with
-     the bottom edge, so the stack rests on the end of the page. No walls
-     drawn: the blocks sit in the squares of the graph paper, which is the
-     frame. */
+  /* Width and left margin are both set in px by site.js, which measures the
+     page rather than the column it hangs in: the well is the same size on
+     every page, and the container it sits inside is not. No walls drawn —
+     the blocks sit in the squares of the graph paper, which is the frame. */
   width: 100%;
   margin: clamp(2rem, 5vw, 3.5rem) 0 0;
   cursor: pointer;

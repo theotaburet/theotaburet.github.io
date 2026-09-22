@@ -22,8 +22,11 @@
   // while the cells behind it are still alive: at 0.68 cells a generation, 26
   // generations of life trail the front by about 180px. Longer and the ring
   // closes up into a disc that covers most of the screen at once, which is a
-  // flood rather than a ripple.
-  var LIFE = 26; // generations a cell lives before it goes back to paper
+  // flood rather than a ripple. Both numbers are set by pace() below, which
+  // keeps that 180px while changing how fast the front covers it.
+  var SPAN = 26; // the life a front moving one pass a generation wants
+  var LIFE = SPAN; // generations a cell lives before it goes back to paper
+  var PUSH = 1; // spread passes per generation
   var SPREAD = 0.6; // chance a young cell lights an empty neighbour
   var YOUNG = 6; // only cells this new can spread, so growth stays a front
   var BURST = 7; // click seeding radius, in cells
@@ -32,6 +35,14 @@
   // once it is working along an edge, where a cell has fewer neighbours to
   // light. The slower figure is the one to budget with.
   var ADVANCE = 0.4;
+  // A cell drawn by a pulse carries this bit on top of its age. The click is
+  // the only thing allowed to spread: a shape lit while a click is still
+  // growing would be picked up by the front and turned into a front of its own,
+  // so a line going out of the well at the foot of the page came back up the
+  // page as a second wave. Set above YOUNG by construction, so spread() passes
+  // over it already; ageing and drawing take the bit back off.
+  var DRAWN = 128;
+  var AGE = 127;
 
   // Age bands as shares of a life, newest first, so all four lattices get
   // their turn however long a cell lives. Fixed generation counts meant that
@@ -59,7 +70,6 @@
   var nextStep = 0;
   var dirty = true;
   var growing = 0; // generations of spreading left in the current patch
-  var target = null; // grid box the current wave has still to cover
 
   var still = window.matchMedia("(prefers-reduced-motion: reduce)");
   var scheme = window.matchMedia("(prefers-color-scheme: dark)");
@@ -81,31 +91,35 @@
     return Math.max(document.documentElement.scrollHeight, window.innerHeight);
   }
 
-  // Generations a click keeps spreading for: enough to carry the front from
-  // where you clicked to the furthest corner of the viewport, and not one
-  // more. Left alone it never runs out of fuel — every young cell gets six
-  // chances at each of four neighbours — so this is the wall it stops at, and
-  // it is measured off the screen rather than picked out of the air. Clicking
-  // near an edge therefore runs longer than clicking in the middle, which is
-  // what it takes for either to reach the same far corner.
+  // The ceiling on how long a click keeps spreading, in generations: enough to
+  // carry the front from where you clicked to the furthest corner of the page,
+  // and not one more. Left alone it never runs out of fuel — every young cell
+  // gets six chances at each of four neighbours — so this is the wall it stops
+  // at. Normally it never gets here: the front runs out of page first, which
+  // generation() sees as a pass that lights nothing. The page and not the
+  // screen, because the pages here are two and three screens tall and a wave
+  // that stopped at the bottom of the window stopped in the middle of the page.
+  // ADVANCE is the slow figure on purpose, this being the backstop.
   function sweep(x, y) {
     var dx = Math.max(x, width - x);
-    var dy = Math.max(y, height - y);
-    return Math.ceil(Math.sqrt(dx * dx + dy * dy) / CELL / ADVANCE);
+    var dy = Math.max(y, pageHeight() - y);
+    return Math.ceil(Math.sqrt(dx * dx + dy * dy) / CELL / ADVANCE / PUSH);
   }
 
-  // What the wave has to reach: the screen as it stands when you click, in
-  // grid cells. The budget above is the backstop; this is what actually stops
-  // it, so a front that runs slow still gets all the way out and one that
-  // runs fast does not carry on into the dark past the edges.
-  function screen() {
-    var first = Math.floor(window.scrollY / CELL);
-    return {
-      x0: 0,
-      x1: cols - 1,
-      y0: first,
-      y1: first + Math.ceil(height / CELL)
-    };
+  // How hard the front is pushed, from the size of what it has to cross. It
+  // advances a fixed number of pixels a second, so the bigger the page the
+  // longer it takes: a three-screen page at one pass a generation needs the
+  // better part of a minute to reach the far corner, by which time it reads as
+  // having died on the way out rather than as a wave. Extra passes a generation
+  // buy that back, and the shorter life keeps the ring the same thickness in
+  // pixels — only the speed changes, and only where it has to. 1700 is a
+  // laptop screen's diagonal: a page that size lands on one pass, which is
+  // where this started.
+  function pace() {
+    var h = pageHeight();
+    var diagonal = Math.sqrt(width * width + h * h);
+    PUSH = Math.max(1, Math.min(4, Math.round(diagonal / 1700)));
+    LIFE = Math.round(SPAN / PUSH);
   }
 
   function build() {
@@ -119,6 +133,7 @@
     canvas.style.height = height + "px";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
+    pace();
     cols = Math.ceil(width / CELL) + 1;
     rows = Math.ceil(pageHeight() / CELL) + 1;
     age = new Uint8Array(cols * rows);
@@ -138,10 +153,14 @@
     rows = want;
   }
 
+  // Set while a pulse is drawing, so a shape does not have to remember to say
+  // so: every shape below is still just an entry in SHAPES.
+  var fixed = false;
+
   function light(cx, cy) {
     if (cx < 0 || cy < 0 || cx >= cols || cy >= rows) return;
     var i = cy * cols + cx;
-    if (age[i] === 0) age[i] = 1;
+    if (age[i] === 0) age[i] = fixed ? DRAWN + 1 : 1;
   }
 
   // Seed a disc of cells, thinning towards the edge so the patch has a ragged
@@ -161,56 +180,53 @@
     }
   }
 
-  function generation() {
+  // One pass of the front. Every young cell gets a chance at each of its empty
+  // orthogonal neighbours — diagonals make the growth look blobby instead of
+  // gridded. Returns how many cells were born, which is the only thing that
+  // says whether the front still has anywhere to go.
+  function spread() {
     var born = [];
-    var x0 = cols;
-    var x1 = -1;
-    var y0 = rows;
-    var y1 = -1;
     for (var y = 0; y < rows; y++) {
       for (var x = 0; x < cols; x++) {
         var i = y * cols + x;
         var a = age[i];
-        if (a === 0) continue;
-        if (a >= LIFE) {
-          age[i] = 0;
-          continue;
-        }
-        age[i] = a + 1;
-        if (a > YOUNG || growing <= 0) continue;
-        // Orthogonal neighbours only: diagonals make the growth look blobby
-        // instead of gridded.
+        if (a === 0 || a > YOUNG) continue; // DRAWN cells fall out here
         if (x > 0 && age[i - 1] === 0 && Math.random() < SPREAD) born.push(i - 1);
         if (x < cols - 1 && age[i + 1] === 0 && Math.random() < SPREAD) born.push(i + 1);
         if (y > 0 && age[i - cols] === 0 && Math.random() < SPREAD) born.push(i - cols);
         if (y < rows - 1 && age[i + cols] === 0 && Math.random() < SPREAD) born.push(i + cols);
       }
     }
-    for (var k = 0; k < born.length; k++) {
-      var b = born[k];
-      age[b] = 1;
-      var bx = b % cols;
-      var by = (b / cols) | 0;
-      if (bx < x0) x0 = bx;
-      if (bx > x1) x1 = bx;
-      if (by < y0) y0 = by;
-      if (by > y1) y1 = by;
+    for (var k = 0; k < born.length; k++) age[born[k]] = 1;
+    return born.length;
+  }
+
+  function generation() {
+    for (var y = 0; y < rows; y++) {
+      for (var x = 0; x < cols; x++) {
+        var i = y * cols + x;
+        var a = age[i];
+        if (a === 0) continue;
+        age[i] = (a & AGE) >= LIFE ? 0 : a + 1;
+      }
     }
 
     if (growing > 0) {
+      // Several passes on one beat rather than one pass on a faster beat: the
+      // 70ms step is what makes this read as steps instead of a smear, and it
+      // stays exactly where it was.
+      var born = 0;
+      for (var p = 0; p < PUSH; p++) born += spread();
       growing--;
-      // The new cells are the front. Once its span has touched every edge of
-      // the screen there is nothing left out there to sweep.
-      if (
-        target &&
-        x1 >= 0 &&
-        x0 <= target.x0 &&
-        x1 >= target.x1 &&
-        y0 <= target.y0 &&
-        y1 >= target.y1
-      ) {
-        growing = 0;
-      }
+      // The front stops when it has nowhere left to go, and nowhere left to go
+      // is a generation that lit nothing. It needs no geometry and so it cannot
+      // disagree with the shape the front actually has — every measurement of
+      // that shape was wrong in its own way: a bounding box that spans the page
+      // has only reached the middle of each side, and a radius assumes a circle,
+      // which this is not once it is working along an edge. Births cannot be
+      // wrong: the only empty cells a young cell can reach are outside what is
+      // already lit, so while there is page left there are births.
+      if (born === 0) growing = 0;
     }
     dirty = true;
   }
@@ -225,7 +241,7 @@
     var last = Math.min(rows, Math.ceil((off + height) / CELL) + 1);
     for (var y = first; y < last; y++) {
       for (var x = 0; x < cols; x++) {
-        var a = age[y * cols + x];
+        var a = age[y * cols + x] & AGE;
         if (a === 0) continue;
         var band = 0;
         while (band < BANDS.length - 1 && a > BANDS[band][0] * LIFE) band++;
@@ -263,7 +279,6 @@
   // Reduced motion gets one arrangement, drawn once and left alone.
   function drawStill() {
     growing = 12;
-    target = null;
     var n = Math.ceil((7 * pageHeight()) / height);
     for (var i = 0; i < n; i++) {
       seed(Math.random() * width, Math.random() * pageHeight(), 3 + Math.random() * 5, 0.7);
@@ -303,11 +318,66 @@
       ) {
         return;
       }
-      growing = sweep(e.clientX, e.clientY);
-      target = screen();
-      seed(e.clientX, e.clientY + window.scrollY, BURST, 0.85);
+      var y = e.clientY + window.scrollY;
+      growing = sweep(e.clientX, y);
+      seed(e.clientX, y, BURST, 0.85);
     });
   }
+
+  // What the rest of the page can ask the field to draw. Every one of these
+  // is lit all at once and then only ages, so it runs through the four
+  // lattices and fades where it stands. Nothing spreads, including during a
+  // click: whatever asked, a hover or a line going out, never turns into the
+  // sweep this whole file is arranged to avoid. Adding a shape is an entry
+  // here and nothing else.
+  var SHAPES = {
+    // The growth above is a texture and it cannot make a circle. A vibrating
+    // thing radiates circles, so this one is drawn.
+    ring: function (cx, cy, d) {
+      var r = d.r || 4;
+      // A step per cell of circumference, so the circle is as solid at
+      // thirteen cells across as at three and never comes out dashed.
+      var steps = Math.max(8, Math.round(2 * Math.PI * r));
+      for (var i = 0; i < steps; i++) {
+        var a = (i / steps) * 2 * Math.PI;
+        light(cx + Math.round(Math.cos(a) * r), cy + Math.round(Math.sin(a) * r));
+      }
+    },
+    // A row, for a line going out of the well at the foot of the page. It
+    // lands in the page as the line it was: a circle there reads as something
+    // popping at random rather than as the line that just went.
+    line: function (cx, cy, d) {
+      var half = Math.round((d.w || 100) / CELL / 2);
+      for (var x = -half; x <= half; x++) light(cx + x, cy);
+    },
+    // Scattered cells, thinning outwards. Noise, which is the subject of the
+    // page this one belongs to.
+    grain: function (cx, cy, d) {
+      var r = d.r || 5;
+      var n = d.n || 12;
+      for (var i = 0; i < n; i++) {
+        var a = Math.random() * 2 * Math.PI;
+        var t = Math.sqrt(Math.random()) * r;
+        light(cx + Math.round(Math.cos(a) * t), cy + Math.round(Math.sin(a) * t));
+      }
+    }
+  };
+
+  // Something on the page asking the field to answer it: the pointer resting
+  // on a project, or a line going out in the well at the foot of the page.
+  window.addEventListener("field:pulse", function (e) {
+    if (still.matches) return;
+    var d = e.detail || {};
+    fit();
+    fixed = true;
+    (SHAPES[d.shape] || SHAPES.ring)(
+      Math.round(d.x / CELL),
+      Math.round((d.y + window.scrollY) / CELL),
+      d
+    );
+    fixed = false;
+    dirty = true;
+  });
 
   window.addEventListener(
     "scroll",
