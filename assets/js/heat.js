@@ -6,7 +6,8 @@
 // through them in order, D B C A, before it goes out.
 //
 // Three things add heat. The header carries a slow field of clouds that thins
-// out raggedly below it. The pointer leaves a short trail. A press charges for
+// out raggedly below it. The pointer leaves a short trail, and near a link it
+// grows an arrow pointing the rest of the way. A press charges for
 // as long as it is held and lets go as a ring: a tap is a ripple, two seconds
 // is the whole screen.
 //
@@ -33,6 +34,12 @@
   var READ = 1150; // ms the decode takes to cross the headline
   var LEAD = 0.16; // share of the headline that is noise ahead of the front
   var SKIP = "a, button, input, textarea, select, summary, label, .footer-blocks";
+  // What the pointer points at when it comes near: links in the copy and the
+  // project cards, not the lightbox link the theme wraps round every picture.
+  var AIM = ".content a:not(.img-link), .project-card";
+  var NEAR = 140; // px from a target's edge where the trail turns into an arrow
+  var SHAFT = 0.5; // the arrow's heat: C, with the spot running down it past D
+  var HUSH = ".smiley"; // colours itself in; the trail over it would only smudge it
 
   var canvas = document.createElement("canvas");
   canvas.id = "field";
@@ -63,8 +70,11 @@
   var fx = -1;
   var fy = -1;
   var idle = IDLE;
+  var over = false; // the pointer is on something SKIP names
+  var hush = false; // ...or on something HUSH names
   var foot = 0; // page y where the header ends; 0 on a page without one
   var safes = [];
+  var aims = document.querySelectorAll(AIM);
 
   var lede = document.querySelector(".lede");
   var title = document.querySelector(".lede h1");
@@ -170,6 +180,68 @@
     }
     fx = px;
     fy = py;
+  }
+
+  // Near a link and not on it, the trail grows an arrow from the pointer to
+  // the nearest edge of it, with a hot spot running down the shaft to the tip.
+  // It is set straight into the cells, not stamped: a line one square wide,
+  // the same at any frame rate, that cools like the rest the moment it is no
+  // longer drawn. On the link itself the pointer's ring has already opened.
+  // Says whether it drew, because while it does the arrow is the trail.
+  function point() {
+    if (over) return false;
+    var best = NEAR;
+    var tx = 0;
+    var ty = 0;
+    for (var k = 0; k < aims.length; k++) {
+      // Line by line: a link that wraps is two boxes, and the gap between
+      // them is not the link.
+      var boxes = aims[k].getClientRects();
+      for (var j = 0; j < boxes.length; j++) {
+        var b = boxes[j];
+        var nx = Math.max(b.left, Math.min(px, b.right));
+        var ny = Math.max(b.top, Math.min(py, b.bottom));
+        var d = Math.sqrt((nx - px) * (nx - px) + (ny - py) * (ny - py));
+        if (d < best) {
+          best = d;
+          tx = nx;
+          ty = ny;
+        }
+      }
+    }
+    if (best < CELL || best >= NEAR) return false;
+    var ux = (tx - px) / best;
+    var uy = (ty - py) / best;
+    var hx = tx - ux * CELL; // the tip, a square short of the link
+    var hy = ty - uy * CELL;
+    // Never shorter than reads as an arrow: close in, the tail reaches back
+    // past the pointer instead.
+    var len = Math.max(best - CELL, CELL * 6);
+    var run = (now % 900) / 900; // the hot spot, 0 at the tail and 1 at the tip
+    function lay(x0, y0, dx, dy, n, f0, f1) {
+      for (var i = 0; i <= n; i++) {
+        var s = i / n;
+        var f = f0 + (f1 - f0) * s;
+        var glow = Math.exp(-(f - run) * (f - run) * 9);
+        mark(
+          Math.floor((x0 + dx * s) / CELL),
+          Math.floor((y0 + dy * s + window.scrollY) / CELL),
+          SHAFT + 0.45 * glow,
+          0
+        );
+      }
+    }
+    var steps = Math.ceil((len / CELL) * 2);
+    lay(hx - ux * len, hy - uy * len, ux * len, uy * len, steps, 0, 1);
+    // The barbs, swept back from the tip and lit as the tip is.
+    var barb = CELL * 3.5;
+    for (var side = -1; side <= 1; side += 2) {
+      var bx = -ux * 0.8 + side * uy * 0.6; // -u turned by about 37 degrees
+      var by = -uy * 0.8 - side * ux * 0.6;
+      lay(hx, hy, bx * barb, by * barb, 7, 1, 1);
+    }
+    live = true;
+    return true;
   }
 
   // Time is stamped by the first frame that sees the ring, not by the event
@@ -402,7 +474,11 @@
     cool(dt);
     if (idle < IDLE) {
       idle += dt;
-      follow(dt);
+      // The blob steps aside while the trail is an arrow, and over a face.
+      // Starting afresh after, or the first stamp is a stroke from where it
+      // stopped.
+      if (hush || point()) fx = -1;
+      else follow(dt);
     }
     if (press) {
       if (press.t0 < 0) press.t0 = t;
@@ -486,6 +562,8 @@
       if (e.pointerType === "touch") return; // a finger has no resting place to draw
       px = e.clientX;
       py = e.clientY;
+      over = !!aimed(e);
+      hush = !!(e.target && e.target.closest && e.target.closest(HUSH));
       idle = 0;
       wake();
     });
@@ -496,13 +574,14 @@
   }
 
   // What the rest of the page can ask the field to draw: the pointer resting
-  // on a project, or a line going out of the well at the foot of the page.
-  // Each shape is lit at D, held a moment so it reads as a shape, and cools.
-  function mark(c, r) {
+  // on a project, a face asking to be coloured in, or a line going out of the
+  // well at the foot of the page. Each shape is lit, most of them at D, held a
+  // moment so it reads as a shape, and cools.
+  function mark(c, r, v, ms) {
     if (c < 0 || r < 0 || c >= cols || r >= rows) return;
     var i = r * cols + c;
-    if (heat[i] < EMBER) heat[i] = EMBER;
-    hold[i] = 350;
+    if (heat[i] < v) heat[i] = v;
+    if (ms) hold[i] = ms;
   }
 
   var SHAPES = {
@@ -511,12 +590,12 @@
       var steps = Math.max(8, Math.round(2 * Math.PI * r));
       for (var i = 0; i < steps; i++) {
         var a = (i / steps) * 2 * Math.PI;
-        mark(cx + Math.round(Math.cos(a) * r), cy + Math.round(Math.sin(a) * r));
+        mark(cx + Math.round(Math.cos(a) * r), cy + Math.round(Math.sin(a) * r), EMBER, 350);
       }
     },
     line: function (cx, cy, d) {
       var half = Math.round((d.w || 100) / CELL / 2);
-      for (var x = -half; x <= half; x++) mark(cx + x, cy);
+      for (var x = -half; x <= half; x++) mark(cx + x, cy, EMBER, 350);
     },
     grain: function (cx, cy, d) {
       var r = d.r || 5;
@@ -524,7 +603,19 @@
       for (var i = 0; i < n; i++) {
         var a = Math.random() * 2 * Math.PI;
         var t = Math.sqrt(Math.random()) * r;
-        mark(cx + Math.round(Math.cos(a) * t), cy + Math.round(Math.sin(a) * t));
+        mark(cx + Math.round(Math.cos(a) * t), cy + Math.round(Math.sin(a) * t), EMBER, 350);
+      }
+    },
+    // A round patch lit around the level it is given, each square a little
+    // either side of it and always the same square the same way, so a face
+    // fills in with a grain of the neighbouring bands and not a flat disc.
+    disc: function (cx, cy, d) {
+      var r = d.r || 6;
+      for (var y = -r; y <= r; y++) {
+        for (var x = -r; x <= r; x++) {
+          if (x * x + y * y > r * r + r) continue;
+          mark(cx + x, cy + y, (d.v || EMBER) + (hash(cx + x, cy + y) - 0.5) * 0.2, 350);
+        }
       }
     }
   };

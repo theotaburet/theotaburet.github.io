@@ -48,6 +48,17 @@ share something at the same time, in the same place.
 
 And I take photographs.
 
+<div class="moods">
+<figure class="mood">
+{% include smiley.html mood="happy" %}
+<figcaption><span class="mood-label">Good at</span>Finding what was hidden in a photograph, or retouched in an invoice.</figcaption>
+</figure>
+<figure class="mood">
+{% include smiley.html mood="sad" %}
+<figcaption><span class="mood-label">Hopeless at</span>Stopping before the 200th kilometre.</figcaption>
+</figure>
+</div>
+
 ## Get in touch
 
 - Email: [theo.taburet@protonmail.com](mailto:theo.taburet@protonmail.com)

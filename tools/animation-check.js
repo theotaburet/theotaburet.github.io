@@ -64,7 +64,7 @@ function stub(extra, view) {
     // The well hangs on the content column and measures itself against
     // #main-wrapper, so both lookups have to answer.
     querySelector: function () { return host(); },
-    querySelectorAll: function () { return []; },
+    querySelectorAll: function () { return extra.all || []; },
     addEventListener: function () {}
   };
   var box = {
@@ -144,8 +144,9 @@ function report(name, ok, detail) {
 /* -- the background field ------------------------------------------------- */
 
 // One field, wired to a stub canvas that reports what it draws and nothing
-// else: how many cells are lit and how far they reach.
-function field(VW, VH, scroll, file) {
+// else: how many cells are lit and how far they reach. `all` is what any
+// querySelectorAll answers, for the links the pointer can point at.
+function field(VW, VH, scroll, file, all) {
   var live = 0;
   var minX = 1e9;
   var maxX = -1e9;
@@ -193,7 +194,7 @@ function field(VW, VH, scroll, file) {
     addEventListener: function () {},
     getContext: function () { return ctx; }
   };
-  var s = stub({ canvas: canvas }, { w: VW, h: VH });
+  var s = stub({ canvas: canvas, all: all }, { w: VW, h: VH });
   s.box.window.scrollY = scroll || 0;
   vm.runInContext(fs.readFileSync(path.join(JS_DIR, file || "field.js"), "utf8"), s.box);
 
@@ -396,6 +397,36 @@ function field(VW, VH, scroll, file) {
   g.scroll(300);
   g.run(17);
   report("an ember scrolls with the page", before === 450 && g.seen().minY === 150, before + "px, then " + g.seen().minY + "px after scrolling 300px");
+
+  // A face fills in: a disc thirteen squares across, not a ring and not the
+  // square the face is drawn in (169).
+  var d = field(1440, 900, 0, "heat.js");
+  d.run(100);
+  d.fire("field:pulse", { detail: { shape: "disc", r: 6, v: 0.7, x: 720, y: 450 } });
+  d.run(17);
+  var disc = d.seen();
+  report("a face fills in as a disc", disc.live > 110 && disc.live < 150 && disc.maxX - disc.minX + 10 === 130,
+    disc.live + " cells, " + (disc.maxX - disc.minX + 10) + "px across");
+
+  // The arrow. A link 100px above the pointer: the pointer's own blob stays
+  // within about 40px of it, so whatever is lit in the gap is the arrow. With
+  // no link there, or with the pointer on the link, the gap stays paper.
+  var BOX = { left: 700, top: 400, right: 800, bottom: 420, height: 20 };
+  var LINK = { // the stub hands it to every query, so it is copy as well as a link
+    getClientRects: function () { return [BOX]; },
+    getBoundingClientRect: function () { return BOX; }
+  };
+  function aimed(all, onIt) {
+    var f = field(1440, 900, 0, "heat.js", all);
+    f.run(100);
+    f.fire("pointermove", { clientX: 750, clientY: 520, target: { closest: function () { return onIt; } } });
+    f.run(300);
+    return f.band(425, 470);
+  }
+  var toward = aimed([LINK], null);
+  report("near a link the pointer grows an arrow to it", toward >= 40, toward + "px of the gap lit");
+  report("with no link near, no arrow", aimed([], null) === 0, aimed([], null) + "px lit");
+  report("on the link itself, no arrow", aimed([LINK], {}) === 0, aimed([LINK], {}) + "px lit");
 })();
 
 if (failures.length) {

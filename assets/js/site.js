@@ -1,6 +1,6 @@
-// Three small pieces of page furniture: a custom pointer, scroll reveals, and
-// the stack of falling blocks in the footer. Kept in one file because none of
-// them is big enough to be worth its own request.
+// Small pieces of page furniture: a custom pointer, the faces on the About
+// page, scroll reveals, and the stack of falling blocks in the footer. Kept in
+// one file because none of them is big enough to be worth its own request.
 (function () {
   var still = window.matchMedia("(prefers-reduced-motion: reduce)");
   var coarse = window.matchMedia("(pointer: coarse)");
@@ -152,6 +152,88 @@
         (r ? " rotate(" + spin + "rad)" : "");
       window.requestAnimationFrame(follow);
     })();
+  })();
+
+  /* -------------------------------------------------------------------------
+     Faces. The pixel smileys on the About page look toward the pointer by a
+     square, and while it is on one the field colours it in: warm for the
+     happy face, cool for the other. The blink is the stylesheet's.
+     ---------------------------------------------------------------------- */
+  (function faces() {
+    var els = [].slice.call(document.querySelectorAll(".smiley"));
+    if (!els.length || still.matches || coarse.matches) return;
+
+    var CELL = 10; // the field's pitch, as in heat.js
+    var LEVEL = { happy: 0.7, sad: 0.38 }; // B and A in the field's bands
+    var faces = [];
+
+    // Onto the lattice, so the ink and the field's squares are the same
+    // squares. Where it lands depends on everything above it, which a late
+    // image can move, so this runs on every pointer move rather than once:
+    // the only time anyone is looking at the squares is when the pointer is
+    // about. Returns the centre, in the viewport.
+    function snap(f) {
+      var b = f.el.getBoundingClientRect();
+      var left = b.left - f.dx;
+      var top = b.top + window.scrollY - f.dy;
+      var dx = -(((left % CELL) + CELL) % CELL);
+      var dy = -(((top % CELL) + CELL) % CELL);
+      if (dx < -CELL / 2) dx += CELL; // the nearer line, not always the one above
+      if (dy < -CELL / 2) dy += CELL;
+      if (dx !== f.dx || dy !== f.dy) {
+        f.dx = dx;
+        f.dy = dy;
+        f.el.style.transform = "translate(" + dx + "px," + dy + "px)";
+      }
+      return { x: left + dx + b.width / 2, y: top + dy - window.scrollY + b.height / 2 };
+    }
+
+    els.forEach(function (el) {
+      var f = {
+        el: el,
+        look: el.querySelector(".look"),
+        v: LEVEL[el.getAttribute("data-mood")] || 0.5,
+        dx: 0,
+        dy: 0,
+        glance: "",
+        beat: null
+      };
+      // Half a square up and left of the centre: the field rounds to the
+      // nearest square, and the middle of thirteen is a square, not a line.
+      function fill() {
+        if (document.hidden) return;
+        var c = snap(f);
+        window.dispatchEvent(
+          new CustomEvent("field:pulse", {
+            detail: { shape: "disc", r: 6, v: f.v, x: c.x - CELL / 2, y: c.y - CELL / 2 }
+          })
+        );
+      }
+      // Kept up for as long as the pointer stays, like a hover on a card.
+      el.addEventListener("pointerenter", function () {
+        fill();
+        f.beat = window.setInterval(fill, 200);
+      });
+      el.addEventListener("pointerleave", function () {
+        f.beat = window.clearInterval(f.beat);
+      });
+      faces.push(f);
+    });
+
+    window.addEventListener("pointermove", function (e) {
+      faces.forEach(function (f) {
+        var c = snap(f);
+        var dx = e.clientX - c.x;
+        var dy = e.clientY - c.y;
+        var d = Math.sqrt(dx * dx + dy * dy);
+        // A square at most, which in pixel art is the whole of a glance. Right
+        // on top of it, it looks back at you.
+        var glance = d < 40 ? "0 0" : Math.round(dx / d) * 12 + " " + Math.round(dy / d) * 12;
+        if (glance === f.glance) return;
+        f.glance = glance;
+        f.look.setAttribute("transform", "translate(" + glance + ")");
+      });
+    });
   })();
 
   /* -------------------------------------------------------------------------

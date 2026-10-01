@@ -555,6 +555,76 @@ body {
   }
 }
 
+/* ---------------------------------------------------------------------------
+   Moods: a pair of pixel faces on the About page. Only the ink is drawn here;
+   the colour is the field's, which fills a face in while the pointer is on
+   it. 130px is thirteen squares of the paper, one per square of the face.
+   --------------------------------------------------------------------------- */
+.moods {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2rem;
+  margin: 2.5rem 0;
+  text-align: center;
+}
+
+.mood {
+  margin: 0;
+
+  figcaption {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+}
+
+.mood-label {
+  display: block;
+  margin: 1.1rem 0 0.5rem;
+  color: var(--text-muted-color);
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.smiley {
+  display: block;
+  width: 130px;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  fill: currentColor;
+
+  /* Filled in, it sits on the field's light bands, where only dark ink
+     reads: the dark theme's pale grey all but vanishes on the blue. */
+  &:hover {
+    color: #1b1b1e;
+  }
+
+  /* A blink is the eyes shutting to a sliver and back, every few seconds,
+     the two faces out of step. */
+  .eyes {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: blink 4.6s infinite;
+  }
+}
+
+.mood + .mood .eyes {
+  animation-delay: -2.1s;
+}
+
+@keyframes blink {
+  0%,
+  95%,
+  100% {
+    transform: none;
+  }
+
+  97.5% {
+    transform: scaleY(0.15);
+  }
+}
+
 
 /* ---------------------------------------------------------------------------
    Pointer. The native cursor steps aside for a dot and a trailing ring, both
@@ -774,6 +844,10 @@ html.has-cursor {
   .cursor-dot,
   .cursor-ring {
     display: none;
+  }
+
+  .smiley .eyes {
+    animation: none;
   }
 
   .to-reveal {

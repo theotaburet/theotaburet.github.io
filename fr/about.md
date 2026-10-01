@@ -52,6 +52,17 @@ groupe de gens, au même moment, au même endroit.
 
 Et je fais des photos.
 
+<div class="moods">
+<figure class="mood">
+{% include smiley.html mood="happy" %}
+<figcaption><span class="mood-label">Fort pour</span>Retrouver ce qu'on a caché dans une image, ou retouché dans une facture.</figcaption>
+</figure>
+<figure class="mood">
+{% include smiley.html mood="sad" %}
+<figcaption><span class="mood-label">Nul pour</span>Savoir m'arrêter avant le 200e kilomètre.</figcaption>
+</figure>
+</div>
+
 ## Me contacter
 
 - E-mail : [theo.taburet@protonmail.com](mailto:theo.taburet@protonmail.com)
