@@ -1,10 +1,13 @@
 <!-- Chirpy leaves this include empty as an extension point in <head>. -->
 <!-- The theme's viewport says user-scalable=no, which stops anyone zooming in
      on a phone. Rewritten here, before first paint, rather than forking head.html.
+     Zooming in, not out: the open menu pushes the page 260px to the right, and
+     a browser free to zoom out to fit that grows the sidebar with it, taking
+     the theme and language buttons out from under the finger that tapped them.
      The pause button in the sidebar (site.js) is remembered, and has to be known
      before heat.js starts or the field moves before it stops. -->
 <script>
-  document.querySelector('meta[name="viewport"]').content = "width=device-width, initial-scale=1, viewport-fit=cover";
+  document.querySelector('meta[name="viewport"]').content = "width=device-width, initial-scale=1, minimum-scale=1, viewport-fit=cover";
   try {
     if (localStorage.getItem("motion") === "paused") document.documentElement.classList.add("motion-paused");
   } catch (e) {}

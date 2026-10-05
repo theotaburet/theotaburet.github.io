@@ -369,6 +369,37 @@ for (const reduced of [false, true]) {
   if (result.fades !== (reduced ? 0 : 1)) extra.push((reduced ? "theme cross-fades despite reduced motion" : "theme switch does not cross-fade") + " (" + result.fades + " transitions)");
 }
 
+// On a phone, the sidebar's bottom row works under a finger: the theme menu
+// opens and switches to light, and the language link goes to French. With the
+// menu open the theme pushes the page 260px right; if the browser may zoom out
+// to fit that, the sidebar grows with it and the row jumps away from the tap.
+await send("Emulation.setDeviceMetricsOverride", { width: 375, height: 800, deviceScaleFactor: 1, mobile: true });
+await send("Emulation.setTouchEmulationEnabled", { enabled: true });
+await open("/", [{ name: "prefers-color-scheme", value: "dark" }]);
+const tap = async sel => {
+  const b = await ev(`(() => { const r = document.querySelector(${JSON.stringify(sel)})?.getBoundingClientRect(); return r && r.width ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null; })()`);
+  if (!b) return false;
+  await send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: b.x, y: b.y }] });
+  await send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+  await wait(600);
+  return true;
+};
+await tap("#sidebar-trigger");
+await tap("#mode-toggle");
+if (!(await tap('.dropdown-item[data-theme-mode="light"]'))) extra.push("phone: the theme menu does not open under a finger");
+else if ((await ev("document.documentElement.getAttribute('data-bs-theme')")) !== "light") extra.push("phone: tapping Light does not switch to light");
+await open("/", []);
+await tap("#sidebar-trigger");
+await tap("#mode-toggle"); // the tap that used to set the row jumping
+await ev("document.body.click()"); // and close the menu it opens
+await wait(300);
+const went = new Promise(r => (loaded = r));
+if (!(await tap(".lang-switch"))) extra.push("phone: no language link in the sidebar");
+await Promise.race([went, wait(3000)]);
+if ((await ev("location.pathname")) !== "/fr/") extra.push("phone: tapping FR does not go to the French page");
+await send("Emulation.setTouchEmulationEnabled", { enabled: false });
+await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 800, deviceScaleFactor: 1, mobile: false });
+
 // What a crawler or an agent reads before any page.
 const sitemap = await (await fetch(BASE + "/sitemap.xml")).text();
 THIN.forEach(p => {
