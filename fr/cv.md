@@ -9,6 +9,8 @@ description: >-
   Rochelle (L3i), docteur en stéganographie de l'École Centrale de Lille.
 ---
 
+{% include cv-print-head.html lang="fr" %}
+
 <div class="lede wide-page">
 <h1>Où j'ai travaillé, sur quoi, et ce qui en est sorti.</h1>
 <div class="lede-body" markdown="1">
@@ -19,6 +21,7 @@ investigation d'image, une thèse en stéganographie, et l'ingénierie qui a pr�
 les deux.
 
 Télécharger en PDF : [Français]({{ '/assets/pdf/CV_TABURET_Theo_French.pdf' | relative_url }}) · [English]({{ '/assets/pdf/CV_TABURET_Theo_English.pdf' | relative_url }})
+{: .cv-pdf-link}
 </div>
 </div>
 

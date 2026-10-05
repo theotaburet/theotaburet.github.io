@@ -12,6 +12,9 @@
 {%- endif -%}
 ';
 
+/* The theme's light palette, for paper whatever the screen is set to. */
+@use 'themes/light';
+
 /* ---------------------------------------------------------------------------
    Palette
    Lifted from the DCT lattice figure on the Projects page, which uses four
@@ -940,4 +943,155 @@ html.has-cursor {
 .eyebrow .emo {
   font-size: 0.95rem;
   vertical-align: -0.18em;
+}
+
+/* ---------------------------------------------------------------------------
+   Theme switch. site.js has the browser cross-fade the page when the theme
+   changes; this is how long it takes.
+   --------------------------------------------------------------------------- */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.3s;
+}
+
+/* ---------------------------------------------------------------------------
+   Print. On paper a page is its text: the sidebar, the field, the game and
+   the pointer go, the ink is the light theme's whatever the screen shows, and
+   the CV gets the letterhead it carries for this. tools/cv-pdf.sh prints the
+   CV pages through these rules to the PDFs they link to.
+   --------------------------------------------------------------------------- */
+.cv-print-head {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 16mm;
+  }
+
+  :root:root,
+  :root:root[data-bs-theme] {
+    @include light.styles;
+    @include accent-light;
+
+    color-scheme: light;
+  }
+
+  html {
+    font-size: 12px;
+  }
+
+  html,
+  body {
+    background: #fff;
+  }
+
+  #sidebar,
+  #topbar-wrapper,
+  #panel-wrapper,
+  #search-result-wrapper,
+  #back-to-top,
+  #mask,
+  #notification,
+  #field,
+  .footer-blocks,
+  .cursor-dot,
+  .cursor-ring,
+  .anchor,
+  .cv-pdf-link,
+  .lede h1,
+  .lede .eyebrow,
+  .lede::before {
+    display: none !important;
+  }
+
+  /* The theme leaves room for the sidebar, and the wide pages for the band. */
+  #main-wrapper,
+  #main-wrapper > .container,
+  main {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Paper has no scroll to reveal anything on, and no time to fade it in. */
+  .to-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .lede {
+    margin-bottom: 1.2rem;
+    padding-bottom: 1rem;
+  }
+
+  .content {
+    margin-top: 0 !important;
+
+    a {
+      color: inherit;
+      border-bottom: 0;
+      text-decoration: none;
+    }
+
+    /* Tighter than the screen: a CV that runs to a third page for want of
+       leading is a CV with a mostly empty third page. */
+    h2 {
+      margin: 1.3rem 0 0.5rem;
+    }
+
+    h3 {
+      margin: 0.9rem 0 0.3rem;
+    }
+
+    h2,
+    h3 {
+      break-after: avoid;
+    }
+
+    p,
+    li {
+      margin-bottom: 0.4rem;
+      line-height: 1.5;
+      orphans: 3;
+      widows: 3;
+    }
+  }
+
+  .table-wrapper {
+    break-inside: avoid;
+  }
+
+  .cv-print-head {
+    display: flex;
+    gap: 5mm;
+    align-items: center;
+    margin-bottom: 6mm;
+
+    img {
+      flex: none;
+      width: 22mm;
+      height: 22mm;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    p {
+      margin: 0;
+      line-height: 1.45;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+      white-space: nowrap; /* an address broken across two lines is two wrong ones */
+    }
+  }
+
+  .cv-print-name {
+    font-size: 2rem;
+    font-weight: 600;
+  }
 }

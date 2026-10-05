@@ -127,6 +127,9 @@ const chrome = spawn(CHROME, [
   "--no-first-run", "--hide-scrollbars", "about:blank"
 ], { stdio: "ignore" });
 
+// A check that throws must not leave a headless Chrome running behind it.
+process.on("exit", () => chrome.kill());
+
 async function quit(code) {
   const gone = new Promise(r => chrome.once("exit", r));
   chrome.kill();
@@ -222,6 +225,50 @@ else {
   if ((await ev("getComputedStyle(document.querySelector('.lede h1')).maskImage")) !== "none") extra.push("headline left masked when loaded paused");
   await ev(toggle + ".click()");
   if (!(await moving())) extra.push("background does not start again when unpaused");
+}
+
+// The CV prints as a CV: the site's furniture gone, a letterhead in its
+// place, and nothing left at the opacity the scroll reveals start from.
+// tools/cv-pdf.sh prints exactly this to the PDFs the pages link to.
+for (const page of ["/cv/", "/fr/cv/"]) {
+  await open(page, []);
+  const head = "document.querySelector('.cv-print-head')";
+  if (!(await ev(head))) {
+    extra.push(page + " has no print letterhead");
+    continue;
+  }
+  if (await ev(head + ".getClientRects().length")) extra.push(page + " shows its print letterhead on screen");
+  await send("Emulation.setEmulatedMedia", { media: "print", features: [] });
+  const printed = await ev(`(() => {
+    const bad = [];
+    const gone = sel => [...document.querySelectorAll(sel)].every(e => !e.getClientRects().length);
+    ["#sidebar", "#topbar-wrapper", "#field", ".footer-blocks", ".cv-pdf-link"].forEach(sel => { if (!gone(sel)) bad.push(sel + " printed"); });
+    const h = document.querySelector(".cv-print-head");
+    if (!h.getClientRects().length || !/Ezako/.test(h.textContent)) bad.push("letterhead missing or without the current job");
+    if ([...document.querySelectorAll(".content *")].some(e => e.getClientRects().length && parseFloat(getComputedStyle(e).opacity) < 1)) bad.push("content printed half transparent");
+    return bad;
+  })()`);
+  printed.forEach(b => extra.push(page + " in print: " + b));
+  await send("Emulation.setEmulatedMedia", { media: "", features: [] });
+}
+
+// Switching theme cross-fades the page, unless motion is reduced; either way
+// the theme does change.
+for (const reduced of [false, true]) {
+  await open("/", reduced ? [{ name: "prefers-reduced-motion", value: "reduce" }] : []);
+  const result = await ev(`new Promise(done => {
+    let fades = 0;
+    if (document.startViewTransition) {
+      const real = document.startViewTransition.bind(document);
+      document.startViewTransition = cb => { fades++; return real(cb); };
+    }
+    const before = document.documentElement.getAttribute("data-bs-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    const want = before === "dark" ? "light" : "dark";
+    document.querySelector('.dropdown-item[data-theme-mode="' + want + '"]').click();
+    setTimeout(() => done({ fades, want, now: document.documentElement.getAttribute("data-bs-theme") }), 800);
+  })`);
+  if (result.now !== result.want) extra.push("theme menu did not switch to " + result.want + (reduced ? " with reduced motion" : ""));
+  if (result.fades !== (reduced ? 0 : 1)) extra.push((reduced ? "theme cross-fades despite reduced motion" : "theme switch does not cross-fade") + " (" + result.fades + " transitions)");
 }
 
 // What a crawler or an agent reads before any page.

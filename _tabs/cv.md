@@ -8,6 +8,8 @@ description: >-
   (L3i), PhD in steganography from École Centrale de Lille.
 ---
 
+{% include cv-print-head.html %}
+
 <div class="lede wide-page">
 <h1>Where I have worked, what on, and what came out of it.</h1>
 <div class="lede-body" markdown="1">
@@ -17,6 +19,7 @@ Data science at Ezako today; before that, postdoctoral research in image
 forensics, a PhD in steganography, and the engineering that came before both.
 
 Download as PDF: [English]({{ '/assets/pdf/CV_TABURET_Theo_English.pdf' | relative_url }}) · [Français]({{ '/assets/pdf/CV_TABURET_Theo_French.pdf' | relative_url }})
+{: .cv-pdf-link}
 </div>
 </div>
 

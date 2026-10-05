@@ -359,6 +359,32 @@
   })();
 
   /* -------------------------------------------------------------------------
+     Theme switch. The theme flips every colour at once; this has the browser
+     cross-fade the page instead. The click on the menu is caught on its way
+     down, before the theme's own handler hears it, and played again inside
+     the transition: the theme does exactly what it always did, only faded.
+     Without view transitions, or with reduced motion, it stays a flip.
+     ---------------------------------------------------------------------- */
+  (function fade() {
+    if (!document.startViewTransition || still.matches) return;
+    var replaying = false;
+    document.addEventListener(
+      "click",
+      function (e) {
+        var item = e.target.closest && e.target.closest(".dropdown-item[data-theme-mode]");
+        if (!item || replaying) return;
+        e.stopImmediatePropagation();
+        document.startViewTransition(function () {
+          replaying = true;
+          item.click();
+          replaying = false;
+        });
+      },
+      true
+    );
+  })();
+
+  /* -------------------------------------------------------------------------
      The colophon. The theme parks it under the article, where it falls
      between the end of the text and the top of the well and belongs to
      neither. It says who the site is, so it goes where the site's name is.

@@ -1,0 +1,17 @@
+{%- comment -%}
+  The top of the CV on paper, and so of the PDFs tools/cv-pdf.sh prints from
+  /cv/ and /fr/cv/. Hidden on screen, where the sidebar already says all of it.
+  lang="fr" for the French page.
+{%- endcomment -%}
+<div class="cv-print-head">
+<img src="{{ site.avatar | relative_url }}" alt="" width="84" height="84">
+<div>
+<p class="cv-print-name">{{ site.social.name }}</p>
+<p>{% if include.lang == "fr" %}Data scientist chez Ezako · Antibes{% else %}Data Scientist at Ezako · Antibes, France{% endif %}</p>
+<p><a href="{{ site.url }}">{{ site.url | remove: "https://" }}</a> · <a href="mailto:{{ site.social.email }}">{{ site.social.email }}</a>
+{%- for link in site.social.links -%}
+  {%- if link contains "linkedin" or link contains "github" or link contains "orcid" %} · <a href="{{ link }}">{{ link | remove: "https://" | remove: "www." }}</a>{% endif -%}
+{%- endfor -%}
+</p>
+</div>
+</div>
