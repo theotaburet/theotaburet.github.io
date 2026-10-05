@@ -79,6 +79,38 @@ The div carries `data-quiet`: the background field (`heat.js`) leaves alone
 anything so marked, with no trail, no ring and no flash under it, so a figure
 you read by hovering stays readable. Put it on any figure that works that way.
 
+## The natural steganography article
+
+A long, animated article on the TIFS 2020 paper, laid out after distill.pub.
+While it is being written it lives in `_drafts/natural-steganography-jpeg.md`,
+which only `bundle exec jekyll serve --drafts` serves (at
+`/posts/natural-steganography-jpeg/`).
+
+- `ns: true` in its front matter loads `assets/css/ns.css`, D3 and GSAP with
+  ScrollTrigger from jsDelivr (pinned, with SRI hashes, in
+  `_includes/metadata-hook.html`), and `assets/js/ns/article.js`.
+- The page is a normal post made full width by `.wide-page` (on its byline).
+  `ns.scss` lays a grid over `.content`: any direct child is in the text
+  column unless it carries `l-page` (text and margin), `l-gutter` (the
+  margin, for asides) or `l-screen` (the whole width). Figure captions are
+  numbered by CSS.
+- A pinned figure is a `<section class="ns-scrolly l-page" data-fig="NAME">`
+  holding a `<figure class="ns-fig" data-quiet>` (a `.ns-canvas` and a
+  `figcaption`) and one `.ns-step` per state. `assets/js/ns/fig-NAME.js`
+  draws into the canvas and exports
+  `mount(el, ctx) → { steps, show(step, animate), redraw() }`; `article.js`
+  loads it as it comes near, drives it from the step in view and adds the
+  strip of steps under it.
+- `assets/js/ns/maths.js` holds the maths (the photosites-to-DCT matrix,
+  covariance, conditioning, the quantised PMF, the sequential draw). It is
+  checked against the paper's own code:
+
+      uv run --with numpy --with scipy python tools/ns-reference.py   # once, writes tools/ns-reference.json
+      node tools/ns-check.mjs
+
+`tools/page-check.mjs` checks the article's page and figures whenever the
+server it is pointed at serves the draft.
+
 ## French pages
 
 `fr/` holds a hand-written translation of each of the four pages. Nothing links the
