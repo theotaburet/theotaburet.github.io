@@ -365,6 +365,10 @@
   max-width: 34rem;
   margin: 0 auto;
 
+  &.is-wide {
+    max-width: 46rem;
+  }
+
   &.is-four {
     max-width: none;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr));

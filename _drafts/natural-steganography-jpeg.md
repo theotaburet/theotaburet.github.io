@@ -70,6 +70,27 @@ Last, each coefficient is divided by its step in the quantisation table of the c
 </div>
 </section>
 
+## Why neighbouring blocks move together
+
+The development is linear, so the noise it leaves in the DCT domain is Gaussian too, with a covariance the paper writes in closed form (eq. 24):
+
+$$\Sigma = M\,\mathrm{diag}(v)\,M^\top,$$
+
+where $v$ is the variance of the stego signal at each photosite. The photosites are independent of each other. The coefficients are not: neighbouring pixels share photosites through demosaicking, and the 8×8 blocks of a JPEG sit side by side on the same sensor.
+
+<figure class="ns-inline l-page" data-fig="covariance" data-quiet>
+<div class="ns-canvas"></div>
+<figcaption>Correlations between the DCT coefficients of 3×3 neighbouring blocks, computed in your browser from $\Sigma = M\,\mathrm{diag}(v)\,M^\top$ with a uniform $v$. Left: with the coefficient chosen in the centre block. Middle: all of $\Sigma$, entry by entry under the loupe. Right: that coefficient's column of $\Sigma$, turned back into pixels. Red positive, blue negative, the colour growing as $\sqrt{|\rho|}$.</figcaption>
+</figure>
+
+Pick a coefficient of the centre block. It moves most with the other coefficients of its own block, less but clearly with the four blocks that share a side with it, and hardly at all with the four diagonal ones, which only meet it at a corner. The three developments take this apart, as Fig. 8 of the paper does. With the red channel alone, the Bayer pattern shows through: the red photosites sit on one side of each 2×2 cell, so the dependencies lean towards north and east. With a plain low-pass filter and no mosaic, the four sides are alike again.
+
+The picture on the right says why. It is the chosen coefficient's column of $\Sigma$ put back through the inverse DCT: what knowing that one coefficient tells about each pixel around. Inside its block, its own waveform. Past each side, a trace one or two pixels deep, where the neighbouring block was demosaicked from the same photosites as the edge of this one. Nothing reaches the diagonal blocks but a corner.
+
+<aside class="l-gutter" markdown="1">
+Under the loupe, $\Sigma$ is a $576\times576$ matrix: 64 coefficients for each of 9 blocks, in the paper's order, centre first, then N, W, E, S and the diagonals.
+</aside>
+
 *Draft: the rest of the article is on its way. This is one of its figures.*
 
 ## The draw, in miniature

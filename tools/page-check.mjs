@@ -791,6 +791,39 @@ if (ARTICLE_UP) {
   }
 }
 
+// The dependencies: a coefficient of the centre block correlates with the
+// blocks beside it, not (beyond 0.01) with the diagonal ones; the low-pass
+// development changes the numbers; a theme switch repaints the matrix, and
+// the loupe over it follows.
+if (ARTICLE_UP) {
+  await open(ARTICLE, []);
+  const C = `document.querySelector('.ns-inline[data-fig="covariance"]')`;
+  const ok = await ev(`(async () => { const f = ${C}; if (!f) return false; f.scrollIntoView({ block: "center", behavior: "instant" }); await new Promise(r => setTimeout(r, 1500)); return !!f.querySelector(".cov-cell"); })()`);
+  if (!ok) extra.push("article: no covariance figure");
+  else {
+    const reach = `(() => { const m = {}; ${C}.querySelectorAll(".cov-cell").forEach(c => { const b = c.dataset.block; if (b !== "C") m[b] = Math.max(m[b] || 0, Math.abs(+c.dataset.r)); }); return m; })()`;
+    await ev(`${C}.querySelector('.cov-cell[data-block="C"][data-t="1"]').dispatchEvent(new MouseEvent("click", { bubbles: true }))`);
+    await wait(300);
+    const m = await ev(reach);
+    const sides = ["N", "W", "E", "S"].filter(b => !(m[b] > 0.01));
+    const corners = ["NW", "NE", "SW", "SE"].filter(b => !(m[b] <= 0.01));
+    if (sides.length || corners.length) extra.push("article covariance: mode (0, 1) reaches " + JSON.stringify(m) + ", expected N W E S above 0.01 and the corners under");
+    const sum = `[...${C}.querySelectorAll(".cov-cell")].reduce((s, c) => s + Math.abs(+c.dataset.r), 0)`;
+    const before = await ev(sum);
+    await ev(`${C}.querySelector('input[value="lowpass"]').click()`);
+    await wait(500);
+    if (Math.abs((await ev(sum)) - before) < 1e-6) extra.push("article covariance: the low-pass development leaves the correlations as they were");
+    const look = `(() => { const c = ${C}.querySelector("canvas"); const l = ${C}.querySelector(".ns-lens"); return [c.toDataURL(), l ? l.style.backgroundImage : ""]; })()`;
+    const [src0, bg0] = await ev(look);
+    await ev(`document.documentElement.setAttribute("data-bs-theme", (document.documentElement.getAttribute("data-bs-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")) === "dark" ? "light" : "dark")`);
+    await wait(800);
+    const [src1, bg1] = await ev(look);
+    if (src1 === src0) extra.push("article covariance: the matrix is not repainted on a theme switch");
+    else if (!(bg1 !== bg0 && bg1.includes(src1.slice(40, 120)))) extra.push("article covariance: the loupe still shows the matrix in the old theme");
+    await ev(`document.documentElement.removeAttribute("data-bs-theme")`);
+  }
+}
+
 // The CV prints as a CV: the site's furniture gone, a letterhead in its
 // place, and nothing left at the opacity the scroll reveals start from.
 // tools/cv-pdf.sh prints exactly this to the PDFs the pages link to.
