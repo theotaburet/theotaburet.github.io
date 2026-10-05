@@ -29,6 +29,9 @@ Download as PDF: [English]({{ '/assets/pdf/CV_TABURET_Theo_English.pdf' | relati
 
 **[Ezako](https://www.ezako.com/)**, Antibes, France · current position
 
+- Object detection (YOLO, RF-DETR) to annotate underwater sound
+- Anomaly detection on MEMS sensors with quantised 1D CNNs running on STM32 microcontrollers
+
 ### Postdoctoral Researcher in Computer Vision and Image Processing
 
 **[Université de La Rochelle, Laboratoire L3I](https://www.univ-larochelle.fr/) / Yooz** · 2021-2023

@@ -8,7 +8,7 @@ description: >-
 ---
 
 <div class="lede wide-page">
-<h1>Three things I keep coming back to.</h1>
+<h1>Three things I've built.</h1>
 <div class="lede-body" markdown="1">
 <p class="eyebrow"><span class="emo">🧰</span> Selected&nbsp;work &middot; Théo&nbsp;Taburet &middot; signal,&nbsp;images&nbsp;and&nbsp;bicycles</p>
 

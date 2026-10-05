@@ -18,17 +18,17 @@ const CHROME = process.env.CHROME || "/Applications/Google Chrome.app/Contents/M
 const PORT = 9400 + ((Math.random() * 500) | 0);
 const PAGES = [
   "/", "/cv/", "/publications/", "/projects/", "/photos/",
-  "/fr/", "/fr/cv/", "/fr/publications/", "/fr/projets/", "/fr/photos/",
-  "/archives/", "/tags/", "/categories/"
+  "/fr/", "/fr/cv/", "/fr/publications/", "/fr/projets/", "/fr/photos/"
 ];
+// The theme's lists of posts. Until there is a post they list nothing, so
+// they stay out of the menu.
+const POSTS = fs.readdirSync(new URL("../_posts", import.meta.url)).some(f => f.endsWith(".md"));
 const WIDTHS = [375, 1280];
 // Pages with nothing on them yet: kept out of search results.
-const THIN = ["/archives/", "/tags/", "/categories/", "/photos/", "/fr/photos/"];
-// Pages that exist in both languages, and so have to say so.
-const PAIRED = PAGES.filter(p => !["/archives/", "/tags/", "/categories/"].includes(p));
+const THIN = ["/photos/", "/fr/photos/"];
 
 // Runs in the page. Returns one line per problem found.
-const CHECKS = page => `((page, THIN, PAIRED) => {
+const CHECKS = page => `((page, THIN, POSTS) => {
   const bad = [];
   const describe = el => "<" + el.tagName.toLowerCase() + (el.className ? " class='" + el.className + "'" : "") + ">";
   const shown = el => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== "hidden";
@@ -112,11 +112,14 @@ const CHECKS = page => `((page, THIN, PAIRED) => {
   const noindex = /noindex/.test(meta('meta[name="robots"]'));
   if (THIN.includes(page) !== noindex) bad.push(noindex ? "indexable page marked noindex" : "empty page left open to indexing");
 
-  if (PAIRED.includes(page)) {
-    const alt = [...document.querySelectorAll('link[rel="alternate"][hreflang]')].map(l => l.hreflang).sort().join(",");
-    if (alt !== "en,fr,x-default") bad.push("hreflang alternates: [" + alt + "], expected en, fr, x-default");
-    if (!document.querySelector("#topbar .lang-switch")) bad.push("no language switch in the top bar");
-  }
+  // Every page exists in both languages, and has to say so.
+  const alt = [...document.querySelectorAll('link[rel="alternate"][hreflang]')].map(l => l.hreflang).sort().join(",");
+  if (alt !== "en,fr,x-default") bad.push("hreflang alternates: [" + alt + "], expected en, fr, x-default");
+  if (!document.querySelector("#topbar .lang-switch")) bad.push("no language switch in the top bar");
+
+  if (!POSTS) document.querySelectorAll("#sidebar a[href]").forEach(a => {
+    if (/^\\/(archives|tags|categories)\\/$/.test(a.pathname)) bad.push("menu links to an empty list of posts: " + a.pathname);
+  });
 
   // Light and dark, one tap away at the top of every page, not in a menu.
   const theme = document.querySelector("#topbar button[aria-pressed]");
@@ -127,7 +130,7 @@ const CHECKS = page => `((page, THIN, PAIRED) => {
   }
 
   return bad;
-})(${JSON.stringify(page)}, ${JSON.stringify(THIN)}, ${JSON.stringify(PAIRED)})`;
+})(${JSON.stringify(page)}, ${JSON.stringify(THIN)}, ${POSTS})`;
 
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), "page-check-"));
 const chrome = spawn(CHROME, [

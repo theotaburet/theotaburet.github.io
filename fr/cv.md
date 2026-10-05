@@ -31,6 +31,9 @@ Télécharger en PDF : [Français]({{ '/assets/pdf/CV_TABURET_Theo_French.pdf' |
 
 **[Ezako](https://www.ezako.com/)**, Antibes · poste actuel
 
+- Détection d'objets (YOLO, RF-DETR) pour l'annotation de sons sous-marins
+- Détection d'anomalies sur capteurs MEMS avec des CNN 1D quantifiés sur microcontrôleurs STM32
+
 ### Chercheur postdoctoral en vision par ordinateur et traitement d'images
 
 **[Université de La Rochelle, laboratoire L3i](https://www.univ-larochelle.fr/) / Yooz** · 2021-2023

@@ -4,13 +4,13 @@ lang: fr-FR
 title: À propos
 permalink: /fr/
 description: >-
-  Théo Taburet est data scientist chez Ezako à Antibes, docteur en stéganographie
-  de l'École Centrale de Lille. Vision par ordinateur, investigation d'images et
-  détection de fraude documentaire.
+  Théo Taburet est data scientist chez Ezako à Antibes : détection de sons
+  sous-marins et détection d'anomalies sur microcontrôleurs. Avant cela,
+  investigation d'images et thèse en stéganographie.
 ---
 
 <div class="lede wide-page">
-<h1>Je cache des choses dans les images. Puis je pars les chercher.</h1>
+<h1>J'apprends aux machines à remarquer ce qui cloche.</h1>
 <div class="lede-body" markdown="1">
 <p class="eyebrow"><span class="emo">🔍</span> Théo&nbsp;Taburet &middot; data&nbsp;science &middot; Antibes</p>
 
@@ -18,20 +18,20 @@ Je suis **Théo Taburet**, data scientist chez [Ezako](https://www.ezako.com/) �
 </div>
 </div>
 
-J'ai soutenu une thèse de mathématiques appliquées à l'École Centrale de Lille, sur la
-**stéganographie** : l'art de cacher de l'information dans une image sans laisser de
-trace statistique. Mes travaux portaient sur des schémas d'insertion qui imitent le
-bruit de capteur, pour qu'une charge cachée ressemble à quelque chose qui a toujours
-fait partie de la photo.
+Chez Ezako, j'implémente des détecteurs de type **YOLO et RF-DETR** pour annoter des
+sons sous-marins, et de la **détection d'anomalies sur capteurs MEMS** : des CNN 1D,
+quantifiés pour tourner sur un microcontrôleur STM32.
 
-Depuis, je travaille sur l'autre face de la même pièce : **investigation d'image et
-détection de fraude documentaire**, avec de l'apprentissage profond pour repérer les
-tickets, les factures et les JPEG doublement compressés qui ont été retouchés.
+Avant ça, six ans d'images : une thèse de mathématiques appliquées à l'École Centrale
+de Lille sur la stéganographie, cacher un message dans une photo pour qu'il passe pour
+du bruit de capteur, puis un post-doc à l'Université de La Rochelle sur l'autre face de
+la pièce : repérer les tickets retouchés et les JPEG doublement compressés.
 
 ## Ce sur quoi je travaille
 
-- **Apprentissage automatique** : deep learning, CNN, détection d'anomalies, détection d'objets, segmentation
-- **Vision par ordinateur** : traitement d'image, stéganographie et stéganalyse, détection de manipulations
+- **Apprentissage automatique** : deep learning, CNN, détection d'objets (YOLO, RF-DETR), détection d'anomalies, segmentation
+- **IA embarquée** : CNN 1D quantifiés sur microcontrôleurs STM32
+- **Signal et image** : sons sous-marins, capteurs MEMS, traitement d'image, investigation d'image
 - **Outils** : Python, PyTorch, OpenCV, FastAPI, Docker, CI/CD
 
 ## Ce que je construis
@@ -59,7 +59,7 @@ Et je fais des photos.
 <div class="moods">
 <figure class="mood">
 {% include smiley.html mood="happy" %}
-<figcaption><span class="mood-label">Fort pour</span>Retrouver ce qu'on a caché dans une image, ou retouché dans une facture.</figcaption>
+<figcaption><span class="mood-label">Fort pour</span>Repérer le point de la courbe qui n'a rien à faire là.</figcaption>
 </figure>
 <figure class="mood">
 {% include smiley.html mood="sad" %}

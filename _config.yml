@@ -19,8 +19,9 @@ title: Théo Taburet # the main title
 tagline: Data Scientist · PhD in Applied Mathematics # it will display as the subtitle
 
 description: >- # used by seo meta and the atom feed
-  Data scientist at Ezako in Antibes, with a PhD in steganography. Computer
-  vision, image forensics and document fraud detection.
+  Data scientist at Ezako in Antibes: detection models for underwater sound and
+  anomaly detection on microcontrollers. Previously image forensics, and a PhD in
+  steganography.
 
 # Fill in the protocol & hostname for your site.
 # E.g. 'https://username.github.io', note that it does not end with a '/'.

@@ -2,13 +2,13 @@
 layout: page
 title: About
 description: >-
-  Théo Taburet is a data scientist at Ezako in Antibes, France, with a PhD in
-  steganography from École Centrale de Lille. Computer vision, image forensics
-  and document fraud detection.
+  Théo Taburet is a data scientist at Ezako in Antibes, France: detection models
+  for underwater sound, and anomaly detection on microcontrollers. Previously
+  image forensics, and a PhD in steganography.
 ---
 
 <div class="lede wide-page">
-<h1>I hide things in photographs. Then I go looking for them.</h1>
+<h1>I teach machines to notice what's off.</h1>
 <div class="lede-body" markdown="1">
 <p class="eyebrow"><span class="emo">🔍</span> Théo&nbsp;Taburet &middot; data&nbsp;science &middot; Antibes</p>
 
@@ -16,19 +16,20 @@ I'm **Théo Taburet**, a data scientist at [Ezako](https://www.ezako.com/) in An
 </div>
 </div>
 
-I hold a PhD in applied mathematics from École Centrale de Lille, where I worked on
-**steganography**: the art of hiding information inside images without leaving a
-statistical trace. My thesis focused on embedding schemes that mimic sensor noise,
-so that a hidden payload looks like it was always part of the photograph.
+At Ezako I implement **YOLO and RF-DETR** style detectors to annotate underwater
+sound, and **anomaly detection on MEMS sensors**: 1D CNNs, quantised to run on an
+STM32 microcontroller.
 
-Since then I've worked on the other side of the same coin: **image forensics and
-document fraud detection**, using deep learning to spot manipulated receipts,
-invoices, and double-compressed JPEGs.
+Before that it was images, for six years: a PhD in applied mathematics at École
+Centrale de Lille on steganography, hiding a message in a photograph so that it
+passes for sensor noise, then a postdoc at Université de La Rochelle on the other
+side of the coin, spotting retouched receipts and double-compressed JPEGs.
 
 ## What I work on
 
-- **Machine learning**: deep learning, CNNs, anomaly detection, object detection, segmentation
-- **Computer vision**: image processing, steganography and steganalysis, manipulation detection
+- **Machine learning**: deep learning, CNNs, object detection (YOLO, RF-DETR), anomaly detection, segmentation
+- **Embedded ML**: quantised 1D CNNs on STM32 microcontrollers
+- **Signals and images**: underwater sound, MEMS sensors, image processing, image forensics
 - **Tooling**: Python, PyTorch, OpenCV, FastAPI, Docker, CI/CD
 
 ## What I'm building
@@ -55,7 +56,7 @@ And I take photographs.
 <div class="moods">
 <figure class="mood">
 {% include smiley.html mood="happy" %}
-<figcaption><span class="mood-label">Good at</span>Finding what was hidden in a photograph, or retouched in an invoice.</figcaption>
+<figcaption><span class="mood-label">Good at</span>Spotting the one point on the curve that has no business being there.</figcaption>
 </figure>
 <figure class="mood">
 {% include smiley.html mood="sad" %}

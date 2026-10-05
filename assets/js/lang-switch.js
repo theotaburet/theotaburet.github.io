@@ -7,7 +7,7 @@
 //   - every page in PAIRS gets an FR/EN switch at the right of the top bar
 //   - French pages get their sidebar repointed at the French equivalents
 //
-// Pages outside PAIRS (archives, categories, tags, posts) exist in English
+// Pages outside PAIRS (posts, and their archives, categories and tags) exist in English
 // only: no switch, and their sidebar entries are left alone.
 (function () {
   var PAIRS = {{ site.data.translations | jsonify }}; // _data/translations.yml

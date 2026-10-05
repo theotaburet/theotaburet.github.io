@@ -11,7 +11,7 @@ description: >-
 ---
 
 <div class="lede wide-page">
-<h1>Trois choses sur lesquelles je reviens toujours.</h1>
+<h1>Trois choses que j'ai construites.</h1>
 <div class="lede-body" markdown="1">
 <p class="eyebrow"><span class="emo">🧰</span> Travaux&nbsp;choisis &middot; Théo&nbsp;Taburet &middot; signal,&nbsp;images&nbsp;et&nbsp;vélo</p>
 

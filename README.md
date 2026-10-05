@@ -20,7 +20,7 @@ Pushing to `main` builds and deploys via GitHub Actions; no local toolchain need
 | Images | `assets/img/` |
 
 Nav order is the `order:` field in each tab's front matter: cv 2, publications 3,
-projects 4, then categories 5, tags 6, archives 7. The About page is not a tab;
+projects 4, photos 5. The About page is not a tab;
 it is `index.md` and the sidebar reaches it through the built-in Home entry.
 
 ## Writing a post
@@ -29,8 +29,10 @@ Copy `_drafts/template.md` to `_posts/YYYY-MM-DD-some-slug.md` and edit it. The
 template documents the front matter and the Chirpy-specific markdown (callouts,
 maths, image options). Files in `_drafts/` are never published.
 
-Posts are reachable from **Archives**, **Categories**, and **Tags**. There is no
-blog index at `/` because that slot is the About page. See below.
+Posts are reachable from **Archives**, **Categories**, and **Tags**, which are out
+of the menu until there is a post to list: bring them back with the first one,
+`git checkout 2168e73 -- _tabs/archives.md _tabs/categories.md _tabs/tags.md`.
+There is no blog index at `/` because that slot is the About page. See below.
 
 ## Restoring a blog home page
 
