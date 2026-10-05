@@ -1,0 +1,225 @@
+---
+---
+// The natural steganography article, laid out after distill.pub: a column of
+// text, figures free to run wider than it, and a margin to its right for
+// asides and captions. Built on the site's .wide-page (full width, no side
+// panel), so no layout leaves the theme. This file loads on that page only,
+// which is why it may style .content directly.
+
+.content {
+  display: grid;
+  grid-template-columns:
+    [screen-start] minmax(0, 1fr)
+    [page-start body-start] minmax(0, 46rem)
+    [body-end gutter-start] minmax(0, 17rem)
+    [gutter-end page-end] minmax(0, 1fr)
+    [screen-end];
+  // Dense, so an aside goes up beside the paragraph before it.
+  grid-auto-flow: row dense;
+  counter-reset: ns-fig;
+
+  > * {
+    grid-column: body;
+  }
+
+  > .l-page {
+    grid-column: page;
+  }
+
+  > .l-screen {
+    grid-column: screen;
+  }
+
+  > .l-gutter {
+    grid-column: gutter;
+    padding-left: 2rem;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: var(--text-muted-color);
+  }
+}
+
+// Narrower, the margin is too thin to read: one column, and an aside
+// follows the paragraph it comments on.
+@media (max-width: 1199.98px) {
+  .content {
+    grid-template-columns: [screen-start page-start body-start gutter-start] minmax(0, 1fr) [screen-end page-end body-end gutter-end];
+
+    > .l-gutter {
+      margin-bottom: 1rem;
+      padding-left: 0.75rem;
+      border-left: 2px solid var(--main-border-color);
+    }
+  }
+}
+
+// Who wrote it and what it explains, between two rules, as on Distill.
+.ns-byline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.75rem 2rem;
+  margin-bottom: 2rem;
+  padding: 1rem 0;
+  border-block: 1px solid var(--main-border-color);
+  font-size: 0.85rem;
+
+  p {
+    margin: 0;
+  }
+
+  .ns-label {
+    margin-bottom: 0.25rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted-color);
+  }
+}
+
+// Figures are numbered as they come: "Figure 1." in ink, then a grey caption.
+.content figcaption {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--text-muted-color);
+
+  &::before {
+    counter-increment: ns-fig;
+    content: 'Figure ' counter(ns-fig) '. ';
+    font-weight: 600;
+    color: var(--heading-color);
+  }
+}
+
+// A pinned figure: it stays at the top of the screen, under the top bar,
+// while the steps of text that drive it scroll past underneath. The step
+// being read is at full strength, the others faded, but only once the figure
+// is live: if it never comes, every word stays readable.
+.ns-scrolly {
+  // What the figures draw with, so a theme switch is a repaint.
+  --ns-a: #a0d8ef;
+  --ns-b: #f8b862;
+  --ns-c: #8db255;
+  --ns-d: #d3381c;
+  --ns-hot: #884898;
+  --ns-ink: var(--heading-color);
+  --ns-muted: var(--text-muted-color);
+  --ns-paper: var(--main-bg);
+  --ns-rule: var(--main-border-color);
+
+  margin: 1rem 0 3rem;
+}
+
+.ns-fig {
+  position: sticky;
+  top: 3.5rem; // the top bar is 3rem
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.4rem;
+  // On a phone the figure never takes the screen from the text.
+  max-height: 60vh;
+  margin: 0;
+  padding: 0.5rem 0;
+  background-color: var(--main-bg);
+
+  figcaption {
+    // Three lines at most while pinned on a narrow screen; the steps say the rest.
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+}
+
+// Wide enough, the caption moves into the margin, beside its figure.
+@media (min-width: 1200px) {
+  .ns-fig {
+    grid-template-columns: minmax(0, 46rem) minmax(0, 17rem);
+    align-items: center;
+
+    figcaption {
+      display: block;
+      padding-left: 2rem;
+    }
+  }
+}
+
+.ns-canvas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  min-height: 0;
+
+  svg {
+    display: block;
+    width: 100%;
+    max-width: 480px;
+    height: auto;
+    max-height: calc(60vh - 7.5rem);
+  }
+}
+
+.ns-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25rem 1rem;
+  font-size: 0.8rem;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0;
+  }
+
+  input[type='range'] {
+    width: 6.5rem;
+  }
+
+  output {
+    min-width: 2.2em;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.ns-steps {
+  max-width: 46rem;
+}
+
+.ns-step {
+  // Long enough to hold the figure on one state while it is read.
+  min-height: 55vh;
+  padding: 1rem 0;
+
+  &:last-child {
+    min-height: 30vh;
+  }
+}
+
+.ns-scrolly.is-live .ns-step {
+  opacity: 0.35;
+  transition: opacity 0.3s;
+
+  &.is-active {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ns-scrolly.is-live .ns-step {
+    transition: none;
+  }
+}
+
+.ns-fallback {
+  margin: 0;
+  padding: 1rem;
+  font-size: 0.9rem;
+  text-align: center;
+  color: var(--text-muted-color);
+}

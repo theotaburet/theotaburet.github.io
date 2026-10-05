@@ -59,6 +59,19 @@
 }
 </script>
 {%- endif %}
+{%- if page.ns %}
+{%- comment -%}
+  The natural steganography article: D3 draws its figures, GSAP and its
+  ScrollTrigger plugin move them as the text scrolls. Pinned, with their
+  hashes, and on that page only. Deferred and module scripts run in the order
+  they are written, so the libraries are there before article.js.
+{%- endcomment %}
+<link rel="stylesheet" href="{{ '/assets/css/ns.css' | relative_url }}">
+<script defer src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js" integrity="sha384-XmJ9SoHtVOHoQUcKvFAzVXwdkKo1Ie3bhmSoIAkcdsHGaIrVJIkmozyq0FJeb/Ly" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js" integrity="sha384-wl5TeDVvOWt30Pbf8aSo2ZrzsOjddu3avOBvHe+p+OhJt9gP6w9YXmDkN5DK2/dF" crossorigin="anonymous"></script>
+<script type="module" src="{{ '/assets/js/ns/article.js' | relative_url }}"></script>
+{%- endif %}
 <script defer src="{{ '/assets/js/lang-switch.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/js/heat.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/js/site.js' | relative_url }}"></script>

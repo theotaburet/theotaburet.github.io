@@ -26,11 +26,18 @@ const POSTS = fs.readdirSync(new URL("../_posts", import.meta.url)).some(f => f.
 const WIDTHS = [375, 1280];
 // Pages with nothing on them yet: kept out of search results.
 const THIN = ["/photos/", "/fr/photos/"];
+// The natural steganography article. A draft until it is published, so only
+// `jekyll serve --drafts` serves it: checked when it is there, said when not.
+const ARTICLE = "/posts/natural-steganography-jpeg/";
+const ARTICLE_UP = await fetch(BASE + ARTICLE).then(r => r.ok, () => false);
+if (ARTICLE_UP) PAGES.push(ARTICLE);
+else console.log("skip " + ARTICLE + " (not served; start jekyll with --drafts)");
 
 // Runs in the page. Returns one line per problem found.
 const CHECKS = page => `((page, THIN, POSTS) => {
   const bad = [];
   const describe = el => "<" + el.tagName.toLowerCase() + (el.className ? " class='" + el.className + "'" : "") + ">";
+  const post = page.startsWith("/posts/");
   const shown = el => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== "hidden";
 
   if (/^\\s*\\|/.test(document.title)) bad.push("empty page title: " + JSON.stringify(document.title));
@@ -100,7 +107,8 @@ const CHECKS = page => `((page, THIN, POSTS) => {
   const ld = [...document.querySelectorAll('script[type="application/ld+json"]')].map(s => s.textContent).join("\\n");
   const meta = sel => (document.querySelector(sel) || {}).content || "";
   if (document.documentElement.innerHTML.includes("qc6CJjYAAAAJ")) bad.push("links to the theme's sample Scholar profile, which is Albert Einstein's");
-  if (/"BlogPosting"/.test(ld)) bad.push("described to search engines as a blog post");
+  if (!post && /"BlogPosting"/.test(ld)) bad.push("described to search engines as a blog post");
+  if (post && !/"BlogPosting"/.test(ld)) bad.push("article not described to search engines as a blog post");
   if (/&(nbsp|middot);/.test(ld)) bad.push("HTML entities inside JSON-LD");
   const desc = meta('meta[name="description"]');
   if (!desc.trim()) bad.push("no meta description");
@@ -114,8 +122,10 @@ const CHECKS = page => `((page, THIN, POSTS) => {
 
   // Every page exists in both languages, and has to say so.
   const alt = [...document.querySelectorAll('link[rel="alternate"][hreflang]')].map(l => l.hreflang).sort().join(",");
-  if (alt !== "en,fr,x-default") bad.push("hreflang alternates: [" + alt + "], expected en, fr, x-default");
-  if (!document.querySelector("#topbar .lang-switch")) bad.push("no language switch in the top bar");
+  // An article exists in English until its translation is written.
+  if (!post && alt !== "en,fr,x-default") bad.push("hreflang alternates: [" + alt + "], expected en, fr, x-default");
+  if (post && alt) bad.push("article claims a translation it does not have: [" + alt + "]");
+  if (!post && !document.querySelector("#topbar .lang-switch")) bad.push("no language switch in the top bar");
 
   if (!POSTS) document.querySelectorAll("#sidebar a[href]").forEach(a => {
     if (/^\\/(archives|tags|categories)\\/$/.test(a.pathname)) bad.push("menu links to an empty list of posts: " + a.pathname);
@@ -167,10 +177,15 @@ await new Promise(r => ws.addEventListener("open", r));
 let seq = 0;
 const replies = new Map();
 let loaded = null;
+const thrown = []; // uncaught script errors, for the checks that care
 ws.addEventListener("message", e => {
   const m = JSON.parse(e.data);
   if (m.id && replies.has(m.id)) replies.get(m.id)(m);
   if (m.method === "Page.loadEventFired" && loaded) loaded();
+  if (m.method === "Runtime.exceptionThrown") {
+    const x = m.params.exceptionDetails;
+    thrown.push((x.exception && x.exception.description) || x.text);
+  }
 });
 const send = (method, params = {}) =>
   new Promise(r => {
@@ -179,6 +194,7 @@ const send = (method, params = {}) =>
   });
 
 await send("Page.enable");
+await send("Runtime.enable");
 let failures = 0;
 for (const width of WIDTHS) {
   const phone = width < 800;
@@ -362,6 +378,65 @@ for (const page of ["/projects/", "/fr/projets/"]) {
   await mouse(5, 5);
 }
 
+// The article, laid out after distill.pub: the text in a readable column,
+// wide figures running past it, asides in the margin, a byline that cites
+// the paper. Its libraries load there only; each pinned figure stays under
+// the top bar while its text goes by; and when the libraries cannot be had,
+// a word in each figure's place instead of a hole, with every word of text
+// and caption readable.
+if (ARTICLE_UP) {
+  await open("/projects/", []);
+  if ((await ev("typeof d3 + ' ' + typeof gsap")) !== "undefined undefined") extra.push("the article's libraries load on other pages too");
+  thrown.length = 0;
+  await open(ARTICLE, []);
+  const libs = await ev("[typeof d3, typeof gsap, typeof ScrollTrigger].join()");
+  if (libs !== "object,object,function") extra.push("article: libraries missing: " + libs);
+  const grid = await ev(`(() => {
+    const p = document.querySelector(".content > p").getBoundingClientRect();
+    const page = document.querySelector(".content > .ns-scrolly.l-page").getBoundingClientRect();
+    const aside = document.querySelector(".content > .l-gutter").getBoundingClientRect();
+    return {
+      text: Math.round(p.width), page: Math.round(page.width), gap: Math.round(aside.left - p.right),
+      doi: !!document.querySelector(".ns-byline a[href='https://doi.org/10.1109/TIFS.2020.3007354']")
+    };
+  })()`);
+  if (grid.text > 736) extra.push("article: the text column is " + grid.text + "px wide, over 46rem");
+  if (grid.page < grid.text + 150) extra.push("article: a wide figure is no wider than the text (" + grid.page + "px for " + grid.text + "px)");
+  if (grid.gap < 0) extra.push("article: the aside is not in the margin beside the text");
+  if (!grid.doi) extra.push("article: the byline does not link the paper's DOI");
+  const cap = await ev(`getComputedStyle(document.querySelector(".ns-fig figcaption"), "::before").content`);
+  if (!/Figure/.test(cap || "")) extra.push("article: figure caption not numbered: " + cap);
+  const pin = await ev(`(async () => {
+    const s = document.querySelector(".ns-scrolly");
+    scrollTo({ top: scrollY + s.getBoundingClientRect().top + 300, behavior: "instant" });
+    await new Promise(r => setTimeout(r, 400));
+    const f = s.querySelector(".ns-fig").getBoundingClientRect();
+    const bar = document.getElementById("topbar-wrapper").getBoundingClientRect();
+    return f.top >= Math.max(0, bar.bottom) - 1 && f.top < 80 ? "" : "figure not pinned under the top bar: its top at " + Math.round(f.top) + "px, the bar ends at " + Math.round(bar.bottom) + "px";
+  })()`);
+  if (pin) extra.push("article: " + pin);
+  if (thrown.length) extra.push("article: script error: " + thrown[0]);
+
+  await send("Network.enable");
+  await send("Network.setBlockedURLs", { urls: ["*cdn.jsdelivr.net/npm/d3@*", "*cdn.jsdelivr.net/npm/gsap@*"] });
+  await open(ARTICLE, []);
+  const cut = await ev(`(async () => {
+    for (const s of document.querySelectorAll(".ns-scrolly")) {
+      s.scrollIntoView({ behavior: "instant" });
+      await new Promise(r => setTimeout(r, 400));
+    }
+    return {
+      blank: [...document.querySelectorAll(".ns-fig")].filter(f => !f.querySelector(".ns-fallback")).length,
+      dim: [...document.querySelectorAll(".ns-step")].filter(s => getComputedStyle(s).opacity !== "1").length,
+      mute: [...document.querySelectorAll(".ns-fig figcaption")].filter(c => c.textContent.trim().length < 20).length
+    };
+  })()`);
+  await send("Network.setBlockedURLs", { urls: [] });
+  if (cut.blank) extra.push("article without its libraries: " + cut.blank + " figure(s) left blank instead of saying so");
+  if (cut.dim) extra.push("article without its libraries: " + cut.dim + " step(s) of text left dimmed");
+  if (cut.mute) extra.push("article without its libraries: " + cut.mute + " caption(s) gone");
+}
+
 // The CV prints as a CV: the site's furniture gone, a letterhead in its
 // place, and nothing left at the opacity the scroll reveals start from.
 // tools/cv-pdf.sh prints exactly this to the PDFs the pages link to.
@@ -452,6 +527,16 @@ if (!(await tap("#topbar .lang-switch"))) extra.push("phone: no language link in
 await Promise.race([went, wait(3000)]);
 if ((await ev("location.pathname")) !== "/fr/") extra.push("phone: tapping FR does not go to the French page");
 else if ((await ev("document.querySelector('#topbar .lang-switch')?.textContent")) !== "EN") extra.push("phone: the French page offers no way back to English");
+// On a phone the article is one column: an aside follows its paragraph.
+if (ARTICLE_UP) {
+  await open(ARTICLE, []);
+  const one = await ev(`(() => {
+    const p = document.querySelector(".content > p").getBoundingClientRect();
+    const a = document.querySelector(".content > .l-gutter").getBoundingClientRect();
+    return Math.abs(a.left - p.left) < 20 && a.top > p.top;
+  })()`);
+  if (!one) extra.push("phone: the article's aside is not under its paragraph");
+}
 await send("Emulation.setTouchEmulationEnabled", { enabled: false });
 await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 800, deviceScaleFactor: 1, mobile: false });
 
