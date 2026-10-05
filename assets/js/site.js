@@ -15,7 +15,9 @@
      a picture, a caret on running text.
      ---------------------------------------------------------------------- */
   (function cursor() {
-    if (still.matches || coarse.matches) return;
+    // In forced colours the dot is painted in the page's own colour, on the
+    // page's own colour, with the real pointer hidden: nothing would show.
+    if (still.matches || coarse.matches || window.matchMedia("(forced-colors: active)").matches) return;
 
     var dot = document.createElement("div");
     var ring = document.createElement("div");
@@ -307,6 +309,53 @@
       a.setAttribute("aria-hidden", "true");
       a.tabIndex = -1;
     });
+    // The theme describes the portrait as "avatar".
+    var portrait = document.querySelector("#avatar img");
+    var name = document.querySelector("#sidebar .site-title");
+    if (portrait && name) portrait.alt = name.textContent.trim();
+  })();
+
+  /* -------------------------------------------------------------------------
+     Pause. The background keeps moving for as long as the page is open, and
+     anyone who finds that hard to read past needs a way to stop it that is
+     not buried in their system settings. It sits beside the theme toggle,
+     heat.js listens for motion:pause, and the choice is remembered (the class
+     is put back before anything starts, in metadata-hook.html). The well at
+     the foot of the page is left playing: it is a game, and it was asked for.
+     ---------------------------------------------------------------------- */
+  (function pause() {
+    var bottom = document.querySelector("#sidebar .sidebar-bottom");
+    if (still.matches || !bottom) return; // with reduced motion nothing moves to begin with
+
+    var root = document.documentElement;
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "motion-toggle";
+    btn.setAttribute(
+      "aria-label",
+      root.lang.indexOf("fr") === 0 ? "Mettre les animations en pause" : "Pause animations"
+    );
+    btn.innerHTML = '<i aria-hidden="true"></i>';
+
+    function show() {
+      var paused = root.classList.contains("motion-paused");
+      btn.setAttribute("aria-pressed", paused ? "true" : "false");
+      btn.firstChild.className = paused ? "fas fa-play" : "fas fa-pause";
+    }
+
+    btn.addEventListener("click", function () {
+      var paused = root.classList.toggle("motion-paused");
+      try {
+        localStorage.setItem("motion", paused ? "paused" : "");
+      } catch (e) {} // private windows: still pauses, just not next time
+      show();
+      window.dispatchEvent(new CustomEvent("motion:pause", { detail: paused }));
+    });
+
+    show();
+    var toggle = bottom.querySelector(".btn-group");
+    if (toggle) toggle.insertAdjacentElement("afterend", btn);
+    else bottom.insertBefore(btn, bottom.firstChild);
   })();
 
   /* -------------------------------------------------------------------------

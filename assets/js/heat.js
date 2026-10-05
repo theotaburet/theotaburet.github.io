@@ -79,7 +79,15 @@
   var lede = document.querySelector(".lede");
   var title = document.querySelector(".lede h1");
   var keepOut = document.querySelectorAll(".content > *");
-  var still = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var paused = document.documentElement.classList.contains("motion-paused");
+  // Reduced motion, or the pause button in the sidebar (site.js): either way
+  // the field holds still. A getter, so every check below hears about both.
+  var still = {
+    get matches() {
+      return reduce.matches || paused;
+    }
+  };
   var scheme = window.matchMedia("(prefers-color-scheme: dark)");
 
   // Chirpy writes data-bs-theme on <html> only once the visitor picks a mode;
@@ -521,17 +529,31 @@
   build();
   measure();
 
-  if (still.matches) {
+  if (reduce.matches) {
     // Reduced motion gets the header's weather as a still, and nothing else.
     draw();
   } else {
-    if (title) {
+    if (title && !paused) {
       // Masked before the first frame, or the headline shows whole for an
       // instant and then vanishes to be decoded.
       reading = 0;
       decode(0);
     }
-    wake();
+    if (paused) draw();
+    else wake();
+
+    // The pause button. Stopping keeps whatever is lit where it is, and lets
+    // the headline finish rather than leaving it half decoded.
+    window.addEventListener("motion:pause", function (e) {
+      paused = e.detail;
+      if (!paused) return wake();
+      press = null;
+      if (title && reading >= 0) {
+        reading = -1;
+        title.style.webkitMaskImage = title.style.maskImage = "";
+      }
+      draw();
+    });
 
     // The canvas is pointer-events:none, so the window is what hears about it.
     window.addEventListener("pointerdown", function (e) {
@@ -539,7 +561,7 @@
       // game is aimed at that thing.
       // Primary button only: a right click opens a menu that swallows the
       // pointerup, and the charge would never be let go.
-      if (e.button || aimed(e)) return;
+      if (e.button || aimed(e) || paused) return;
       press = { x: e.clientX, y: e.clientY, t0: -1 };
       wake();
     });
@@ -552,7 +574,7 @@
     window.addEventListener("pointercancel", drop);
     window.addEventListener("blur", drop); // so is a press the window lost sight of
     window.addEventListener("dblclick", function (e) {
-      if (aimed(e)) return;
+      if (aimed(e) || paused) return;
       ring(e.clientX, e.clientY, 2.8);
       stamp(e.clientX, e.clientY, 1, 90);
       shake = 2.4;

@@ -1,6 +1,11 @@
 ---
 icon: fas fa-camera
 order: 5
+description: >-
+  Photographs by Théo Taburet, mostly taken on long bike rides.
+# ponytail: placeholders for now; drop these two once real photographs are in.
+noindex: true
+sitemap: false
 ---
 
 <div class="lede wide-page">

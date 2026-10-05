@@ -137,6 +137,40 @@ $amber: #f8b862;
 }
 
 /* ---------------------------------------------------------------------------
+   Pause button, put beside the theme toggle by site.js. The theme styles the
+   buttons in that row by id, so this repeats their look rather than borrowing
+   it.
+   --------------------------------------------------------------------------- */
+
+.motion-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: 0 0.8rem 0.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: var(--sidebar-btn-color);
+  background-color: var(--sidebar-btn-bg);
+
+  &:not(:focus-visible) {
+    box-shadow: var(--sidebar-border-color) 0 0 0 1px;
+  }
+
+  &:hover {
+    color: var(--sidebar-active-color);
+    background-color: var(--sidebar-hover-bg);
+  }
+}
+
+/* Paused, the faces stop blinking too. */
+.motion-paused .smiley .eyes {
+  animation: none;
+}
+
+/* ---------------------------------------------------------------------------
    Colophon, moved out of the page foot and into the sidebar by site.js.
    Aligned on the icon row below it, which is what it now reads as a caption
    for.

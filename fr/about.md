@@ -3,14 +3,18 @@ layout: page
 lang: fr-FR
 title: À propos
 permalink: /fr/
+description: >-
+  Théo Taburet est data scientist chez Ezako à Antibes, docteur en stéganographie
+  de l'École Centrale de Lille. Vision par ordinateur, investigation d'images et
+  détection de fraude documentaire.
 ---
 
 <div class="lede wide-page">
 <h1>Je cache des choses dans les images. Puis je pars les chercher.</h1>
 <div class="lede-body" markdown="1">
-<p class="eyebrow"><span class="emo">🔍</span> Théo&nbsp;Taburet &middot; vision&nbsp;par&nbsp;ordinateur &middot; La&nbsp;Rochelle</p>
+<p class="eyebrow"><span class="emo">🔍</span> Théo&nbsp;Taburet &middot; data&nbsp;science &middot; Antibes</p>
 
-Je suis **Théo Taburet**, chercheur en vision par ordinateur, basé à La Rochelle.
+Je suis **Théo Taburet**, data scientist chez [Ezako](https://www.ezako.com/) à Antibes.
 </div>
 </div>
 

@@ -1,3 +1,6 @@
+---
+# Front matter so Jekyll fills in the page pairs below.
+---
 // Sidebar language handling, injected through _includes/metadata-hook.html so
 // no theme file is forked.
 //
@@ -7,12 +10,7 @@
 // Pages outside PAIRS (archives, categories, tags, posts) exist in English
 // only: no switch, and their sidebar entries are left alone.
 (function () {
-  var PAIRS = {
-    "/": "/fr/",
-    "/cv/": "/fr/cv/",
-    "/publications/": "/fr/publications/",
-    "/projects/": "/fr/projets/"
-  };
+  var PAIRS = {{ site.data.translations | jsonify }}; // _data/translations.yml
 
   // Chirpy's fr-FR locale has no key for these tabs, so it falls back to the
   // English page title. Only Projects actually differs between the two.

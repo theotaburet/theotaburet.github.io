@@ -1,7 +1,61 @@
 <!-- Chirpy leaves this include empty as an extension point in <head>. -->
 <!-- The theme's viewport says user-scalable=no, which stops anyone zooming in
-     on a phone. Rewritten here, before first paint, rather than forking head.html. -->
-<script>document.querySelector('meta[name="viewport"]').content = "width=device-width, initial-scale=1, viewport-fit=cover";</script>
+     on a phone. Rewritten here, before first paint, rather than forking head.html.
+     The pause button in the sidebar (site.js) is remembered, and has to be known
+     before heat.js starts or the field moves before it stops. -->
+<script>
+  document.querySelector('meta[name="viewport"]').content = "width=device-width, initial-scale=1, viewport-fit=cover";
+  try {
+    if (localStorage.getItem("motion") === "paused") document.documentElement.classList.add("motion-paused");
+  } catch (e) {}
+</script>
+{%- if page.noindex %}
+<meta name="robots" content="noindex">
+{%- endif %}
+{%- for pair in site.data.translations %}
+  {%- if pair[0] == page.url or pair[1] == page.url %}
+<link rel="alternate" hreflang="en" href="{{ pair[0] | absolute_url }}">
+<link rel="alternate" hreflang="fr" href="{{ pair[1] | absolute_url }}">
+<link rel="alternate" hreflang="x-default" href="{{ pair[0] | absolute_url }}">
+  {%- endif %}
+{%- endfor %}
+{%- if page.url == "/" or page.url == "/fr/" %}
+{%- comment -%}
+  Who the site is about, for search engines and agents. The theme only says it
+  is a website, and the facts here are the ones every profile elsewhere should
+  agree with.
+{%- endcomment %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfilePage",
+  "url": {{ page.url | absolute_url | jsonify }},
+  "inLanguage": {{ page.lang | default: site.lang | jsonify }},
+  "mainEntity": {
+    "@type": "Person",
+    "@id": {{ "/#person" | absolute_url | jsonify }},
+    "name": "Théo Taburet",
+    "alternateName": ["Theo Taburet", "Théo TABURET"],
+    "url": {{ "/" | absolute_url | jsonify }},
+    "image": {{ site.avatar | absolute_url | jsonify }},
+    "description": {{ page.description | default: site.description | jsonify }},
+    "jobTitle": "Data Scientist",
+    "worksFor": { "@type": "Organization", "name": "Ezako", "url": "https://www.ezako.com/" },
+    "workLocation": {
+      "@type": "Place",
+      "address": { "@type": "PostalAddress", "addressLocality": "Antibes", "addressCountry": "FR" }
+    },
+    "alumniOf": [
+      { "@type": "CollegeOrUniversity", "name": "École Centrale de Lille" },
+      { "@type": "CollegeOrUniversity", "name": "Cranfield University" },
+      { "@type": "CollegeOrUniversity", "name": "ESTIA" }
+    ],
+    "knowsAbout": ["Computer vision", "Steganography", "Steganalysis", "Image forensics", "Document fraud detection", "Deep learning"],
+    "sameAs": {{ site.social.links | jsonify }}
+  }
+}
+</script>
+{%- endif %}
 <script defer src="{{ '/assets/js/lang-switch.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/js/heat.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/js/site.js' | relative_url }}"></script>

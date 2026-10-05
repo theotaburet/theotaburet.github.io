@@ -2,21 +2,29 @@
 icon: fas fa-file-lines
 order: 2
 title: CV
+description: >-
+  CV of Théo Taburet: data scientist at Ezako in Antibes, previously
+  postdoctoral researcher in image forensics at Université de La Rochelle
+  (L3i), PhD in steganography from École Centrale de Lille.
 ---
 
 <div class="lede wide-page">
 <h1>Where I have worked, what on, and what came out of it.</h1>
 <div class="lede-body" markdown="1">
-<p class="eyebrow"><span class="emo">🎓</span> Théo&nbsp;Taburet &middot; curriculum&nbsp;vitae &middot; La&nbsp;Rochelle</p>
+<p class="eyebrow"><span class="emo">🎓</span> Théo&nbsp;Taburet &middot; curriculum&nbsp;vitae &middot; Antibes</p>
 
-Postdoctoral research in image forensics, a PhD in steganography, and the
-engineering that came before both.
+Data science at Ezako today; before that, postdoctoral research in image
+forensics, a PhD in steganography, and the engineering that came before both.
 
 Download as PDF: [English]({{ '/assets/pdf/CV_TABURET_Theo_English.pdf' | relative_url }}) · [Français]({{ '/assets/pdf/CV_TABURET_Theo_French.pdf' | relative_url }})
 </div>
 </div>
 
 ## Experience
+
+### Data Scientist
+
+**[Ezako](https://www.ezako.com/)**, Antibes, France · current position
 
 ### Postdoctoral Researcher in Computer Vision and Image Processing
 
@@ -50,7 +58,7 @@ production. Involved in R&D project management.
 
 **[École Centrale de Lille](https://www.centralelille.fr/), Laboratoire CRISTAL**, Lille, France · 2017-2020
 
-Thesis: *Méthodes de stéganographie fondées sur la prise en compte du bruit de capteur.*
+Thesis: *Méthodes de stéganographie fondées sur la prise en compte du bruit de capteur.*{:lang="fr"}
 
 ### MSc, Digital Signal and Image Processing
 

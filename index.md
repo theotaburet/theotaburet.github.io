@@ -1,14 +1,18 @@
 ---
 layout: page
 title: About
+description: >-
+  Théo Taburet is a data scientist at Ezako in Antibes, France, with a PhD in
+  steganography from École Centrale de Lille. Computer vision, image forensics
+  and document fraud detection.
 ---
 
 <div class="lede wide-page">
 <h1>I hide things in photographs. Then I go looking for them.</h1>
 <div class="lede-body" markdown="1">
-<p class="eyebrow"><span class="emo">🔍</span> Théo&nbsp;Taburet &middot; computer&nbsp;vision &middot; La&nbsp;Rochelle</p>
+<p class="eyebrow"><span class="emo">🔍</span> Théo&nbsp;Taburet &middot; data&nbsp;science &middot; Antibes</p>
 
-I'm **Théo Taburet**, a computer vision researcher based in La Rochelle, France.
+I'm **Théo Taburet**, a data scientist at [Ezako](https://www.ezako.com/) in Antibes, France.
 </div>
 </div>
 

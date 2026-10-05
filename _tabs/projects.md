@@ -1,6 +1,10 @@
 ---
 icon: fas fa-diagram-project
 order: 4
+description: >-
+  Projects by Théo Taburet: diapason, a group radio played in sync from phones
+  in the browser; Ravitools, offline points of interest for cycling GPX files;
+  and research on natural steganography.
 ---
 
 <div class="lede wide-page">

@@ -3,6 +3,11 @@ layout: page
 lang: fr-FR
 title: Projets
 permalink: /fr/projets/
+description: >-
+  Projets de Théo Taburet : diapason, une radio de groupe jouée en synchro
+  depuis les téléphones, dans le navigateur ; Ravitools, des points d'intérêt
+  hors ligne pour les traces GPX à vélo ; et la recherche en stéganographie
+  naturelle.
 ---
 
 <div class="lede wide-page">

@@ -1,0 +1,7 @@
+# Each English page and its French counterpart. Read by metadata-hook.html for
+# the hreflang links and by assets/js/lang-switch.js for the FR/EN switch.
+/: /fr/
+/cv/: /fr/cv/
+/publications/: /fr/publications/
+/projects/: /fr/projets/
+/photos/: /fr/photos/

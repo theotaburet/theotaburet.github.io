@@ -3,6 +3,12 @@ layout: page
 lang: fr-FR
 title: Photos
 permalink: /fr/photos/
+description: >-
+  Photographies de Théo Taburet, prises surtout pendant de longues sorties à
+  vélo.
+# ponytail: placeholders for now; drop these two once real photographs are in.
+noindex: true
+sitemap: false
 ---
 
 <div class="lede wide-page">

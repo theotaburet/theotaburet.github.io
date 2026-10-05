@@ -57,13 +57,14 @@ function stub(extra, view) {
     documentElement: {
       scrollHeight: 4000,
       getAttribute: function () { return null; },
-      classList: { add: function () {}, remove: function () {}, toggle: function () {} }
+      classList: { add: function () {}, remove: function () {}, toggle: function () {}, contains: function () { return false; } }
     },
     createElement: function () { return extra.canvas; },
     getElementById: function () { return host(); },
     // The well hangs on the content column and measures itself against
-    // #main-wrapper, so both lookups have to answer.
-    querySelector: function () { return host(); },
+    // #main-wrapper, so both lookups have to answer. The sidebar is not what
+    // is being judged here: it is simply not there.
+    querySelector: function (sel) { return /^#sidebar/.test(sel) ? null : host(); },
     querySelectorAll: function () { return extra.all || []; },
     addEventListener: function () {}
   };
