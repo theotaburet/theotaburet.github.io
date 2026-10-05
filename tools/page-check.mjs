@@ -887,6 +887,33 @@ if (ARTICLE_UP) {
   }
 }
 
+// One real block: the total it shows is the sum of the entropies of its 64
+// coefficients, and a coarser JPEG carries fewer bits.
+if (ARTICLE_UP) {
+  await open(ARTICLE, []);
+  const F = `document.querySelector('.ns-scrolly[data-fig="block"]')`;
+  if (!(await ev(`!!${F}`))) extra.push("article: no block figure");
+  else {
+    await ev(`(() => { const s = ${F}.querySelectorAll(".ns-step")[3]; scrollTo({ top: scrollY + s.getBoundingClientRect().top - innerHeight * 0.5, behavior: "instant" }); })()`);
+    await wait(2500);
+    const total = qf => ev(`(() => {
+      const r = ${F}.querySelector('input[value="${qf}"]');
+      if (!r) return null;
+      r.click();
+      const shown = ${F}.querySelector(".h-total");
+      const sum = [...${F}.querySelectorAll(".h-bar")].reduce((s, b) => s + +b.dataset.h, 0);
+      return shown ? [parseFloat(shown.textContent.replace(/^[^0-9]*/, "")), sum] : null;
+    })()`);
+    const at100 = await total(100);
+    const at95 = await total(95);
+    if (!at100 || !at95) extra.push("article block: no QF choice or no total");
+    else {
+      if (Math.abs(at100[0] - at100[1]) > 0.01) extra.push("article block: the total says " + at100[0] + " bits, the coefficients add up to " + at100[1].toFixed(3));
+      if (!(at95[0] < at100[0])) extra.push("article block: QF 95 carries " + at95[0] + " bits and QF 100 " + at100[0]);
+    }
+  }
+}
+
 // The CV prints as a CV: the site's furniture gone, a letterhead in its
 // place, and nothing left at the opacity the scroll reveals start from.
 // tools/cv-pdf.sh prints exactly this to the PDFs the pages link to.

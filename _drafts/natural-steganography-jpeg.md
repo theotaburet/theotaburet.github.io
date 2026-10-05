@@ -138,6 +138,31 @@ Here are 12 by 8 blocks, nothing drawn yet. Each block will be drawn given the b
 Conditioning has a cost in time too. The paper draws about 4000 Λ1 blocks a second, 30 for Λ2 and Λ3, 10 for Λ4: 171 s for a 512×512 picture.
 </aside>
 
+## Drawing one real block
+
+Back to the two coefficients of the miniature, now at full size: a block of 64, given its eight neighbours. The routine is the same; only the matrices grow.
+
+<section class="ns-scrolly l-page" data-fig="block" markdown="1">
+<figure class="ns-fig" data-quiet>
+<div class="ns-canvas"></div>
+<figcaption>One <span class="ns-key" data-key="L4">Λ4</span> block of a flat grey patch (6000 DN), its eight neighbours drawn. One panel per coefficient, low frequencies top left, each at the scale of its quantisation step: eleven bins, the integers the file can store around the law's centre.</figcaption>
+</figure>
+<div class="ns-steps" markdown="1">
+<div class="ns-step" markdown="1">
+Given its eight neighbours, the block's 64 coefficients have a Gaussian law, the Schur complement of the neighbours in $\Sigma$. Each panel shows one coefficient's share of it against its quantisation bins. At QF 100 the low frequencies spread over several bins; the high ones, which demosaicking smooths away, fit in one.
+</div>
+<div class="ns-step" markdown="1">
+The block is drawn coefficient by coefficient, in this order, each given the neighbours and the coefficients already drawn: its PMF over the integers, an integer picked (red), then a value inside that bin found by rejection, the ticks along the bottom, misses faint.
+</div>
+<div class="ns-step" markdown="1">
+Each coefficient drawn tells something about the ones after it, so their laws narrow as the block fills in: dashed, given the neighbours only; solid, given the coefficients before it too. Below, $\sigma$ against the quantisation step, for all 64.
+</div>
+<div class="ns-step" markdown="1">
+What a coefficient carries is the entropy of its PMF, and the block's capacity is their sum, as in the paper's Fig. 14. Switch to QF 95: the high frequencies get steps up to 12 times wider, their laws fit in a single integer, and their bits are gone.
+</div>
+</div>
+</section>
+
 *Draft: the rest of the article is on its way. This is one of its figures.*
 
 ## The draw, in miniature
