@@ -26,7 +26,7 @@ description: >-
 
 ## 2020
 
-- **Natural steganography in JPEG domain with a linear development pipeline**{:lang="en"}. Théo Taburet, Patrick Bas, Wadih Sawaya, Jessica Fridrich. *IEEE Transactions on Information Forensics and Security*, vol. 16. [DOI](https://doi.org/10.1109/TIFS.2020.3007354) · [PDF](https://hal.science/hal-02910206/file/TIFS_final.pdf)
+- **Natural steganography in JPEG domain with a linear development pipeline**{:lang="en"}. Théo Taburet, Patrick Bas, Wadih Sawaya, Jessica Fridrich. *IEEE Transactions on Information Forensics and Security*, vol. 16. [DOI](https://doi.org/10.1109/TIFS.2020.3007354) · [PDF](https://hal.science/hal-02910206/file/TIFS_final.pdf) · [Lire l'article explicatif (en anglais)]({{ '/posts/natural-steganography-jpeg/' | relative_url }})
 - **JPEG steganography and synchronization of DCT coefficients for a given development pipeline**{:lang="en"}. Théo Taburet, Patrick Bas, Wadih Sawaya, Rémi Cogranne. *ACM Workshop on Information Hiding and Multimedia Security*. [DOI](https://doi.org/10.1145/3369412.3395074) · [PDF](https://hal.science/hal-02553023/document)
 - **Stéganographie naturelle pour images JPEG**. Théo Taburet, Patrick Bas, Wadih Sawaya, Jessica Fridrich. *GRETSI'19*. [PDF](https://hal.science/hal-02165880/document)
 - **Méthodes de stéganographie fondées sur la prise en compte du bruit de capteur**. Théo Taburet. Thèse de doctorat, École Centrale de Lille. [HAL](https://hal.science/tel-04393785)

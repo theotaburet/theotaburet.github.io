@@ -11,6 +11,10 @@ Research, 2017–2023: natural steganography in the JPEG domain (embedding that 
 - [Publications](https://theotaburet.github.io/publications/): papers with authors, venues, DOIs and open-access PDFs
 - [Projects](https://theotaburet.github.io/projects/): diapason, Ravitools, natural steganography
 
+## Articles
+
+- [Hiding a message in the noise of a camera](https://theotaburet.github.io/posts/natural-steganography-jpeg/): an interactive explainer of natural steganography in JPEG (IEEE TIFS, vol. 16, 2021): sensor noise, demosaicking, the dependencies between DCT coefficients, conditional sampling by lattices of blocks, and how much a picture can carry
+
 ## In French
 
 - [À propos](https://theotaburet.github.io/fr/)

@@ -93,11 +93,14 @@ DCT domain, reaching high security (P<sub>E</sub> ≥ 40%) at over 2 bpnzAC.
 
 <p class="stack"><span>Python</span><span>MATLAB</span><span>DCT</span><span>Steganalysis</span></p>
 
-The scheme splits the DCT coefficients into four interleaved lattices and embeds
-into them in order, so that each lattice can be conditioned on the ones already
-written. Hover or tap a cell below to see what it depends on:
+The scheme splits the 8×8 blocks of a JPEG into four interleaved lattices and
+embeds into them in order, so that each lattice can be conditioned on the ones
+already written. Each cell below is a block; hover or tap one to see its reach,
+everything it depends on, step by step:
 
 <div id="dct-grid" data-quiet></div>
 <script src="{{ '/assets/js/block-dependency-grid.js' | relative_url }}"></script>
 
+[Hiding a message in the noise of a camera]({{ '/posts/natural-steganography-jpeg/' | relative_url }})
+explains the whole scheme with interactive figures, from the sensor to the JPEG file.
 See the [publications]({{ '/publications/' | relative_url }}) page for the papers.

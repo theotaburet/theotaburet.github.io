@@ -98,11 +98,14 @@ le domaine DCT, et atteignent une sécurité élevée (P<sub>E</sub> ≥ 40 %) �
 
 <p class="stack"><span>Python</span><span>MATLAB</span><span>DCT</span><span>Stéganalyse</span></p>
 
-Le schéma découpe les coefficients DCT en quatre réseaux entrelacés et insère dedans
-dans l'ordre, de sorte que chaque réseau puisse être conditionné par ceux déjà écrits.
-Survolez ou touchez une case pour voir ce dont elle dépend :
+Le schéma découpe les blocs 8×8 d'un JPEG en quatre réseaux entrelacés et insère
+dedans dans l'ordre, de sorte que chaque réseau puisse être conditionné par ceux déjà
+écrits. Chaque case est un bloc ; survolez-en ou touchez-en une pour voir sa portée,
+tout ce dont elle dépend de proche en proche :
 
-<div id="dct-grid" data-quiet data-hint="Survolez ou touchez une case pour voir tout ce dont elle dépend." data-label="Un bloc 8 × 8 de coefficients DCT réparti en quatre réseaux entrelacés : A et C alternent sur les lignes impaires, D et B sur les lignes paires." data-legend="indépendant|dépend de A|dépend de A, B|dépend de A, B, C"></div>
+<div id="dct-grid" data-quiet data-hint="Survolez ou touchez un bloc pour voir sa portée : tout ce dont il dépend, de proche en proche." data-label="Huit fois huit blocs JPEG répartis en quatre réseaux entrelacés : A et C alternent sur les lignes impaires, D et B sur les lignes paires." data-legend="indépendant|dépend de A|dépend de A, B|dépend de A, B, C"></div>
 <script src="{{ '/assets/js/block-dependency-grid.js' | relative_url }}"></script>
 
+[Un article explicatif, en anglais]({{ '/posts/natural-steganography-jpeg/' | relative_url }}),
+présente tout le schéma avec des figures interactives, du capteur au fichier JPEG.
 Les articles sont sur la page [publications]({{ '/fr/publications/' | relative_url }}).

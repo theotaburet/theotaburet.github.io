@@ -81,10 +81,10 @@ you read by hovering stays readable. Put it on any figure that works that way.
 
 ## The natural steganography article
 
-A long, animated article on the TIFS 2020 paper, laid out after distill.pub.
-While it is being written it lives in `_drafts/natural-steganography-jpeg.md`,
-which only `bundle exec jekyll serve --drafts` serves (at
-`/posts/natural-steganography-jpeg/`).
+A long, animated article on the TIFS paper, laid out after distill.pub:
+`_posts/2026-10-05-natural-steganography-jpeg.md`, served at
+`/posts/natural-steganography-jpeg/`. Projects, Publications (both languages)
+and `llms.txt` link to it.
 
 - `ns: true` in its front matter loads `assets/css/ns.css`, D3 and GSAP with
   ScrollTrigger from jsDelivr (pinned, with SRI hashes, in
@@ -108,8 +108,15 @@ which only `bundle exec jekyll serve --drafts` serves (at
       uv run --with numpy --with scipy python tools/ns-reference.py   # once, writes tools/ns-reference.json
       node tools/ns-check.mjs
 
-`tools/page-check.mjs` checks the article's page and figures whenever the
-server it is pointed at serves the draft.
+- Citations are `{% include ns-cite.html key="…" %}`, numbered by their rank
+  in `_data/ns-refs.yml`, which is kept in the order the text first cites
+  them; `_includes/ns-appendix.html` lists the same entries. Kramdown notes
+  and citations open in a bubble (`assets/js/ns/notes.js`).
+- `fig-block.js` draws its block in `assets/js/ns/block-worker.js`, off the
+  page's thread.
+
+`tools/page-check.mjs` checks the article's page, text, citations and figures;
+it fails if the article is not served.
 
 ## French pages
 

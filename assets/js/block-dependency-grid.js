@@ -1,6 +1,7 @@
-// Interactive figure: dependency structure of the 4 DCT lattices used in the
-// natural-steganography embedding scheme. Hover a cell to reveal everything it
-// depends on, transitively.
+// Interactive figure: the 4 lattices of JPEG blocks of the natural
+// steganography embedding scheme. Each cell is an 8×8 block; hovering one
+// reveals its reach, everything it depends on, transitively. The article
+// (/posts/natural-steganography-jpeg/) shows the direct neighbourhood.
 (function () {
   var root = document.getElementById("dct-grid");
   if (!root) return;
@@ -74,7 +75,7 @@
   grid.setAttribute(
     "aria-label",
     root.dataset.label ||
-      "An 8 by 8 block of DCT coefficients split into four interleaved lattices: A and C alternate on odd rows, D and B on even rows."
+      "Eight by eight JPEG blocks split into four interleaved lattices: A and C alternate on odd rows, D and B on even rows."
   );
   var cells = [];
 
@@ -118,7 +119,7 @@
   var hint = document.createElement("p");
   hint.className = "dg-hint";
   hint.textContent =
-    root.dataset.hint || "Hover or tap a cell to see everything it depends on.";
+    root.dataset.hint || "Hover or tap a block to see its reach: everything it depends on, step by step.";
 
   var legend = document.createElement("div");
   legend.className = "dg-legend";

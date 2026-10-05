@@ -31,7 +31,7 @@ const THIN = ["/photos/", "/fr/photos/"];
 const ARTICLE = "/posts/natural-steganography-jpeg/";
 const ARTICLE_UP = await fetch(BASE + ARTICLE).then(r => r.ok, () => false);
 if (ARTICLE_UP) PAGES.push(ARTICLE);
-else console.log("skip " + ARTICLE + " (not served; start jekyll with --drafts)");
+else console.log("the article " + ARTICLE + " is not served");
 
 // Runs in the page. Returns one line per problem found.
 const CHECKS = page => `((page, THIN, POSTS) => {
@@ -1079,6 +1079,31 @@ if (ARTICLE_UP) {
     return out;
   })()`);
   if (t.length) extra.push("article text: " + t.join(", "));
+}
+
+// The article is published, and the site leads to it: Projects (where the
+// grid's cells are blocks and what it shows is a reach), Publications, in
+// both languages, and llms.txt.
+if (!ARTICLE_UP) extra.push("the article " + ARTICLE + " is not built");
+for (const [page, label, hint, link] of [["/projects/", /blocks/, /reach/, null], ["/fr/projets/", /blocs/, /portée/, null], ["/publications/", null, null, "Read the explainer"], ["/fr/publications/", null, null, "Lire l'article explicatif (en anglais)"]]) {
+  await open(page, []);
+  const r = await ev(`(() => {
+    const out = [];
+    const to = [...document.querySelectorAll('.content a[href$="${ARTICLE}"]')];
+    if (!to.length) out.push("no link to the article");
+    ${label ? `const g = document.querySelector("#dct-grid [role=img]");
+    if (!g || !${label}.test(g.getAttribute("aria-label")) || /coefficients/.test(g.getAttribute("aria-label"))) out.push("the grid's cells are not called blocks");
+    if (!${hint}.test(document.querySelector("#dct-grid .dg-hint")?.textContent || "")) out.push("the grid does not say it shows a reach");` : ""}
+    ${link ? `const a = to.find(x => x.textContent.trim().replace(/’/g, "'") === ${JSON.stringify(link)});
+    if (!a) out.push("no '${link}' link");
+    else if (!/TIFS|Information Forensics/.test(a.closest("li")?.textContent || "")) out.push("'${link}' is not by the TIFS paper");` : ""}
+    return out;
+  })()`);
+  r.forEach(x => extra.push(page + ": " + x));
+}
+{
+  const llms = await (await fetch(BASE + "/llms.txt")).text();
+  if (!llms.includes(ARTICLE)) extra.push("llms.txt does not list the article");
 }
 
 // The CV prints as a CV: the site's furniture gone, a letterhead in its
