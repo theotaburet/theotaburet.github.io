@@ -240,9 +240,39 @@ const rel = (a, b) => Math.abs(a - b) / Math.abs(b);
   // to work them out; they must stay what this embedding gives.
   const { BITS } = await import("../assets/js/ns/fig-lattices.js");
   report("the lattices figure's bits a block are this embedding's", [1, 2, 3, 4].every(L => Math.abs(BITS[L] - avg(L)) < 0.05), [1, 2, 3, 4].map(L => avg(L).toFixed(1)).join(" "));
+  // Eq. (29): the PMF is over the integer the file stores, round((c + s) / q),
+  // c the cover's coefficient; so the integer drawn is that one, on a cover
+  // with texture, where c is not a multiple of q.
+  {
+    const Bt = 6;
+    const nct = 8 * Bt + 2;
+    const r = N.rng(9);
+    const raw = Float64Array.from({ length: nct * nct }, (_, k) => 6000 + 1500 * Math.sin(k / 7) + 300 * N.gauss(r));
+    const steps = N.QTABLES[95].map(q => 256 * q);
+    const et = N.embed(raw, Bt, vOf, steps, 5, N.rng(5));
+    const Y = N.develop(raw, nct);
+    let wrong = 0;
+    let seen = 0;
+    et.blocks.forEach((s, k) => {
+      if (!s) return;
+      const bi = Math.floor(k / Bt);
+      const bj = k % Bt;
+      const x = new Float64Array(64);
+      for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) x[i * 8 + j] = 4 * Y[(bi * 8 + i) * (nct - 2) + bj * 8 + j];
+      const c = N.dct8(x);
+      for (let t = 0; t < 64; t++) {
+        seen++;
+        if (Math.round((c[t] + s[t]) / steps[t]) !== (et.ints && et.ints[k] ? et.ints[k][t] : NaN)) wrong++;
+      }
+    });
+    report("the integer drawn is the one the file stores, round((c + s) / q)", seen > 0 && wrong === 0, wrong + " of " + seen + " differ");
+  }
   let dark;
   try {
-    dark = N.embed(new Float64Array((8 * B + 2) ** 2).fill(900), B, vOf, new Array(64).fill(256), 5, N.rng(4));
+    // 905, not 900: a flat 900 DN puts every DC exactly on a quantisation
+    // boundary (112.5 steps), where the 1e-3 variance that keeps the maths
+    // defined splits the integer 50/50. A real picture has no such ties.
+    dark = N.embed(new Float64Array((8 * B + 2) ** 2).fill(905), B, vOf, new Array(64).fill(256), 5, N.rng(4));
   } catch (err) {
     dark = { bits: NaN, err };
   }

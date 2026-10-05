@@ -347,14 +347,19 @@ export const GIVEN = { 1: [0], 2: [0, 5, 6, 7, 8], 3: [0, 1, 2, 3, 4], 4: [0, 1,
 // (8B+2)² photosites, B a side, drawn lattice by lattice, each given the
 // neighbours already drawn. vOf(x) is the stego variance of a photosite of
 // value x (set to 0 when negative, as the paper says); steps are the 64
-// quantisation steps; K half the alphabet. A block is drawn only if every
-// neighbour it needs was; the others stay null. Returns the 64 continuous
-// values drawn per block, the bits they carry, and the bits per block of
-// each lattice.
+// quantisation steps; K half the alphabet; all in the 16-bit domain, where a
+// coefficient is the DCT of the luminance ×4. As eq. (29), each coefficient
+// is drawn around the cover's own, c + m, so the PMF is over the integer the
+// file stores. A block is drawn only if every neighbour it needs was; the
+// others stay null. Returns, per block, the stego signal s (the draw less
+// the cover) and the integers stored, round((c + s) / q); the bits they
+// carry; and the bits per block of each lattice.
 export function embed(raw, B, vOf, steps, K, rand) {
   const nc = 8 * B + 2;
   const M = photositesToDct(3);
+  const Y = develop(raw, nc);
   const blocks = new Array(B * B).fill(null);
+  const ints = new Array(B * B).fill(null);
   const perLattice = { 1: [], 2: [], 3: [], 4: [] };
   let bits = 0;
   const v = new Float64Array(26 * 26);
@@ -376,15 +381,19 @@ export function embed(raw, B, vOf, steps, K, rand) {
         let cov = Ss;
         if (n > 64) ({ mean, cov } = conditional(Ss, n, 64, known.flatMap(b => Array.from(b))));
         for (let t = 0; t < 64; t++) cov[t * 65] += 1e-3; // what rounding leaves of a variance that is zero
-        const draw = sampleSequential(mean, cov, 64, steps, K, rand);
-        blocks[bi * B + bj] = Float64Array.from(draw, d => d.x);
+        const x = new Float64Array(64);
+        for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) x[i * 8 + j] = 4 * Y[(bi * 8 + i) * (nc - 2) + bj * 8 + j];
+        const c = dct8(x);
+        const draw = sampleSequential(Float64Array.from(mean, (m, t) => c[t] + m), cov, 64, steps, K, rand);
+        blocks[bi * B + bj] = Float64Array.from(draw, (d, t) => d.x - c[t]);
+        ints[bi * B + bj] = Int32Array.from(draw, d => d.k);
         const h = draw.reduce((a, d) => a + d.h, 0);
         perLattice[L].push(h);
         bits += h;
       }
     }
   }
-  return { blocks, bits, perLattice };
+  return { blocks, ints, bits, perLattice };
 }
 
 // The JPEG luminance quantisation tables of the reference code (NS/tools,
