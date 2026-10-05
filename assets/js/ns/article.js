@@ -52,7 +52,35 @@ async function start(section) {
   fig.dataset.steps = view.steps;
   section.classList.add("is-live");
 
+  // The steps as a strip of buttons under the figure: where it is, and a way
+  // to any step without scrolling there. A click scrolls the text to its
+  // step; the triggers it passes on the way are not obeyed, or the figure
+  // would replay every step in between.
   let current = -1;
+  let jumping = false;
+  const strip = document.createElement("div");
+  strip.className = "ns-stepper";
+  strip.setAttribute("role", "group");
+  strip.setAttribute("aria-label", "Steps of this figure");
+  const dots = steps.map((step, i) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = i + 1;
+    b.setAttribute("aria-label", "Step " + (i + 1) + " of " + steps.length);
+    b.addEventListener("click", () => {
+      jumping = true;
+      const release = () => (jumping = false);
+      window.addEventListener("scrollend", release, { once: true });
+      setTimeout(release, 2000); // no scrollend where it is not supported, or when nothing scrolled
+      const top = window.scrollY + step.getBoundingClientRect().top - window.innerHeight * 0.5;
+      window.scrollTo({ top, behavior: still() ? "instant" : "smooth" });
+      go(i, true);
+    });
+    strip.appendChild(b);
+    return b;
+  });
+  canvas.appendChild(strip);
+
   function go(i, animate) {
     i = Math.max(0, Math.min(view.steps - 1, i));
     if (i === current) return;
@@ -60,6 +88,7 @@ async function start(section) {
     fig.dataset.step = i;
     // Held still, the figure is at its end and the whole text is for reading.
     steps.forEach((s, k) => s.classList.toggle("is-active", still() || k === i));
+    dots.forEach((d, k) => d.setAttribute("aria-current", k === i ? "step" : "false"));
     view.show(i, animate && !still());
   }
   const triggers = steps.map((step, i) =>
@@ -68,7 +97,7 @@ async function start(section) {
       start: "top 60%",
       end: "bottom 60%",
       onToggle: self => {
-        if (self.isActive && !still()) go(i, true);
+        if (self.isActive && !still() && !jumping) go(i, true);
       }
     })
   );

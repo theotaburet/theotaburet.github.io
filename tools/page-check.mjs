@@ -66,7 +66,8 @@ const CHECKS = page => `((page, THIN, POSTS) => {
       return;
     }
     const img = el.querySelector("img[alt]");
-    const name = (el.getAttribute("aria-label") || el.textContent || (img && img.alt) || el.title || "").trim();
+    const label = [...(el.labels || [])].map(l => l.textContent).join(" "); // a <label> names a form field
+    const name = (el.getAttribute("aria-label") || el.textContent || label || (img && img.alt) || el.title || "").trim();
     if (!name) bad.push("focusable without a name: " + describe(el));
 
     // And a finger has to be able to reach it: whatever is on top at its
@@ -354,11 +355,17 @@ else {
 
 // A figure read by hovering is read in peace: whatever the pointer does over
 // it, a stroke or a press, the background under it stays paper.
-for (const page of ["/projects/", "/fr/projets/"]) {
+const QUIET = [["/projects/", "#dct-grid", "#dct-grid .dg-grid"], ["/fr/projets/", "#dct-grid", "#dct-grid .dg-grid"]];
+if (ARTICLE_UP) QUIET.push([ARTICLE, ".ns-scrolly", ".ns-fig svg"]);
+for (const [page, near, sel] of QUIET) {
   await open(page, []);
-  await ev("document.getElementById('dct-grid').scrollIntoView({ block: 'center', behavior: 'instant' })");
+  await ev(`document.querySelector(${JSON.stringify(near)}).scrollIntoView({ block: 'center', behavior: 'instant' })`);
   await wait(600);
-  const g = await ev("(() => { const b = document.querySelector('#dct-grid .dg-grid').getBoundingClientRect(); return { x: b.left, y: b.top, w: b.width, h: b.height }; })()");
+  const g = await ev(`(() => { const b = document.querySelector(${JSON.stringify(sel)})?.getBoundingClientRect(); return b && { x: b.left, y: b.top, w: b.width, h: b.height }; })()`);
+  if (!g) {
+    extra.push(page + ": nothing to hover at " + sel);
+    continue;
+  }
   for (let i = 1; i < 10; i++) {
     await mouse(g.x + (g.w * i) / 10, g.y + (g.h * i) / 10);
     await wait(60);
@@ -435,6 +442,118 @@ if (ARTICLE_UP) {
   if (cut.blank) extra.push("article without its libraries: " + cut.blank + " figure(s) left blank instead of saying so");
   if (cut.dim) extra.push("article without its libraries: " + cut.dim + " step(s) of text left dimmed");
   if (cut.mute) extra.push("article without its libraries: " + cut.mute + " caption(s) gone");
+}
+
+// The figures, as a reader meets them: walking the text moves each through
+// its steps in order; landing mid-section shows that step at once; the strip
+// of steps goes straight where it is asked; the theme repaints; the pause
+// button and reduced motion leave each at its end with nothing moving; and
+// the toy's controls hold up at their extremes.
+if (ARTICLE_UP) {
+  const S = `document.querySelectorAll(".ns-scrolly")`;
+  const at = f => ev(`${S}[${f}].querySelector(".ns-fig").dataset.step`);
+  const toStep = (f, i) => ev(`(() => { const s = ${S}[${f}].querySelectorAll(".ns-step")[${i}]; scrollTo({ top: scrollY + s.getBoundingClientRect().top - innerHeight * 0.5, behavior: "instant" }); })()`);
+  const moving = () => ev("gsap.globalTimeline.getChildren(true, true, false).some(t => t.isActive())");
+  thrown.length = 0;
+  await open(ARTICLE, []);
+  const count = await ev(`${S}.length`);
+  for (let f = 0; f < count; f++) {
+    const n = await ev(`${S}[${f}].querySelectorAll(".ns-step").length`);
+    for (let i = 0; i < n; i++) {
+      await toStep(f, i);
+      await wait(500);
+      const got = await at(f);
+      if (got !== String(i)) {
+        extra.push("article figure " + f + ": step " + i + " of the text shows step " + got + " of the figure");
+        break;
+      }
+    }
+    const m = await ev(`(() => {
+      const s = ${S}[${f}], fig = s.querySelector(".ns-fig"), svg = fig.querySelector("svg");
+      return {
+        quiet: fig.hasAttribute("data-quiet"), label: !!(svg && svg.getAttribute("aria-label")),
+        steps: +fig.dataset.steps, texts: s.querySelectorAll(".ns-step").length,
+        strip: s.querySelectorAll(".ns-stepper button").length, caption: !!fig.querySelector("figcaption")
+      };
+    })()`);
+    if (!m.quiet) extra.push("article figure " + f + " not marked data-quiet");
+    if (!m.label) extra.push("article figure " + f + " has no aria-label");
+    if (m.steps !== m.texts) extra.push("article figure " + f + ": " + m.steps + " states for " + m.texts + " steps of text");
+    if (m.strip !== m.texts) extra.push("article figure " + f + ": " + m.strip + " buttons in its strip for " + m.texts + " steps");
+    if (!m.caption) extra.push("article figure " + f + " lost its caption when it was drawn");
+  }
+  if (thrown.length) extra.push("article: script error: " + thrown[0]);
+
+  await open(ARTICLE, []);
+  await toStep(0, 4);
+  await wait(900);
+  if ((await at(0)) !== "4") extra.push("article: landing on step 4 of the first figure shows step " + (await at(0)));
+
+  await toStep(0, 0);
+  await wait(600);
+  await ev(`(() => {
+    const fig = ${S}[0].querySelector(".ns-fig");
+    window.__seen = [];
+    new MutationObserver(() => window.__seen.push(fig.dataset.step)).observe(fig, { attributes: true, attributeFilter: ["data-step"] });
+    ${S}[0].querySelectorAll(".ns-stepper button")[4].click();
+  })()`);
+  await wait(2500);
+  const seen = await ev("window.__seen.join()");
+  const cur = await ev(`${S}[0].querySelectorAll(".ns-stepper button")[4].getAttribute("aria-current")`);
+  if ((await at(0)) !== "4" || cur !== "step") extra.push("article: clicking step 5 of the strip shows step " + (await at(0)) + ", aria-current " + cur);
+  if (seen !== "4") extra.push("article: clicking step 5 of the strip played the steps in between: " + seen);
+
+  const ink = () => ev(`${S}[0].querySelector(".ns-fig svg text")?.getAttribute("fill")`);
+  const before = await ink();
+  const was = await ev(`document.documentElement.getAttribute("data-bs-theme") === "dark" ? "dark" : "light"`);
+  const other = was === "dark" ? "light" : "dark";
+  await ev(`document.querySelector('.dropdown-item[data-theme-mode="${other}"]').click()`);
+  await wait(900);
+  if ((await ink()) === before) extra.push("article: figure text keeps its colour (" + before + ") after the theme switch");
+  await ev(`document.querySelector('.dropdown-item[data-theme-mode="${was}"]').click()`);
+  await wait(600);
+
+  await toStep(0, 1);
+  await wait(200);
+  await ev(toggle + ".click()");
+  await wait(400);
+  const last = String((await ev(`${S}[0].querySelectorAll(".ns-step").length`)) - 1);
+  if ((await at(0)) !== last) extra.push("article: paused mid-animation, the first figure shows step " + (await at(0)) + ", not its last");
+  if (await moving()) extra.push("article: still animating while paused");
+  if (await ev(`[...${S}[0].querySelectorAll(".ns-step")].some(s => getComputedStyle(s).opacity !== "1")`)) extra.push("article: text left dimmed while paused");
+  await ev(toggle + ".click()");
+
+  await open(ARTICLE, [{ name: "prefers-reduced-motion", value: "reduce" }]);
+  for (let f = 0; f < count; f++) {
+    await ev(`${S}[${f}].scrollIntoView({ behavior: "instant" })`);
+    await wait(500);
+    const end = String((await ev(`${S}[${f}].querySelectorAll(".ns-step").length`)) - 1);
+    if ((await at(f)) !== end) extra.push("article, reduced motion: figure " + f + " shows step " + (await at(f)) + ", not its last");
+  }
+  if (await moving()) extra.push("article, reduced motion: something is animating");
+
+  await open(ARTICLE, []);
+  const toy = await ev(`[...${S}].findIndex(s => s.dataset.fig === "toy")`);
+  if (toy < 0) extra.push("article: no toy figure");
+  else {
+    const T = `${S}[${toy}]`;
+    await toStep(toy, 2);
+    await wait(2500);
+    const pt = () => ev(`${T}.querySelector(".toy-point")?.getAttribute("cx")`);
+    const p0 = await pt();
+    await ev(`${T}.querySelector(".ns-controls button").click()`);
+    await wait(300);
+    if ((await pt()) === p0) extra.push("article toy: Draw again draws the same point");
+    await toStep(toy, 5);
+    await wait(600);
+    const words = await ev(`(() => {
+      const r = ${T}.querySelectorAll("input[type=range]");
+      r[0].value = 0.95; r[0].dispatchEvent(new Event("input"));
+      r[1].value = 0.2; r[1].dispatchEvent(new Event("input"));
+      return [...${T}.querySelectorAll("svg text")].map(t => t.textContent).join(" | ");
+    })()`);
+    if (/NaN|Infinity|undefined/.test(words) || !/bits/.test(words)) extra.push("article toy at ρ 0.95, step 0.2: " + String(words).slice(0, 120));
+  }
 }
 
 // The CV prints as a CV: the site's furniture gone, a letterhead in its
@@ -536,6 +655,19 @@ if (ARTICLE_UP) {
     return Math.abs(a.left - p.left) < 20 && a.top > p.top;
   })()`);
   if (!one) extra.push("phone: the article's aside is not under its paragraph");
+}
+// On a phone the pinned figure, controls, strip and caption included, leaves
+// the text most of the screen.
+if (ARTICLE_UP) {
+  const fit = await ev(`(async () => {
+    const s = document.querySelector(".ns-scrolly");
+    scrollTo({ top: scrollY + s.getBoundingClientRect().top + 200, behavior: "instant" });
+    await new Promise(r => setTimeout(r, 800));
+    const f = s.querySelector(".ns-fig").getBoundingClientRect();
+    return { h: f.height, w: f.width, vw: innerWidth, vh: innerHeight };
+  })()`);
+  if (fit.h > fit.vh * 0.6 + 1) extra.push("phone: the pinned figure takes " + Math.round((fit.h / fit.vh) * 100) + "% of the screen");
+  if (fit.w > fit.vw) extra.push("phone: the pinned figure is wider than the screen");
 }
 await send("Emulation.setTouchEmulationEnabled", { enabled: false });
 await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 800, deviceScaleFactor: 1, mobile: false });

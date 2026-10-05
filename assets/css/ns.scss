@@ -223,3 +223,28 @@
   text-align: center;
   color: var(--text-muted-color);
 }
+
+// The strip of steps: small round buttons, the current one filled.
+.ns-stepper {
+  display: flex;
+  justify-content: center;
+  gap: 0.35rem;
+
+  button {
+    width: 1.6rem;
+    height: 1.6rem;
+    padding: 0;
+    border: 1px solid var(--ns-rule);
+    border-radius: 50%;
+    background: none;
+    font-size: 0.7rem;
+    line-height: 1;
+    color: var(--ns-muted);
+
+    &[aria-current='step'] {
+      border-color: var(--ns-ink);
+      background-color: var(--ns-ink);
+      color: var(--ns-paper);
+    }
+  }
+}
