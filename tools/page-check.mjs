@@ -848,6 +848,45 @@ if (ARTICLE_UP) {
   }
 }
 
+// The four lattices: a key in the text hovered before its figure exists
+// breaks nothing; a Λ4 block is drawn given exactly its eight neighbours;
+// the bits a block carries fall from Λ1 to Λ4; the key Λ2 in the text lights
+// the Λ2 blocks, and only them.
+if (ARTICLE_UP) {
+  await open(ARTICLE, []);
+  thrown.length = 0;
+  await ev(`(() => { const k = document.querySelector('.ns-key[data-key="L2"]'); if (k) { k.dispatchEvent(new MouseEvent("mouseenter")); k.dispatchEvent(new MouseEvent("mouseleave")); } })()`);
+  await wait(200);
+  if (thrown.length) extra.push("article lattices: hovering a key before its figure is drawn throws: " + thrown[0]);
+  const F = `document.querySelector('.ns-scrolly[data-fig="lattices"]')`;
+  if (!(await ev(`!!${F}`))) extra.push("article: no lattices figure");
+  else {
+    await ev(`(() => { const s = ${F}.querySelectorAll(".ns-step")[4]; scrollTo({ top: scrollY + s.getBoundingClientRect().top - innerHeight * 0.5, behavior: "instant" }); })()`);
+    await wait(2000);
+    const given = await ev(`(() => {
+      const b = ${F}.querySelector('rect.block[data-bi="3"][data-bj="6"]');
+      if (!b || b.dataset.lattice !== "4") return -1;
+      b.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+      const n = ${F}.querySelectorAll("rect.block.is-given").length;
+      b.dispatchEvent(new MouseEvent("mouseleave", { bubbles: true }));
+      return n;
+    })()`);
+    if (given !== 8) extra.push("article lattices: hovering a Λ4 block lights " + given + " neighbours, expected 8");
+    const bits = await ev(`[1, 2, 3, 4].map(L => { const t = ${F}.querySelector('.lat-bits[data-lattice="' + L + '"]'); return t ? +t.dataset.bits : NaN; })`);
+    if (!bits.every((b, i) => i === 0 || b < bits[i - 1])) extra.push("article lattices: bits a block by lattice " + bits.join(", ") + ", expected falling from Λ1 to Λ4");
+    const lit = await ev(`(() => {
+      const k = document.querySelector('.ns-key[data-key="L2"]');
+      if (!k) return "no key L2 in the text";
+      k.dispatchEvent(new MouseEvent("mouseenter"));
+      const on = [...${F}.querySelectorAll("rect.block.is-key")];
+      const all = ${F}.querySelectorAll('rect.block[data-lattice="2"]').length;
+      k.dispatchEvent(new MouseEvent("mouseleave"));
+      return on.length === all && all > 0 && on.every(b => b.dataset.lattice === "2") ? "" : on.length + " blocks lit for " + all + " Λ2 blocks";
+    })()`);
+    if (lit) extra.push("article lattices: the key Λ2: " + lit);
+  }
+}
+
 // The CV prints as a CV: the site's furniture gone, a letterhead in its
 // place, and nothing left at the opacity the scroll reveals start from.
 // tools/cv-pdf.sh prints exactly this to the PDFs the pages link to.

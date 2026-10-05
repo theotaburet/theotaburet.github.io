@@ -104,6 +104,40 @@ Back in pixels, the eye can hardly tell them apart. The numbers can. Inside a bl
 
 A detector that looks at the picture relative to the 8×8 grid, as phase-aware features such as DCTR do, sees this at once. The paper measures it with $P_E$, the error of the best detector, from 0 % (always caught) to 50 % (a coin toss). Drawn coefficient by coefficient, the signal is caught every time at QF 100, $P_E = 0.0\,\%$. Drawing each block's 64 coefficients jointly but the blocks independently of each other does no better. J-Cov-NS, which ties the blocks together, stays at 42.9 %.
 
+## Four lattices of blocks
+
+Drawing a whole photograph at once would take a covariance with as many rows as the picture has coefficients: millions. The paper draws one block at a time instead, given the neighbours already drawn, and only the eight that touch it: past them, as the previous figures showed, nothing is shared. The order matters, and the paper settles it with four interleaved lattices, <span class="ns-key" data-key="L1">Λ1</span>, <span class="ns-key" data-key="L2">Λ2</span>, <span class="ns-key" data-key="L3">Λ3</span> and <span class="ns-key" data-key="L4">Λ4</span>, drawn one after the other. That is the chain rule:
+
+$$p(\Lambda_1, \Lambda_2, \Lambda_3, \Lambda_4) = p(\Lambda_1)\; p(\Lambda_2 \mid \Lambda_1)\; p(\Lambda_3 \mid \Lambda_1, \Lambda_2)\; p(\Lambda_4 \mid \Lambda_1, \Lambda_2, \Lambda_3).$$
+
+<section class="ns-scrolly l-page" data-fig="lattices" markdown="1">
+<figure class="ns-fig" data-quiet>
+<div class="ns-canvas"></div>
+<figcaption>The blocks of a JPEG in the four lattices of the paper's Fig. 10, drawn one lattice after the other. Hover a block to see what it is drawn given; with the reach on, everything it depends on in the end. Bits a block on a flat grey patch at QF 100.</figcaption>
+</figure>
+<div class="ns-steps" markdown="1">
+<div class="ns-step" markdown="1">
+Here are 12 by 8 blocks, nothing drawn yet. Each block will be drawn given the blocks around it that are already drawn, and only those.
+</div>
+<div class="ns-step" markdown="1">
+<span class="ns-key" data-key="L1">Λ1</span> first: every other block on every other row. No two of them touch, not even at a corner, so each is drawn on its own law, given nothing. A quarter of the picture, all at once.
+</div>
+<div class="ns-step" markdown="1">
+<span class="ns-key" data-key="L2">Λ2</span> next, the blocks diagonally between them. Each meets four Λ1 blocks at its corners, already drawn, and is drawn given those. Corners share few photosites, so it loses little.
+</div>
+<div class="ns-step" markdown="1">
+<span class="ns-key" data-key="L3">Λ3</span> fills the gaps along the rows. Its four sides, two Λ1 blocks and two Λ2 blocks, are all drawn, and sides share a whole row of photosites: its law narrows, and it carries a quarter less.
+</div>
+<div class="ns-step" markdown="1">
+<span class="ns-key" data-key="L4">Λ4</span>, the last quarter, is surrounded. All eight of its neighbours are known, and it is drawn given them all, with the narrowest law and the fewest bits. Turn on the reach to see how far back a single Λ4 block depends.
+</div>
+</div>
+</section>
+
+<aside class="l-gutter" markdown="1">
+Conditioning has a cost in time too. The paper draws about 4000 Λ1 blocks a second, 30 for Λ2 and Λ3, 10 for Λ4: 171 s for a 512×512 picture.
+</aside>
+
 *Draft: the rest of the article is on its way. This is one of its figures.*
 
 ## The draw, in miniature

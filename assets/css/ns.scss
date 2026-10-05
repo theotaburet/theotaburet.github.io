@@ -34,6 +34,13 @@
   align-items: start;
   counter-reset: ns-fig;
 
+  // A long equation scrolls in its own box on a phone, not the page.
+  mjx-container[display='true'] {
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-width: 100%;
+  }
+
   > * {
     grid-column: body;
   }

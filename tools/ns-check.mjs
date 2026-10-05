@@ -236,6 +236,10 @@ const rel = (a, b) => Math.abs(a - b) / Math.abs(b);
   const avg = L => e.perLattice[L].reduce((a, b) => a + b, 0) / e.perLattice[L].length;
   report("every lattice gets blocks", [1, 2, 3, 4].every(L => e.perLattice[L].length > 0), [1, 2, 3, 4].map(L => e.perLattice[L].length).join("/"));
   report("conditioning costs capacity: Λ1 blocks carry more than Λ4 ones", avg(1) > avg(4), avg(1).toFixed(1) + " > " + avg(4).toFixed(1) + " bits a block");
+  // The lattices figure shows these averages without the half second it takes
+  // to work them out; they must stay what this embedding gives.
+  const { BITS } = await import("../assets/js/ns/fig-lattices.js");
+  report("the lattices figure's bits a block are this embedding's", [1, 2, 3, 4].every(L => Math.abs(BITS[L] - avg(L)) < 0.05), [1, 2, 3, 4].map(L => avg(L).toFixed(1)).join(" "));
   let dark;
   try {
     dark = N.embed(new Float64Array((8 * B + 2) ** 2).fill(900), B, vOf, new Array(64).fill(256), 5, N.rng(4));
