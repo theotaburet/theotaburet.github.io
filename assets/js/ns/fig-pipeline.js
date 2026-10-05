@@ -205,7 +205,7 @@ export function mount(el, ctx) {
     if (!animate || from === i) return;
     // The picture before dissolves into this one.
     paint(ghost, from);
-    playing.push(gsap.fromTo(ghost.node(), { opacity: 1 }, { opacity: 0, duration: 0.9, ease: "power1.inOut" }));
+    playing.push(gsap.fromTo(ghost.node(), { opacity: 1 }, { opacity: 0, duration: 0.9, ease: "power1.inOut", onComplete: () => ghost.selectAll("*").remove() }));
     playing.push(gsap.from(now.node(), { opacity: 0, duration: 0.6 }));
     // Demosaicking: the kernel's nine pixels light up from the centre out.
     if (i === 1) {

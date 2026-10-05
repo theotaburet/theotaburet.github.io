@@ -1128,6 +1128,27 @@ if (ARTICLE_UP) {
     return out;
   })()`);
   if (tiny.length) extra.push("phone: figure text under 11px: " + tiny.slice(0, 4).join(" | ") + (tiny.length > 4 ? " (+" + (tiny.length - 4) + ")" : ""));
+  // Text a phone makes bigger must not run into other text.
+  const clash = await ev(`(async () => {
+    const out = [];
+    for (const fig of document.querySelectorAll(".ns-inline, .ns-scrolly")) {
+      fig.scrollIntoView({ block: "center", behavior: "instant" });
+      await new Promise(r => setTimeout(r, 2500)); // past any entrance: a dissolve overlaps on purpose
+      const svg = fig.querySelector(".ns-canvas svg");
+      if (!svg) continue;
+      const seen = t => { for (let e = t; e && e !== svg; e = e.parentElement) if (getComputedStyle(e).opacity === "0" || e.getAttribute("opacity") === "0") return false; return true; };
+      const boxes = [...svg.querySelectorAll("text")].filter(seen).map(t => [t, t.getBoundingClientRect()]).filter(([, b]) => b.width && b.height);
+      for (let i = 0; i < boxes.length; i++) {
+        for (let j = i + 1; j < boxes.length; j++) {
+          const [a, p] = boxes[i], [b, q] = boxes[j];
+          const w = Math.min(p.right, q.right) - Math.max(p.left, q.left), h = Math.min(p.bottom, q.bottom) - Math.max(p.top, q.top);
+          if (w > 2 && h > 2) out.push(fig.dataset.fig + ": '" + a.textContent.slice(0, 14) + "' on '" + b.textContent.slice(0, 14) + "'");
+        }
+      }
+    }
+    return out;
+  })()`);
+  if (clash.length) extra.push("phone: figure text runs into other text: " + clash.slice(0, 4).join(" | ") + (clash.length > 4 ? " (+" + (clash.length - 4) + ")" : ""));
 }
 await send("Emulation.setTouchEmulationEnabled", { enabled: false });
 await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 800, deviceScaleFactor: 1, mobile: false });

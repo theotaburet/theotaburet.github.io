@@ -9,7 +9,8 @@
 const DATA = new URL("../../data/ns/noise.json", import.meta.url);
 const W = 560;
 const H = 380;
-const PAD = { l: 84, r: 16, t: 56, b: 48 }; // room on the left for the ticks and the axis title
+const PAD = { l: 84, r: 16 }; // room on the left for the ticks and the axis title
+const BOTTOM = 332; // the x axis; what is above and below it follows the text size
 
 export function mount(el, ctx) {
   const { d3, gsap } = ctx;
@@ -55,21 +56,22 @@ export function mount(el, ctx) {
     if (!n) return;
     const c = ctx.colors();
     const fs = ctx.textSize(svg.node());
-    svg.selectAll("*").remove();
+    const top = 22 + fs * 2.8; // under the legend and the line beneath it
+    svg.attr("viewBox", "0 0 " + W + " " + Math.ceil(BOTTOM + fs * 3.2)).selectAll("*").remove();
     const da = n.iso200.a - n.iso100.a;
     const db = n.iso200.b - n.iso100.b;
     const line = (f, m) => f.a * m + f.b;
     const all = n.iso100.bins.concat(n.iso200.bins);
     const x = d3.scaleLinear([d3.min(all, p => p[0]) * 0.98, d3.max(all, p => p[0]) * 1.02], [PAD.l, W - PAD.r]);
-    const y = d3.scaleLinear([0, d3.max(all, p => p[1]) * 1.12], [H - PAD.b, PAD.t]);
+    const y = d3.scaleLinear([0, d3.max(all, p => p[1]) * 1.12], [BOTTOM, top]);
     const [m0, m1] = x.domain();
 
     // The axes, in ink.
     const ax = g => g.selectAll("text").attr("fill", c.ink).attr("font-size", fs);
-    svg.append("g").attr("transform", "translate(0," + (H - PAD.b) + ")").call(d3.axisBottom(x).ticks(6)).call(ax).call(g => g.selectAll("line, path").attr("stroke", c.muted));
-    svg.append("g").attr("transform", "translate(" + PAD.l + ",0)").call(d3.axisLeft(y).ticks(5)).call(ax).call(g => g.selectAll("line, path").attr("stroke", c.muted));
-    svg.append("text").attr("x", (PAD.l + W - PAD.r) / 2).attr("y", H - 10).attr("text-anchor", "middle").attr("fill", c.ink).attr("font-size", fs).text("photosite value (14-bit, black level included)");
-    svg.append("text").attr("transform", "rotate(-90)").attr("x", -(PAD.t + H - PAD.b) / 2).attr("y", fs + 2).attr("text-anchor", "middle").attr("fill", c.ink).attr("font-size", fs).text("noise variance");
+    svg.append("g").attr("transform", "translate(0," + BOTTOM + ")").call(d3.axisBottom(x).ticks(6)).call(ax).call(g => g.selectAll("line, path").attr("stroke", c.muted));
+    svg.append("g").attr("transform", "translate(" + PAD.l + ",0)").call(d3.axisLeft(y).ticks(5).tickFormat(v => (v ? d3.format("~s")(v) : "0"))).call(ax).call(g => g.selectAll("line, path").attr("stroke", c.muted));
+    svg.append("text").attr("x", (PAD.l + W - PAD.r) / 2).attr("y", BOTTOM + fs * 2.7).attr("text-anchor", "middle").attr("fill", c.ink).attr("font-size", fs).text("photosite value (14-bit, black level included)");
+    svg.append("text").attr("transform", "rotate(-90)").attr("x", -(top + BOTTOM) / 2).attr("y", fs + 2).attr("text-anchor", "middle").attr("fill", c.ink).attr("font-size", fs).text("noise variance");
 
     // The room for the payload: the band between the two lines, as it fills.
     if (t > 0) {
@@ -104,7 +106,7 @@ export function mount(el, ctx) {
       svg.append("circle").attr("cx", PAD.l + 8 + i * 90).attr("cy", 18).attr("r", 5).attr("fill", fill);
       svg.append("text").attr("x", PAD.l + 18 + i * 90).attr("y", 22).attr("fill", c.ink).attr("font-size", fs).text(label);
     });
-    svg.append("text").attr("x", W - PAD.r).attr("y", 22).attr("text-anchor", "end").attr("fill", c.ink).attr("font-size", fs)
+    svg.append("text").attr("x", W - PAD.r).attr("y", 22 + fs * 1.5).attr("text-anchor", "end").attr("fill", c.ink).attr("font-size", fs)
       .text("a₂ − a₁ = " + da.toFixed(2) + " here, 1.15 in the paper");
   }
 
