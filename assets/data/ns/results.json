@@ -1,0 +1,19 @@
+{
+  "source": "Taburet, Bas, Sawaya, Fridrich, Natural steganography in JPEG domain with a linear development pipeline, IEEE TIFS 2020: Table I (DCTR, linear classifier), Table III (SRNet), Table IV (alphabet), Fig. 13a (read off the plot)",
+  "qf": [100, 95, 85, 75],
+  "payload": [2.0, 2.2, 2.4, 7.0],
+  "tableI": {
+    "jcovns": [42.9, 41.2, 41.2, 41.6],
+    "pseudo": [40.2, 40.9, 41.9, 41.3],
+    "scaling": [13.9, 30.3, 39.8, 40.4],
+    "independent": [0.0, 0.5, 10.8, 27.0],
+    "intra": [0.0, 0.2, 15.8, 25.2],
+    "siuniward": [0.0, 0.4, 12.3, 24.8]
+  },
+  "srnet": [37.4, 31.2, null, 35.0],
+  "alphabet": {
+    "K": [1, 2, 3, 5],
+    "pe": [[1.0, 12.9, 28.7, 40.4], [3.5, 23.6, 39.3, 40.9], [39.8, 39.8, 39.8, 41.8], [40.4, 40.4, 40.4, 41.2]]
+  },
+  "bpp": { "100": 0.45, "95": 0.2 }
+}

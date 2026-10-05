@@ -914,6 +914,37 @@ if (ARTICLE_UP) {
   }
 }
 
+// The results: every point shown is the paper's number, as results.json
+// copies it; narrowing the alphabet to K = 1 sinks J-Cov-NS at QF 100 to
+// 1.0 %.
+if (ARTICLE_UP) {
+  await open(ARTICLE, []);
+  const F = `document.querySelector('.ns-inline[data-fig="results"]')`;
+  const ok = await ev(`(async () => { const f = ${F}; if (!f) return false; f.scrollIntoView({ block: "center", behavior: "instant" }); await new Promise(r => setTimeout(r, 1500)); return f.querySelectorAll(".pe").length > 0; })()`);
+  if (!ok) extra.push("article: no results figure with its points");
+  else {
+    const compare = `(async () => {
+      const r = await (await fetch("/assets/data/ns/results.json")).json();
+      const k = r.alphabet.K.indexOf(+${F}.querySelector('input[type="range"]').dataset.k);
+      const want = (s, qf) => {
+        const i = r.qf.indexOf(qf);
+        if (s === "srnet") return r.srnet[i];
+        if (s === "alphabet") return r.alphabet.pe[i][k];
+        return r.tableI[s] ? r.tableI[s][i] : undefined;
+      };
+      return [...${F}.querySelectorAll(".pe")].filter(p => +p.dataset.pe !== want(p.dataset.series, +p.dataset.qf)).map(p => p.dataset.series + " QF " + p.dataset.qf + ": " + p.dataset.pe);
+    })()`;
+    const wrong = await ev(compare);
+    if (wrong.length) extra.push("article results: points that are not the paper's: " + wrong.slice(0, 4).join(", "));
+    await ev(`(() => { const s = ${F}.querySelector('input[type="range"]'); s.value = 0; s.dispatchEvent(new Event("input", { bubbles: true })); })()`);
+    await wait(300);
+    const low = await ev(`(() => { const p = ${F}.querySelector('.pe[data-series="alphabet"][data-qf="100"]'); return p ? +p.dataset.pe : null; })()`);
+    if (low !== 1.0) extra.push("article results: with K = 1, J-Cov-NS at QF 100 shows " + low + ", the paper says 1.0 %");
+    const wrongAfter = await ev(compare);
+    if (wrongAfter.length) extra.push("article results: with K = 1, points that are not the paper's: " + wrongAfter.slice(0, 4).join(", "));
+  }
+}
+
 // The CV prints as a CV: the site's furniture gone, a letterhead in its
 // place, and nothing left at the opacity the scroll reveals start from.
 // tools/cv-pdf.sh prints exactly this to the PDFs the pages link to.

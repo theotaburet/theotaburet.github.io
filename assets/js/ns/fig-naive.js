@@ -84,7 +84,7 @@ export function mount(el, ctx) {
       paint();
     });
   d3.select(el).append("p").attr("class", "ns-view-label").style("text-align", "center")
-    .text("In the paper, drawn each on its own, the signal is caught every time at QF 100: P_E = 0.0 %, against 42.9 % for J-Cov-NS (Table I).");
+    .html("In the paper, drawn each on its own, the signal is caught every time at QF 100: P<sub>E</sub> = 0.0 %, against 42.9 % for J-Cov-NS (Table I).");
 
   function paint() {
     const c = ctx.colors();

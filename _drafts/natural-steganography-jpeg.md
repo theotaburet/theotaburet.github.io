@@ -163,6 +163,23 @@ What a coefficient carries is the entropy of its PMF, and the block's capacity i
 </div>
 </section>
 
+## How much it carries
+
+The paper measures security as the field does. It trains the best detector it can on thousands of pairs of pictures, one with a message and one without, and reports the detector's error, $P_E$. At 50 %, the detector is guessing.
+
+<figure class="ns-inline l-page" data-fig="results" data-quiet>
+<div class="ns-canvas"></div>
+<figcaption>The detector's error $P_E$ on E1Base for each way of drawing the stego signal, by JPEG quality, with the payload under each quality (Table I of the paper, DCTR features and a linear classifier). Hollow points: J-Cov-NS against SRNet, a deep detector (Table III), and with an alphabet of $2K+1$ integers (Table IV), $K$ on the slider. Hover a point for its value.</figcaption>
+</figure>
+
+At QF 100, J-Cov-NS hides 2 bits in every non-zero AC coefficient, and the detector is wrong 42.9 % of the time: barely better than a coin toss. In the same test, SI-UNIWARD, a classic adaptive scheme that hides by changing as little as it can, is caught every time with half that payload. Drawing the coefficients independently, or the blocks independently, is caught every time too. Against SRNet, a deep detector, J-Cov-NS still keeps 31 to 37 %.
+
+The alphabet has to be wide enough as well. Each coefficient is drawn among the $2K+1$ integers around the centre of its law; with $K = 1$, too few to follow the tails of the Gaussian, the detector catches J-Cov-NS at QF 100 99 times out of 100. With $K = 5$ it is back to 40 %.
+
+<aside class="l-gutter" markdown="1">
+bpnzAC: bits per non-zero AC coefficient, the usual unit of JPEG steganography. It counts the payload against the coefficients a scheme could change.
+</aside>
+
 *Draft: the rest of the article is on its way. This is one of its figures.*
 
 ## The draw, in miniature
