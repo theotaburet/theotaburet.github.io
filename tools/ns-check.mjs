@@ -293,7 +293,8 @@ const rel = (a, b) => Math.abs(a - b) / Math.abs(b);
     const da = noise.iso200.a - noise.iso100.a;
     report("noise grows with brightness, and faster at ISO 200", noise.iso100.a > 0 && noise.iso200.a > noise.iso100.a);
     report("the slope gap estimated here is near the paper's 1.15", Math.abs(da - 1.15) < 0.5, "Δa = " + da.toFixed(2));
-    report("the hook's crop carries something", hook.bits > 1000 && hook.size === 256, (hook.bits / 8192).toFixed(1) + " KB");
+    report("the hook's crop could carry something", hook.bits > 1000 && hook.size === 256, (hook.bits / 8000).toFixed(2) + " KB");
+    report("its KB are of 1000 bytes, as the page says", Math.abs(hook.kbytes - hook.bits / 8000) < 0.006, hook.kbytes + " KB for " + Math.round(hook.bits) + " bits");
     const side = f => {
       const b = fs.readFileSync(at(f));
       return b.toString("ascii", 1, 4) === "PNG" ? b.readUInt32BE(16) + "×" + b.readUInt32BE(20) : "not a PNG";

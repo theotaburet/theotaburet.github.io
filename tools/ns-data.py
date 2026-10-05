@@ -109,11 +109,11 @@ def main():
     k = 127 / (4 * d.std() or 1)
     Image.fromarray(np.clip(128 + k * d, 0, 255).round().astype(np.uint8)).save(os.path.join(OUT, "diff.png"), optimize=True)
 
-    json.dump({"size": SIDE, "qf": 100, "bits": meta["bits"], "kbytes": round(meta["bits"] / 8192, 2),
+    json.dump({"size": SIDE, "qf": 100, "bits": meta["bits"], "kbytes": round(meta["bits"] / 8000, 2),
                "blocks": {"drawn": meta["drawn"], "total": meta["total"]},
                "crop": {k: list(map(int, v)) for k, v in at.items()}},
               open(os.path.join(OUT, "hook.json"), "w"))
-    print("noise and crops written;", meta["drawn"], "blocks embedded,", round(meta["bits"] / 8192, 2), "KB, in", meta["ms"], "ms")
+    print("noise and crops written;", meta["drawn"], "blocks embedded,", round(meta["bits"] / 8000, 2), "KB, in", meta["ms"], "ms")
 
 
 if __name__ == "__main__":

@@ -20,9 +20,9 @@ Two photographs of the same piece of cloth. One was taken at ISO 200. The other 
 
 The second crop is the work of *natural steganography*: a message is hidden not in changes too small to see, but in a whole layer of noise that the camera could have made itself. This article explains the scheme my co-authors and I published in IEEE TIFS{% include ns-cite.html key="taburet2021" %}, J-Cov-NS, from the sensor to the JPEG file.
 
-One number runs through it: how much a picture can carry. In the paper's tests, SI-UNIWARD, a classic JPEG scheme, is caught every time at QF 100 with one bit per non-zero AC coefficient. J-Cov-NS carries two, and the same detector errs 43 % of the time, where a coin toss would err 50 %. Getting there means following the noise through demosaicking and the DCT, finding the dependencies that creates, and drawing a signal that respects them.
+One number runs through it: how much a picture can carry. In the paper's tests, SI-UNIWARD, a classic JPEG scheme, is caught every time at QF 100 with one bit per non-zero AC coefficient. J-Cov-NS carries two on average, and the same detector errs 43 % of the time, where a coin toss would err 50 %. Getting there means following the noise through demosaicking and the DCT, finding the dependencies that creates, and drawing a signal that respects them.
 
-The figures compute what they show, in your browser, from the paper's RAW files and its maths. The embedding is simulated, as in the paper: the bits are counted, not written.
+Most figures compute what they show, in your browser, from the paper's maths and two of its RAW files; the last one charts the paper's own tables. The embedding is simulated, as in the paper: the bits are counted, not written.
 
 ## The sensor's noise is a budget
 
@@ -40,7 +40,7 @@ $$S \sim \mathcal{N}\big(0,\ (a_2 - a_1)\,x + b_2 - b_1\big),$$
 so that the result is distributed as an ISO 200 shot of the same scene would be: equal in distribution, in the paper's words (eq. 8), as long as the photosite's value is close to its expectation.[^dark] Nothing is hidden by keeping the changes small. A whole layer of noise is added, and it is allowed to be there: the only limit on how much it can carry is the gap between the two ISOs.
 
 <aside class="l-gutter" markdown="1">
-Two RAW files are not much to measure a sensor with. The paper fits $a$ and $b$ over the whole of E1Base, 10,800 crops, and finds $a_2 - a_1 = 1.15$ and $b_2 - b_1 = -1150$.
+Two RAW files are not much to measure a sensor with. The values the paper uses for E1Base, the database of its experiments, are $a_2 - a_1 = 1.15$ and $b_2 - b_1 = -1150$.
 </aside>
 
 ## From photosites to JPEG coefficients
@@ -98,7 +98,7 @@ Pick a coefficient of the centre block. It moves most with the other coefficient
 The picture on the right says why. It is the chosen coefficient's column of $\Sigma$ put back through the inverse DCT: what knowing that one coefficient tells about each pixel around. Inside its block, its own waveform. Past each side, a trace one or two pixels deep, where the neighbouring block was demosaicked from the same photosites as the edge of this one. Nothing reaches the diagonal blocks but a corner.
 
 <aside class="l-gutter" markdown="1">
-Under the loupe, $\Sigma$ is a $576\times576$ matrix: 64 coefficients for each of 9 blocks, in the paper's order, centre first, then N, W, E, S and the diagonals.
+Under the loupe, $\Sigma$ is a $576\times576$ matrix: 64 coefficients for each of 9 blocks, in the reference code's order: centre first, then N, W, E, S and the diagonals.
 
 The reference code multiplies $v$ by 16. The RAW files hold 14-bit values, the JPEG side works on 16-bit ones, and a factor of 4 on the signal is a factor of 16 on its variance. The figures here do the same.
 </aside>
@@ -146,7 +146,7 @@ Here are 12 by 8 blocks, nothing drawn yet. Each block will be drawn given the b
 </div>
 </section>
 
-The figure's bits per block come from a flat, bright patch, where the noise is strong. On the photographs of E1Base, darker on average, the paper's Fig. 14 gives about 0.8 bit per pixel for Λ1 down to 0.4 for Λ4, at QF 100. The fall from one lattice to the next is the same.
+The figure's bits per block come from a flat, bright patch (6000 DN), where the noise is strong. The paper's Fig. 14, on a synthetic flat image, gives about 0.8 bit per pixel for Λ1 down to 0.4 for Λ4 at QF 100: the same fall from one lattice to the next, in the same order.
 
 <aside class="l-gutter" markdown="1">
 Conditioning has a cost in time too. The paper draws about 4000 Λ1 blocks a second, 30 for Λ2 and Λ3, 10 for Λ4: 171 s for a 512×512 picture.
@@ -216,18 +216,18 @@ What a coefficient carries is the entropy of its PMF, and the block's capacity i
 
 ## How much it carries
 
-The paper measures security as the field does. It trains the best detector it can on thousands of pairs of pictures, one with a message and one without, and reports the detector's error, $P_E$. At 50 %, the detector is guessing.
+The paper measures security as the field does. It trains the best detector it can to tell apart 5,400 pairs of equivalent scenes, one shot at ISO 200, the other shot at ISO 100 and given the stego signal. Then it reports the detector's error, $P_E$, on 5,400 more pairs. At 50 %, the detector is guessing.
 
 <figure class="ns-inline l-page" data-fig="results" data-quiet>
 <div class="ns-canvas"></div>
 <figcaption>The detector's error $P_E$ on E1Base for each way of drawing the stego signal, by JPEG quality, with the payload under each quality (Table I of the paper, DCTR features and a linear classifier). Hollow points: J-Cov-NS against SRNet, a deep detector (Table III), and with an alphabet of $2K+1$ integers (Table IV), $K$ on the slider. Hover a point for its value.</figcaption>
 </figure>
 
-At QF 100, J-Cov-NS hides 2 bits in every non-zero AC coefficient, and the detector is wrong 42.9 % of the time: barely better than a coin toss. In the same test, SI-UNIWARD{% include ns-cite.html key="holub2014" %}, a classic adaptive scheme that hides by changing as little as it can, is caught every time with half that payload.
+At QF 100, J-Cov-NS has room for 2 bits per non-zero AC coefficient on average, and the detector is wrong 42.9 % of the time: barely better than a coin toss. In the same test, SI-UNIWARD{% include ns-cite.html key="holub2014" %}, a classic adaptive scheme that hides by changing as little as it can, is caught every time with half that payload.
 
 The other points are other ways of drawing the stego signal, all from the paper's Table I. *Pseudo-embedding* adds the noise on the photosites and develops the result, as a camera would. It carries no message, but it is the reference for what the noise should look like, and J-Cov-NS matches it. *Covariance scaling*, our earlier scheme{% include ns-cite.html key="taburet2019ei" %}, estimated $\Sigma$ once on a flat picture and scaled it by each block's average colour: good enough at QF 85 and 75, caught far more often at 100 and 95. Coefficients drawn independently, from histograms learnt mode by mode{% include ns-cite.html key="denemark2018" %}, and blocks drawn independently with their inner correlations kept, are both caught every time at QF 100. Against SRNet{% include ns-cite.html key="boroumand2019" %}, a deep detector, J-Cov-NS still keeps 31 to 37 %.
 
-In bits per pixel, J-Cov-NS carries about 0.45 at QF 100 and 0.2 at QF 95 on E1Base (the paper's Fig. 13a, read off the plot): some 15 KB in a 512×512 picture at QF 100, and 6.5 KB at QF 95. The crop at the top of this page, brighter than the average, could carry almost 5 KB in 256×256 pixels. At the same rate, a 16-megapixel photograph would carry close to a megabyte; that is an extrapolation, not a measurement.
+In bits per pixel, J-Cov-NS carries about 0.45 at QF 100 and 0.2 at QF 95 on E1Base (the paper's Fig. 13a, read off the plot): some 15 KB in a 512×512 picture at QF 100, and 6.5 KB at QF 95. The crop at the top of this page could carry about 5 KB in 256×256 pixels, more per pixel than E1Base's average. At the same rate, a 16-megapixel photograph would carry close to a megabyte; that is an extrapolation, not a measurement.
 
 The alphabet has to be wide enough as well. Each coefficient is drawn among the $2K+1$ integers around the centre of its law; with $K = 1$, too few to follow the tails of the Gaussian, the detector catches J-Cov-NS at QF 100 99 times out of 100. With $K = 5$ it is back to 40 %.
 
@@ -241,13 +241,13 @@ None of this comes free.
 
 - **It needs the RAW.** The stego signal lives on the photosites, so the sender must hold the RAW file, know the sensor's noise at both ISOs, and develop the picture with a known pipeline: here, as in the paper, bilinear demosaicking and a greyscale JPEG.
 - **It is slow.** Each block needs its own conditional law and its own Cholesky factor: 171 s for a 512×512 picture in the paper, with Λ4 blocks drawn at 10 a second.
-- **The alphabet must be wide.** Each coefficient is drawn among 11 integers; with 3, the scheme is caught at QF 100.
+- **The alphabet must be wide.** This page draws each coefficient among 11 integers ($K = 5$); with 3, the scheme is caught at QF 100.
 - **Deep detectors do better.** SRNet brings $P_E$ down to 31–37 %: far from caught, no longer a coin toss.
 - **The embedding is simulated.** Here, as in the paper's experiments, the capacity is the sum of the entropies of the PMFs, and the draws are what a perfect code would produce. A real message would be written with multi-layered syndrome-trellis codes{% include ns-cite.html key="filler2011" %}, which come close to that bound, with costs derived from the same probabilities.
 
 ## Going further
 
-The paper{% include ns-cite.html key="taburet2021" %} has what this article leaves out: the full construction of $M$, the derivation of the conditional laws, and more experiments. Around it, other pieces of the same work: an empirical study of colour JPEG steganography and steganalysis{% include ns-cite.html key="taburet2018iwdw" %}; the computation of dependencies between DCT coefficients{% include ns-cite.html key="taburet2019ihmmsec" %}, which this scheme builds on; the synchronisation of DCT coefficients for a given development pipeline{% include ns-cite.html key="taburet2020ihmmsec" %}, the same idea for adaptive schemes; and the thesis that gathers them{% include ns-cite.html key="taburet2020thesis" %}, in French. The reference code and notebooks{% include ns-cite.html key="taburet2024notebooks" %} reproduce the paper's figures, and E1Base holds the 10,800 RAW crops of its experiments; the links are in the appendix.
+The paper{% include ns-cite.html key="taburet2021" %} has what this article leaves out: the full construction of $M$, the derivation of the conditional laws, and more experiments. Around it, other pieces of the same work: an empirical study of colour JPEG steganography and steganalysis{% include ns-cite.html key="taburet2018iwdw" %}; the computation of dependencies between DCT coefficients{% include ns-cite.html key="taburet2019ihmmsec" %}, which this scheme builds on; the synchronisation of DCT coefficients for a given development pipeline{% include ns-cite.html key="taburet2020ihmmsec" %}, the same idea for adaptive schemes; and the thesis that gathers them{% include ns-cite.html key="taburet2020thesis" %}, in French. The reference code and notebooks{% include ns-cite.html key="taburet2024notebooks" %} accompany the paper, and E1Base holds the 10,800 crops of its experiments, cut from 200 RAW photographs; the links are in the appendix.
 
 {% include ns-appendix.html %}
 

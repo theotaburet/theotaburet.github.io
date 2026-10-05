@@ -924,9 +924,19 @@ if (ARTICLE_UP) {
     // A new draw leaves the page free, on a phone's CPU too: the 576-dimension
     // maths runs in a worker, not in the click.
     await send("Emulation.setCPUThrottlingRate", { rate: 4 });
-    const ms = await ev(`(() => { const t = performance.now(); ${F}.querySelector(".ns-controls button").click(); return performance.now() - t; })()`);
+    const long = await ev(`(async () => {
+      const seen = [];
+      const po = new PerformanceObserver(l => l.getEntries().forEach(e => seen.push(Math.round(e.duration))));
+      po.observe({ type: "longtask" });
+      const before = ${F}.querySelector(".h-total")?.textContent;
+      ${F}.querySelector(".ns-controls button").click();
+      for (let k = 0; k < 100 && ${F}.querySelector(".h-total")?.textContent === before; k++) await new Promise(r => setTimeout(r, 50));
+      await new Promise(r => setTimeout(r, 200));
+      po.disconnect();
+      return seen;
+    })()`);
     await send("Emulation.setCPUThrottlingRate", { rate: 1 });
-    if (ms > 50) extra.push("article block: a new draw holds the page for " + Math.round(ms) + " ms at a phone's speed");
+    if (long.length) extra.push("article block: a new draw holds the page for " + long.join(", ") + " ms at a phone's speed");
   }
 }
 
@@ -1002,6 +1012,24 @@ if (ARTICLE_UP) {
     else if (r) extra.push("article " + what + ": " + r);
   }
   await send("Emulation.setFocusEmulationEnabled", { enabled: false });
+  const tip = await ev(`(async () => {
+    const out = [];
+    const shown = () => { const t = document.querySelector('.ns-note[role="tooltip"]'); return t && !t.hidden && t.getClientRects().length ? t : null; };
+    const cite = document.querySelector(".content .ns-cite");
+    // iOS 18.2 labels a tap's click "mouse"; its pointerdown says "touch".
+    cite.scrollIntoView({ block: "center", behavior: "instant" });
+    await new Promise(r => setTimeout(r, 200));
+    const hash = location.hash;
+    cite.dispatchEvent(new PointerEvent("pointerdown", { pointerType: "touch", bubbles: true }));
+    const went = cite.dispatchEvent(new PointerEvent("click", { pointerType: "mouse", bubbles: true, cancelable: true }));
+    await new Promise(r => setTimeout(r, 100));
+    if (went || location.hash !== hash) out.push("a tap whose click says mouse follows the link");
+    if (!shown()) out.push("a tap whose click says mouse opens no bubble");
+    else if (!shown().querySelector('a[href$="' + cite.getAttribute("href") + '"]')) out.push("the bubble has no way to the reference");
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    return out;
+  })()`);
+  tip.forEach(x => extra.push("article bubble: " + x));
 }
 
 // The appendix, as on Distill: acknowledgements, the references the text
@@ -1076,6 +1104,13 @@ if (ARTICLE_UP) {
     const known = new Set([...document.querySelectorAll("[data-keys]")].flatMap(f => f.dataset.keys.split(" ")));
     const stray = [...new Set([...document.querySelectorAll(".ns-key[data-key]")].map(k => k.dataset.key))].filter(k => !known.has(k));
     if (stray.length) out.push("terms no figure knows: " + stray.join(" "));
+    // Claims the paper does not make, and words the simulated embedding forbids.
+    const text = document.querySelector(".content").textContent.replace(/’/g, "'");
+    [/darker on average/, /one with a message and one without/, /fits .{0,12}over the whole of E1Base/, /in the paper's order, centre first/, /hides 2 bits in every/, /The figures compute what they show/, /reproduce the paper's figures/, /brighter than the average/, /Each coefficient is drawn among 11/].forEach(r => { if (r.test(text)) out.push("says " + r); });
+    const hook = document.querySelector('.ns-inline[data-fig="hook"]');
+    hook.querySelector("[data-choice]")?.click();
+    await new Promise(r => setTimeout(r, 300));
+    if (/carries the payload|payload is in/.test(hook.querySelector(".ns-verdict")?.textContent || "")) out.push("the opening figure says a crop carries the payload");
     return out;
   })()`);
   if (t.length) extra.push("article text: " + t.join(", "));
@@ -1322,6 +1357,27 @@ if (ARTICLE_UP) {
     for (const type of ["touchStart", "touchEnd"]) await send("Input.dispatchTouchEvent", { type, touchPoints: type === "touchEnd" ? [] : [{ x: 20, y: cite.y > 300 ? 120 : 600 }] });
     await wait(400);
     if (await ev(bubble)) extra.push("phone: a tap elsewhere leaves the citation's bubble open");
+    // A bubble is measured where it will be, not where the last one was: one
+    // left by the right edge would squeeze the next to a column, which then
+    // widens past the screen.
+    const after = await ev(`(async () => {
+      const shown = () => { const t = document.querySelector('.ns-note[role="tooltip"]'); return t && !t.hidden && t.getClientRects().length ? t : null; };
+      const a = document.querySelector(".content .ns-cite");
+      a.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+      await new Promise(r => setTimeout(r, 50));
+      shown().style.left = innerWidth - 30 + scrollX + "px";
+      a.dispatchEvent(new MouseEvent("mouseleave", { bubbles: true }));
+      await new Promise(r => setTimeout(r, 400));
+      const n = document.querySelector(".content a.footnote");
+      n.scrollIntoView({ block: "center", behavior: "instant" });
+      await new Promise(r => setTimeout(r, 200));
+      n.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+      await new Promise(r => setTimeout(r, 100));
+      const b = shown()?.getBoundingClientRect();
+      n.dispatchEvent(new MouseEvent("mouseleave", { bubbles: true }));
+      return b ? [Math.round(b.left), Math.round(b.right), innerWidth] : null;
+    })()`);
+    if (after && (after[1] > after[2] - 4 || after[0] < 4)) extra.push("phone: a bubble opened after one by the right edge runs off the screen (" + after[0] + " to " + after[1] + ")");
   }
 }
 await send("Emulation.setTouchEmulationEnabled", { enabled: false });

@@ -98,8 +98,8 @@ export function mount(el) {
       answered = true;
       const right = pair[i] === "stego";
       verdict.textContent = right
-        ? "Yes: the " + side.toLowerCase() + " one carries the payload. Here is what it was made from."
-        : "No: the " + side.toLowerCase() + " one is a real ISO 200 photograph. The payload is in the other.";
+        ? "Yes: the " + side.toLowerCase() + " one is the one that could carry the payload. Here is what it was made from."
+        : "No: the " + side.toLowerCase() + " one is a real ISO 200 photograph. The other is the one that could carry the payload.";
       choices.remove();
       lay(["iso100", "iso200", "stego", "diff"], true);
       if (hook) payload(hook.kbytes);
