@@ -116,5 +116,71 @@ const rel = (a, b) => Math.abs(a - b) / Math.abs(b);
   report("knowing the neighbours never adds variance", C.cov.every((x, i) => i % 65 || x <= S[(i / 65) * (n + 1)] + 1e-9));
 }
 
+// --- Quantised sampling (sections V-C and V-D).
+{
+  let wp = 0;
+  for (const c of R.pmf) N.pmf(c.m, c.s, c.q, c.K).p.forEach((p, i) => (wp = Math.max(wp, Math.abs(p - c.p[i]))));
+  report("PMF of eq. (29) matches the reference", wp < 1e-12, "worst " + wp.toExponential(1));
+  const r = N.rng(3);
+  let ws = 0;
+  for (let t = 0; t < 200; t++) {
+    const p = N.pmf((r() - 0.5) * 20, 0.05 + r() * 5, 0.5 + r() * 4, 1 + Math.floor(r() * 6)).p;
+    ws = Math.max(ws, Math.abs(p.reduce((a, b) => a + b, 0) - 1));
+  }
+  report("a PMF always sums to 1", ws < 1e-12, "worst " + ws.toExponential(1));
+  report("Φ: 0.5 at 0, 0.975 at 1.96, symmetric",
+    Math.abs(N.Phi(0) - 0.5) < 1e-15 && Math.abs(N.Phi(1.959963984540054) - 0.975) < 1e-12 && Math.abs(N.Phi(-1.3) + N.Phi(1.3) - 1) < 1e-15);
+  report("entropy: a fair coin is 1 bit, eight equal outcomes 3",
+    Math.abs(N.entropy([0.5, 0.5]) - 1) < 1e-15 && Math.abs(N.entropy(new Array(8).fill(1 / 8)) - 3) < 1e-15);
+  const a = N.rng(9);
+  const b = N.rng(9);
+  const c = N.rng(10);
+  const sa = [a(), a(), a()].join();
+  report("the generator replays a seed, and another seed differs", sa === [b(), b(), b()].join() && sa !== [c(), c(), c()].join());
+
+  // A real block: Λ4, given its eight neighbours, at QF 100 (a step of 256 in
+  // the 16-bit domain of the reference).
+  const M3 = N.photositesToDct(3);
+  const S = N.covariance(M3, R.v);
+  for (let i = 0; i < 576; i++) S[i * 577] += 1e-3;
+  const C = N.conditional(S, 576, 64, R.obs);
+  const draw = N.sampleSequential(C.mean, C.cov, 64, new Array(64).fill(256), 5, N.rng(1));
+  const inBin = d => {
+    const t = d.ks.indexOf(d.k);
+    const lo = t === 0 ? -Infinity : (d.k - 0.5) * 256;
+    const hi = t === d.ks.length - 1 ? Infinity : (d.k + 0.5) * 256;
+    return d.x >= lo && d.x < hi;
+  };
+  report("rejection keeps a value in the square that was drawn, every time", draw.every(inBin));
+  report("and the value it keeps is the last one it tried", draw.every(d => d.tried[d.tried.length - 1] === d.x));
+  const far = N.sampleSequential([12, 0], Float64Array.from([1, 0, 0, 1]), 2, [0.25, 0.25], 6, N.rng(5));
+  report("the draw starts from the conditional mean it is given", Math.abs(far[0].x - 12) < 5 && Math.abs(far[1].x) < 5);
+
+  // The toy of §6a: ρ comes back from 20 000 draws in sequence; drawn each on
+  // its own, it does not; and the second, knowing the first, carries fewer bits.
+  const toy = (cov, seed) => {
+    const g = N.rng(seed);
+    let xy = 0;
+    let xx = 0;
+    let yy = 0;
+    let h2 = 0;
+    for (let i = 0; i < 20000; i++) {
+      const d = N.sampleSequential([0, 0], cov, 2, [0.25, 0.25], 20, g);
+      xy += d[0].x * d[1].x;
+      xx += d[0].x ** 2;
+      yy += d[1].x ** 2;
+      h2 += d[1].h;
+    }
+    return { rho: xy / Math.sqrt(xx * yy), h2: h2 / 20000 };
+  };
+  const joint = toy(Float64Array.from([1, 0.8, 0.8, 1]), 42);
+  const apart = toy(Float64Array.from([1, 0, 0, 1]), 43);
+  report("drawn in sequence, the toy recovers ρ = 0.8", Math.abs(joint.rho - 0.8) < 0.02, "ρ̂ = " + joint.rho.toFixed(3));
+  report("drawn each on its own, it does not", Math.abs(apart.rho) < 0.02, "ρ̂ = " + apart.rho.toFixed(3));
+  const marginal = N.entropy(N.pmf(0, 1, 0.25, 20).p);
+  report("conditioning costs bits: the second carries fewer than on its own", joint.h2 < marginal - 0.3,
+    joint.h2.toFixed(2) + " < " + marginal.toFixed(2) + " bits");
+}
+
 console.log(failures ? "\n" + failures + " problem(s)" : "\nall good");
 process.exit(failures ? 1 : 0);

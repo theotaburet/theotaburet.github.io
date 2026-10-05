@@ -165,3 +165,115 @@ export function conditional(S, n, k, obs) {
   }
   return { mean, cov };
 }
+
+// Standard normal CDF, to double precision (Hart's algorithm, as given by
+// West, "Better approximations to cumulative normal functions", 2005).
+export function Phi(x) {
+  const z = Math.abs(x);
+  let c = 0;
+  if (z <= 37) {
+    const e = Math.exp((-z * z) / 2);
+    if (z < 7.07106781186547) {
+      let n = 3.52624965998911e-2 * z + 0.700383064443688;
+      n = n * z + 6.37396220353165;
+      n = n * z + 33.912866078383;
+      n = n * z + 112.079291497871;
+      n = n * z + 221.213596169931;
+      n = n * z + 220.206867912376;
+      let d = 8.83883476483184e-2 * z + 1.75566716318264;
+      d = d * z + 16.064177579207;
+      d = d * z + 86.7807322029461;
+      d = d * z + 296.564248779674;
+      d = d * z + 637.333633378831;
+      d = d * z + 793.826512519948;
+      d = d * z + 440.413735824752;
+      c = (e * n) / d;
+    } else {
+      let b = z + 0.65;
+      b = z + 4 / b;
+      b = z + 3 / b;
+      b = z + 2 / b;
+      b = z + 1 / b;
+      c = e / b / 2.506628274631;
+    }
+  }
+  return x > 0 ? 1 - c : c;
+}
+
+// Eq. (29): the probability that N(m, s²), quantised with step q, lands on
+// each of the 2K+1 integers around round(m/q). The two outer bins take the
+// tails, so the probabilities sum to 1.
+export function pmf(m, s, q, K) {
+  const c = Math.round(m / q);
+  const ks = [];
+  const p = [];
+  for (let k = -K; k <= K; k++) {
+    const lo = k === -K ? -Infinity : (c + k - 0.5) * q;
+    const hi = k === K ? Infinity : (c + k + 0.5) * q;
+    ks.push(c + k);
+    p.push(Phi((hi - m) / s) - Phi((lo - m) / s));
+  }
+  return { ks, p };
+}
+
+// Shannon entropy, in bits: what one draw from p can carry.
+export function entropy(p) {
+  let h = 0;
+  for (const x of p) if (x > 0) h -= x * Math.log2(x);
+  return h;
+}
+
+// mulberry32: a small seeded generator, so a draw can be replayed.
+export function rng(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// A standard normal from a uniform generator (Box-Muller).
+export function gauss(rand) {
+  let u = 0;
+  while (!u) u = rand();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rand());
+}
+
+// Draws the n variables of N(mean, cov) one after the other, as the scheme
+// does inside a block (section V-C): each one's law given the ones before is
+// read off the Cholesky factor; its integer is picked from the PMF of that
+// law; then a continuous value that rounds to the integer is found again by
+// rejection, and the next variable is conditioned on it. Returns every step,
+// tries included, so a figure can replay them.
+export function sampleSequential(mean, cov, n, steps, K, rand) {
+  const L = cholesky(cov, n);
+  const z = new Float64Array(n); // the standard normals the draws amount to: s = mean + L z
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    let m = mean[i];
+    for (let j = 0; j < i; j++) m += L[i * n + j] * z[j];
+    const s = L[i * n + i];
+    const q = steps[i];
+    const { ks, p } = pmf(m, s, q, K);
+    let u = rand();
+    let t = 0;
+    while (t < p.length - 1 && u >= p[t]) u -= p[t++];
+    const k = ks[t];
+    const lo = t === 0 ? -Infinity : (k - 0.5) * q;
+    const hi = t === p.length - 1 ? Infinity : (k + 0.5) * q;
+    // ponytail: plain rejection, as the paper; it averages 2K+1 tries per
+    // variable, since a square is picked as often as it is likely.
+    const tried = [];
+    let x;
+    do {
+      x = m + s * gauss(rand);
+      tried.push(x);
+    } while (x < lo || x >= hi);
+    z[i] = (x - m) / s;
+    out.push({ m, s, ks, p, k, x, tried, h: entropy(p) });
+  }
+  return out;
+}
