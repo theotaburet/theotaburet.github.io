@@ -102,7 +102,7 @@ Le schéma découpe les coefficients DCT en quatre réseaux entrelacés et insè
 dans l'ordre, de sorte que chaque réseau puisse être conditionné par ceux déjà écrits.
 Survolez ou touchez une case pour voir ce dont elle dépend :
 
-<div id="dct-grid" data-cursor="grain" data-hint="Survolez ou touchez une case pour voir tout ce dont elle dépend." data-label="Un bloc 8 × 8 de coefficients DCT réparti en quatre réseaux entrelacés : A et C alternent sur les lignes impaires, D et B sur les lignes paires." data-legend="indépendant|dépend de A|dépend de A, B|dépend de A, B, C"></div>
+<div id="dct-grid" data-quiet data-hint="Survolez ou touchez une case pour voir tout ce dont elle dépend." data-label="Un bloc 8 × 8 de coefficients DCT réparti en quatre réseaux entrelacés : A et C alternent sur les lignes impaires, D et B sur les lignes paires." data-legend="indépendant|dépend de A|dépend de A, B|dépend de A, B, C"></div>
 <script src="{{ '/assets/js/block-dependency-grid.js' | relative_url }}"></script>
 
 Les articles sont sur la page [publications]({{ '/fr/publications/' | relative_url }}).

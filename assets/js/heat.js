@@ -34,7 +34,9 @@
   var BLOCK = 6; // px, the squares the headline is decoded in
   var READ = 1150; // ms the decode takes to cross the headline
   var LEAD = 0.16; // share of the headline that is noise ahead of the front
-  var SKIP = "a, button, input, textarea, select, summary, label, .footer-blocks";
+  var SKIP = "a, button, input, textarea, select, summary, label, .footer-blocks, [data-quiet]";
+  // A figure read by hovering it: the field keeps out from under it.
+  var QUIET = "[data-quiet]";
   // What the pointer points at when it comes near: links in the copy and the
   // project cards, not the lightbox link the theme wraps round every picture;
   // and the headings.
@@ -646,6 +648,12 @@
     });
     window.addEventListener("pointermove", function (e) {
       if (e.pointerType === "touch") return; // a finger has no resting place to draw
+      if (e.target && e.target.closest && e.target.closest(QUIET)) {
+        idle = IDLE; // as if it had left the page
+        fx = -1;
+        px = -1;
+        return;
+      }
       px = e.clientX;
       py = e.clientY;
       over = !!aimed(e);

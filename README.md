@@ -75,6 +75,10 @@ and `.deploys` for a project's live links.
 page. Plain JS, no dependencies. It looks for `<div id="dct-grid"></div>` and does
 nothing if that element is absent.
 
+The div carries `data-quiet`: the background field (`heat.js`) leaves alone
+anything so marked, with no trail, no ring and no flash under it, so a figure
+you read by hovering stays readable. Put it on any figure that works that way.
+
 ## French pages
 
 `fr/` holds a hand-written translation of each of the four pages. Nothing links the

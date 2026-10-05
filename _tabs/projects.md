@@ -97,7 +97,7 @@ The scheme splits the DCT coefficients into four interleaved lattices and embeds
 into them in order, so that each lattice can be conditioned on the ones already
 written. Hover or tap a cell below to see what it depends on:
 
-<div id="dct-grid" data-cursor="grain"></div>
+<div id="dct-grid" data-quiet></div>
 <script src="{{ '/assets/js/block-dependency-grid.js' | relative_url }}"></script>
 
 See the [publications]({{ '/publications/' | relative_url }}) page for the papers.

@@ -336,6 +336,32 @@ else {
   await ev(toggle + ".click()");
 }
 
+// A figure read by hovering is read in peace: whatever the pointer does over
+// it, a stroke or a press, the background under it stays paper.
+for (const page of ["/projects/", "/fr/projets/"]) {
+  await open(page, []);
+  await ev("document.getElementById('dct-grid').scrollIntoView({ block: 'center', behavior: 'instant' })");
+  await wait(600);
+  const g = await ev("(() => { const b = document.querySelector('#dct-grid .dg-grid').getBoundingClientRect(); return { x: b.left, y: b.top, w: b.width, h: b.height }; })()");
+  for (let i = 1; i < 10; i++) {
+    await mouse(g.x + (g.w * i) / 10, g.y + (g.h * i) / 10);
+    await wait(60);
+  }
+  const mid = { x: g.x + g.w / 2, y: g.y + g.h / 2, button: "left", clickCount: 1 };
+  await send("Input.dispatchMouseEvent", { type: "mousePressed", ...mid });
+  await wait(300);
+  await send("Input.dispatchMouseEvent", { type: "mouseReleased", ...mid });
+  await wait(150);
+  const lit = await ev(`(() => {
+    const d = document.getElementById("field").getContext("2d").getImageData(${g.x}, ${g.y}, ${g.w}, ${g.h}).data;
+    let n = 0;
+    for (let i = 3; i < d.length; i += 4) if (d[i]) n++;
+    return n;
+  })()`);
+  if (lit) extra.push(page + ": the background lights up under the dependency figure (" + lit + " px)");
+  await mouse(5, 5);
+}
+
 // The CV prints as a CV: the site's furniture gone, a letterhead in its
 // place, and nothing left at the opacity the scroll reveals start from.
 // tools/cv-pdf.sh prints exactly this to the PDFs the pages link to.
