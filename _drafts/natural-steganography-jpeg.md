@@ -20,6 +20,25 @@ Two photographs of the same piece of cloth. One was taken at ISO 200. The other 
 <div><p class="ns-label">Affiliations</p><p>CRIStAL, CNRS, Centrale Lille · IMT Lille-Douai · Binghamton University</p></div>
 </div>
 
+## The sensor's noise is a budget
+
+A camera sensor counts photons, and the count is noisy. This *photonic noise* is Gaussian to a very good approximation, and its variance grows with the light: $\sigma^2 = a\,\mu + b$, where $\mu$ is the noiseless value of the photosite. Raise the ISO and the sensor amplifies harder, so the same scene shot at <span class="ns-key" data-key="iso200">ISO 200</span> is noisier than at <span class="ns-key" data-key="iso100">ISO 100</span>.
+
+<figure class="ns-inline l-page" data-fig="noise" data-quiet>
+<div class="ns-canvas"></div>
+<figcaption>Noise variance against brightness, measured on the two RAW files: green photosites, the variance of each 8×8 tile around a smooth local mean, and in each brightness bin the lower fifth of the tiles, where texture adds least. The lines are fitted to the points.</figcaption>
+</figure>
+
+Natural steganography lives in that gap. Starting from an ISO 100 picture $x$, it adds at every photosite a stego signal
+
+$$S \sim \mathcal{N}\big(0,\ (a_2 - a_1)\,x + b_2 - b_1\big),$$
+
+so that the result is distributed exactly as an ISO 200 shot of the same scene would be. Nothing is hidden by keeping the changes small. A whole layer of noise is added, and it is allowed to be there: the only limit on how much it can carry is the gap between the two ISOs.
+
+<aside class="l-gutter" markdown="1">
+Two RAW files are not much to measure a sensor with. The paper fits $a$ and $b$ over the whole of E1Base, 10,800 crops, and finds $a_2 - a_1 = 1.15$ and $b_2 - b_1 = -1150$.
+</aside>
+
 *Draft: the rest of the article is on its way. This is one of its figures.*
 
 ## The draw, in miniature

@@ -27,6 +27,15 @@ function colors(el) {
   return { A: v("a"), B: v("b"), C: v("c"), D: v("d"), hot: v("hot"), ink: v("ink"), muted: v("muted"), paper: v("paper"), rule: v("rule") };
 }
 
+// The size, in an SVG's own units, of text that should read as 12px where
+// the figure is drawn at full size and never fall under about 11px where it
+// is drawn narrower, on a phone.
+function textSize(svg) {
+  const drawn = svg.getBoundingClientRect().width;
+  const units = svg.viewBox.baseVal.width;
+  return drawn && units ? Math.max(12, (12 * units * 0.95) / drawn) : 12;
+}
+
 // Said in the figure's place, so a blocked CDN or a broken module costs the
 // picture and not the page. The caption and the text around it remain.
 function fallback(canvas, why) {
@@ -47,13 +56,21 @@ async function start(section) {
   let view;
   try {
     const mod = await import("./fig-" + section.dataset.fig + ".js");
-    view = mod.mount(canvas, { d3: window.d3, gsap: window.gsap, maths, colors: () => colors(section), still });
+    view = mod.mount(canvas, { d3: window.d3, gsap: window.gsap, maths, colors: () => colors(section), still, textSize });
   } catch (e) {
     console.error(e);
     return fallback(canvas, e.message);
   }
   fig.dataset.steps = view.steps;
   if (view.keys) fig.dataset.keys = view.keys.join(" ");
+  // Drawn at another width (a rotated phone, a resized window), a figure is
+  // redrawn, so its text keeps its size.
+  let width = 0;
+  new ResizeObserver(([e]) => {
+    const w = Math.round(e.contentRect.width);
+    if (width && w !== width) view.redraw();
+    width = w;
+  }).observe(canvas);
   section.classList.add("is-live");
   if (inline) {
     view.show(0, false);

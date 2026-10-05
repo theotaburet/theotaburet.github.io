@@ -724,6 +724,35 @@ if (ARTICLE_UP) {
   }
 }
 
+// The sensor's noise: adding the stego signal takes the ISO 100 points onto
+// the ISO 200 line; the button says whether it is pressed; held still, the
+// points go there at once.
+if (ARTICLE_UP) {
+  const gapTo200 = `(() => {
+    const f = document.querySelector('.ns-inline[data-fig="noise"]');
+    const l = f.querySelector("line.fit200");
+    const x1 = +l.getAttribute("x1"), y1 = +l.getAttribute("y1"), x2 = +l.getAttribute("x2"), y2 = +l.getAttribute("y2");
+    const pts = [...f.querySelectorAll("circle.p100")];
+    return pts.reduce((s, c) => { const x = +c.getAttribute("cx"); return s + Math.abs(+c.getAttribute("cy") - (y1 + (y2 - y1) * (x - x1) / (x2 - x1))); }, 0) / pts.length;
+  })()`;
+  for (const reduced of [false, true]) {
+    await open(ARTICLE, reduced ? [{ name: "prefers-reduced-motion", value: "reduce" }] : []);
+    const ok = await ev(`(async () => { const f = document.querySelector('.ns-inline[data-fig="noise"]'); if (!f) return false; f.scrollIntoView({ block: "center", behavior: "instant" }); await new Promise(r => setTimeout(r, 900)); return !!f.querySelector("circle.p100"); })()`);
+    if (!ok) {
+      extra.push("article: no noise figure with its ISO 100 points");
+      break;
+    }
+    const before = await ev(gapTo200);
+    await ev(`document.querySelector('.ns-inline[data-fig="noise"] button').click()`);
+    await wait(reduced ? 100 : 2000);
+    const after = await ev(gapTo200);
+    const pressed = await ev(`document.querySelector('.ns-inline[data-fig="noise"] button').getAttribute("aria-pressed")`);
+    const at = "article noise" + (reduced ? ", reduced motion" : "") + ": ";
+    if (!(after * 3 < before)) extra.push(at + "adding the stego signal leaves the ISO 100 points " + after.toFixed(1) + "px from the ISO 200 line (" + before.toFixed(1) + " before)");
+    if (pressed !== "true") extra.push(at + "the button does not say it is pressed");
+  }
+}
+
 // The CV prints as a CV: the site's furniture gone, a letterhead in its
 // place, and nothing left at the opacity the scroll reveals start from.
 // tools/cv-pdf.sh prints exactly this to the PDFs the pages link to.
@@ -890,6 +919,23 @@ if (ARTICLE_UP) {
     if (end.top !== v.top) extra.push("phone: dragging the loupe scrolls the page (" + v.top + " → " + end.top + ")");
     if (!(end.fx > 0.55)) extra.push("phone: the loupe does not follow the finger (" + end.fx.toFixed(2) + ")");
   }
+}
+// On a phone, what the figures in the flow of the text write is readable too.
+if (ARTICLE_UP) {
+  await open(ARTICLE, []);
+  const tiny = await ev(`(async () => {
+    const out = [];
+    for (const fig of document.querySelectorAll(".ns-inline")) {
+      fig.scrollIntoView({ block: "center", behavior: "instant" });
+      await new Promise(r => setTimeout(r, 700));
+      const svg = fig.querySelector("svg");
+      if (!svg) continue;
+      const k = svg.getBoundingClientRect().width / svg.viewBox.baseVal.width;
+      [...svg.querySelectorAll("text")].forEach(t => { if (parseFloat(getComputedStyle(t).fontSize) * k < 11) out.push(fig.dataset.fig + ": " + t.textContent.slice(0, 16)); });
+    }
+    return out;
+  })()`);
+  if (tiny.length) extra.push("phone: figure text under 11px: " + tiny.slice(0, 4).join(" | ") + (tiny.length > 4 ? " (+" + (tiny.length - 4) + ")" : ""));
 }
 await send("Emulation.setTouchEmulationEnabled", { enabled: false });
 await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 800, deviceScaleFactor: 1, mobile: false });
