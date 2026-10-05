@@ -7,6 +7,13 @@ math: true
 ns: true
 ---
 
+Two photographs of the same piece of cloth. One was taken at ISO 200. The other was taken at ISO 100, then given the noise it lacked to pass for ISO 200, drawn so that it could carry a payload. Can you tell which?
+
+<figure class="ns-inline l-page" data-fig="hook" data-quiet>
+<div class="ns-canvas"></div>
+<figcaption>A 256×256 crop of the Z CAM E1 RAW files that come with the paper's code, developed (bilinear demosaicking, then luminance) and saved as a JPEG at quality 100. The loupe shows the same spot in every view. Blocks along the edges, whose neighbours fall outside the crop, are left as they were.</figcaption>
+</figure>
+
 <div class="ns-byline wide-page l-page">
 <div><p class="ns-label">Written by</p><p><a href="/">Théo Taburet</a></p></div>
 <div><p class="ns-label">Based on</p><p>T. Taburet, P. Bas, W. Sawaya, J. Fridrich, <em>Natural Steganography in JPEG Domain With a Linear Development Pipeline</em>, IEEE Transactions on Information Forensics and Security 16, 2020. <a href="https://doi.org/10.1109/TIFS.2020.3007354">doi:10.1109/TIFS.2020.3007354</a></p></div>

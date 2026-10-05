@@ -38,7 +38,9 @@ function fallback(canvas, why) {
 }
 
 async function start(section) {
-  const fig = section.querySelector(".ns-fig");
+  // A figure in the flow of the text is its own section: one state, no steps.
+  const inline = section.classList.contains("ns-inline");
+  const fig = inline ? section : section.querySelector(".ns-fig");
   const canvas = fig.querySelector(".ns-canvas");
   const steps = [...section.querySelectorAll(".ns-step")];
   if (!window.d3 || !window.gsap || !window.ScrollTrigger) return fallback(canvas, "a library did not load");
@@ -51,7 +53,14 @@ async function start(section) {
     return fallback(canvas, e.message);
   }
   fig.dataset.steps = view.steps;
+  if (view.keys) fig.dataset.keys = view.keys.join(" ");
   section.classList.add("is-live");
+  if (inline) {
+    view.show(0, false);
+    // Held still, it is redrawn as it stands, with nothing left playing.
+    live.push({ view, hold: () => view.redraw(), redraw: () => view.redraw() });
+    return;
+  }
 
   // The steps as a strip of buttons under the figure: where it is, and a way
   // to any step without scrolling there. A click scrolls the text to its
@@ -116,6 +125,7 @@ async function start(section) {
   const here = triggers.findIndex(t => t.isActive);
   go(Math.max(0, here), false);
   live.push({
+    view,
     // Redrawn where it is, so a pause stops what is playing, and a resume
     // fades the other steps again.
     hold: () => {
@@ -138,7 +148,19 @@ function boot() {
       }),
     { rootMargin: "100% 0px" }
   );
-  document.querySelectorAll(".ns-scrolly").forEach(s => near.observe(s));
+  document.querySelectorAll(".ns-scrolly, .ns-inline").forEach(s => near.observe(s));
+
+  // Terms in the text, coloured as in the figures: hovered or focused, they
+  // light up what they name in every figure drawn so far that has it.
+  document.querySelectorAll(".ns-key[data-key]").forEach(k => {
+    const key = k.dataset.key;
+    const to = on => live.forEach(f => f.view.keys && f.view.keys.includes(key) && f.view.highlight(on ? key : null));
+    k.tabIndex = 0;
+    k.addEventListener("mouseenter", () => to(true));
+    k.addEventListener("focus", () => to(true));
+    k.addEventListener("mouseleave", () => to(false));
+    k.addEventListener("blur", () => to(false));
+  });
 
   // Paused or reduced, or back from either: each figure is redrawn on its
   // step, with nothing left playing.

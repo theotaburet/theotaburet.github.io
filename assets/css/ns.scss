@@ -7,6 +7,18 @@
 // which is why it may style .content directly.
 
 .content {
+  // What the figures draw with, and the terms in the text that name what is
+  // in them, so a theme switch is a repaint.
+  --ns-a: #a0d8ef;
+  --ns-b: #f8b862;
+  --ns-c: #8db255;
+  --ns-d: #d3381c;
+  --ns-hot: #884898;
+  --ns-ink: var(--heading-color);
+  --ns-muted: var(--text-muted-color);
+  --ns-paper: var(--main-bg);
+  --ns-rule: var(--main-border-color);
+
   display: grid;
   grid-template-columns:
     [screen-start] minmax(0, 1fr)
@@ -17,6 +29,8 @@
   // Not dense: in the default packing an item for the margin, coming after
   // one in the text column, takes the same row, beside the paragraph it
   // comments on. Dense would send it up to the first free margin cell.
+  // Each starts at the top of its row, so the two line up.
+  align-items: start;
   counter-reset: ns-fig;
 
   > * {
@@ -96,17 +110,6 @@
 // being read is at full strength, the others faded, but only once the figure
 // is live: if it never comes, every word stays readable.
 .ns-scrolly {
-  // What the figures draw with, so a theme switch is a repaint.
-  --ns-a: #a0d8ef;
-  --ns-b: #f8b862;
-  --ns-c: #8db255;
-  --ns-d: #d3381c;
-  --ns-hot: #884898;
-  --ns-ink: var(--heading-color);
-  --ns-muted: var(--text-muted-color);
-  --ns-paper: var(--main-bg);
-  --ns-rule: var(--main-border-color);
-
   margin: 1rem 0 3rem;
 }
 
@@ -273,4 +276,138 @@
       color: var(--ns-paper);
     }
   }
+}
+
+// A figure in the flow of the text, as on Distill: wider than the text when
+// it is l-page, its caption under it. It keeps what it draws (and a loupe
+// near its edge) to its own box.
+.ns-inline {
+  margin: 1.5rem 0 2.5rem;
+  padding: 0.75rem 0;
+  overflow: hidden;
+  background-color: var(--main-bg);
+
+  figcaption {
+    max-width: 46rem;
+    margin-top: 0.75rem;
+  }
+}
+
+// A picture the loupe can be laid on.
+.ns-view {
+  position: relative;
+  touch-action: none; // a finger on it moves the lens, not the page
+  border-radius: 2px;
+  outline-offset: 3px;
+
+  img,
+  canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    image-rendering: pixelated;
+  }
+}
+
+.ns-view-label {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.75rem;
+  line-height: 1.3;
+  color: var(--text-muted-color);
+}
+
+.ns-lens {
+  position: absolute;
+  z-index: 2;
+  border: 2px solid var(--ns-ink);
+  border-radius: 50%;
+  background-repeat: no-repeat;
+  background-color: var(--ns-paper);
+  box-shadow: 0 2px 12px rgb(0 0 0 / 35%);
+  image-rendering: pixelated;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+
+  &.is-on {
+    opacity: 1;
+  }
+}
+
+.ns-lens-value {
+  position: absolute;
+  bottom: -1.5rem;
+  left: 50%;
+  padding: 0 0.3rem;
+  border-radius: 3px;
+  background-color: var(--ns-paper);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  color: var(--ns-ink);
+  transform: translateX(-50%);
+}
+
+// The opening figure: a question, the crops side by side, the answer.
+.ns-question {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
+  text-align: center;
+}
+
+.ns-views {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  gap: 1rem;
+  // Its full share of a centred column, or auto-fit sees no room for a second.
+  width: 100%;
+  max-width: 34rem;
+  margin: 0 auto;
+
+  &.is-four {
+    max-width: none;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr));
+  }
+}
+
+.ns-choices {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.ns-verdict {
+  margin: 0.75rem 0 0;
+  text-align: center;
+  font-weight: 600;
+}
+
+// A term in the text that names something in a figure: underlined in its
+// colour; hovered or focused, the figure lights the thing up.
+.ns-key {
+  text-decoration: underline dotted 2px var(--ns-hot);
+  text-underline-offset: 3px;
+  cursor: help;
+
+  &[data-key='L1'] {
+    text-decoration-color: var(--ns-a);
+  }
+
+  &[data-key='L2'] {
+    text-decoration-color: var(--ns-b);
+  }
+
+  &[data-key='L3'] {
+    text-decoration-color: var(--ns-c);
+  }
+
+  &[data-key='L4'] {
+    text-decoration-color: var(--ns-d);
+  }
+}
+
+.is-key {
+  outline: 2px solid var(--ns-ink);
+  outline-offset: 1px;
 }

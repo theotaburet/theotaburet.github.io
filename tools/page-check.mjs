@@ -398,7 +398,10 @@ if (ARTICLE_UP) {
   await open(ARTICLE, []);
   const libs = await ev("[typeof d3, typeof gsap, typeof ScrollTrigger].join()");
   if (libs !== "object,object,function") extra.push("article: libraries missing: " + libs);
-  const grid = await ev(`(() => {
+  const grid = await ev(`(async () => {
+    // Measured once on screen: paragraphs slide in as they arrive (site.js).
+    document.querySelector(".content > .l-gutter").scrollIntoView({ block: "center", behavior: "instant" });
+    await new Promise(r => setTimeout(r, 1200));
     const p = document.querySelector(".content > p").getBoundingClientRect();
     const page = document.querySelector(".content > .ns-scrolly.l-page").getBoundingClientRect();
     const aside = document.querySelector(".content > .l-gutter").getBoundingClientRect();
@@ -618,6 +621,109 @@ if (ARTICLE_UP) {
   }
 }
 
+// The figures set in the flow of the text, as on Distill: drawn as they come
+// near, labelled, readable in both themes, and inside their box.
+if (ARTICLE_UP) {
+  await open(ARTICLE, []);
+  const I = `document.querySelectorAll(".ns-inline")`;
+  const inline = await ev(`${I}.length`);
+  if (!inline) extra.push("article: no figure in the flow of the text");
+  const was = await ev(`document.documentElement.getAttribute("data-bs-theme") === "dark" ? "dark" : "light"`);
+  for (const mode of ["light", "dark"]) {
+    await ev(`document.querySelector('.dropdown-item[data-theme-mode="${mode}"]').click()`);
+    await wait(500);
+    for (let f = 0; f < inline; f++) {
+      const m = await ev(`(async () => {
+        const lum = c => { const [r, g, b] = c.match(/[\\d.]+/g).map(Number).map(v => v / 255).map(v => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+        const fig = ${I}[${f}];
+        fig.scrollIntoView({ block: "center", behavior: "instant" });
+        await new Promise(r => setTimeout(r, 900));
+        const box = fig.getBoundingClientRect();
+        const bg = lum(getComputedStyle(fig).backgroundColor);
+        const faint = [...fig.querySelectorAll("svg text")].filter(t => {
+          for (let e = t; e && e !== fig; e = e.parentElement) if (getComputedStyle(e).opacity === "0") return false;
+          const l = lum(getComputedStyle(t).fill);
+          return (Math.max(l, bg) + 0.05) / (Math.min(l, bg) + 0.05) < 4.5;
+        }).map(t => t.textContent.slice(0, 24));
+        const out = [...fig.querySelectorAll(".ns-canvas *")].filter(e => {
+          if (e.closest(".ns-lens")) return false;
+          const b = e.getBoundingClientRect();
+          return b.width > 0 && (b.right > box.right + 1 || b.left < box.left - 1);
+        }).map(e => e.tagName.toLowerCase()).slice(0, 3);
+        return { name: fig.dataset.fig, live: fig.classList.contains("is-live"), quiet: fig.hasAttribute("data-quiet"),
+          label: !!fig.querySelector("[role=img][aria-label], [role=group][aria-label]"), faint, out };
+      })()`);
+      const at = "article figure " + m.name + ", " + mode + " theme: ";
+      if (!m.live) extra.push(at + "never drawn");
+      if (!m.quiet) extra.push(at + "not marked data-quiet");
+      if (!m.label) extra.push(at + "no labelled picture in it");
+      if (m.faint.length) extra.push(at + "text too faint to read: " + m.faint.join(" | "));
+      if (m.out.length) extra.push(at + "runs out of its box: " + m.out.join(", "));
+    }
+  }
+  await ev(`document.querySelector('.dropdown-item[data-theme-mode="${was}"]').click()`);
+  await wait(400);
+
+  // The loupe: the same spot in every view it is laid on, sharp, inside the
+  // picture, and moved by the keys as by the pointer.
+  await open(ARTICLE, []);
+  const L = `document.querySelector(".ns-loupe")`;
+  if (!(await ev(`!!${L}`))) extra.push("article: no figure with a loupe");
+  else {
+    const c = await ev(`(async () => {
+      ${L}.scrollIntoView({ block: "center", behavior: "instant" });
+      await new Promise(r => setTimeout(r, 900));
+      const b = ${L}.querySelector(".ns-view img, .ns-view canvas").getBoundingClientRect();
+      return { x: b.left + b.width * 0.3, y: b.top + b.height * 0.6 };
+    })()`);
+    await mouse(c.x, c.y);
+    await wait(400);
+    const lens = () => ev(`[...${L}.querySelectorAll(".ns-view")].map(v => {
+      const l = v.querySelector(".ns-lens"), b = v.querySelector("img, canvas").getBoundingClientRect(), r = l.getBoundingClientRect();
+      return { shown: getComputedStyle(l).opacity === "1", fx: (r.left + r.width / 2 - b.left) / b.width, fy: (r.top + r.height / 2 - b.top) / b.height, w: b.width, pix: getComputedStyle(l).imageRendering };
+    })`);
+    let ls = await lens();
+    if (!ls.length || !ls.every(l => l.shown)) extra.push("article loupe: not shown on every view under the pointer");
+    else {
+      const off = Math.max(...ls.map(l => Math.max(Math.abs(l.fx - ls[0].fx), Math.abs(l.fy - ls[0].fy)) * l.w));
+      if (off > 1) extra.push("article loupe: the views are " + off.toFixed(1) + "px apart");
+      if (Math.abs(ls[0].fx - 0.3) > 0.02 || Math.abs(ls[0].fy - 0.6) > 0.02) extra.push("article loupe: not where the pointer is (" + ls[0].fx.toFixed(2) + ", " + ls[0].fy.toFixed(2) + ")");
+      if (!ls.every(l => l.pix === "pixelated")) extra.push("article loupe: smooths the pixels it magnifies");
+    }
+    await ev(`${L}.querySelector(".ns-view").focus()`);
+    for (let k = 0; k < 30; k++) await send("Input.dispatchKeyEvent", { type: "keyDown", key: "ArrowRight", code: "ArrowRight", windowsVirtualKeyCode: 39 });
+    await wait(200);
+    ls = await lens();
+    if (!(ls[0] && ls[0].fx > 0.95 && ls[0].fx <= 1.001)) extra.push("article loupe: thirty presses of the right arrow leave it at " + (ls[0] ? ls[0].fx.toFixed(2) : "?") + " of the width");
+    await mouse(5, 5);
+  }
+
+  // The opening figure: two crops and a question; after a choice, the answer
+  // and four views.
+  const H = `document.querySelector('.ns-inline[data-fig="hook"]')`;
+  const hk = await ev(`(async () => {
+    const h = ${H};
+    if (!h) return null;
+    h.scrollIntoView({ block: "center", behavior: "instant" });
+    await new Promise(r => setTimeout(r, 900));
+    const imgs = [...h.querySelectorAll(".ns-view img")];
+    return { n: imgs.length, loaded: imgs.every(i => i.complete && i.naturalWidth === 256), kb: (h.textContent.match(/([\\d.]+)\\s*KB/) || [])[1] };
+  })()`);
+  if (!hk) extra.push("article: no opening figure");
+  else {
+    if (hk.n !== 2 || !hk.loaded) extra.push("article hook: " + hk.n + " crops shown, all loaded: " + hk.loaded);
+    const kb = (await (await fetch(BASE + "/assets/data/ns/hook.json")).json()).kbytes;
+    if (!(Math.abs(+hk.kb - kb) <= 0.1)) extra.push("article hook: says " + hk.kb + " KB, the data " + kb);
+    const after = await ev(`(async () => {
+      ${H}.querySelector("button[data-choice]").click();
+      await new Promise(r => setTimeout(r, 900));
+      const views = [...${H}.querySelectorAll(".ns-view")];
+      return { n: views.length, labelled: views.every(v => (v.querySelector(".ns-view-label")?.textContent || "").trim().length > 3), verdict: !!(${H}.querySelector(".ns-verdict")?.textContent || "").trim(), rows: new Set(views.map(v => Math.round(v.getBoundingClientRect().top))).size };
+    })()`);
+    if (after.n !== 4 || !after.labelled || !after.verdict || after.rows !== 1) extra.push("article hook: after a choice, " + JSON.stringify(after) + " (four labelled views in one row expected)");
+  }
+}
+
 // The CV prints as a CV: the site's furniture gone, a letterhead in its
 // place, and nothing left at the opacity the scroll reveals start from.
 // tools/cv-pdf.sh prints exactly this to the PDFs the pages link to.
@@ -759,6 +865,31 @@ if (ARTICLE_UP) {
     if (!landed) extra.push(at + "a click on step 5 of the strip leaves the step's first line under the figure");
   }
   await send("Emulation.setDeviceMetricsOverride", { width: 375, height: 800, deviceScaleFactor: 1, mobile: true });
+}
+// On a phone the loupe follows a finger, and the page stays where it is.
+if (ARTICLE_UP) {
+  await open(ARTICLE, []);
+  const v = await ev(`(async () => {
+    const fig = document.querySelector(".ns-loupe");
+    if (!fig) return null;
+    fig.scrollIntoView({ block: "center", behavior: "instant" });
+    await new Promise(r => setTimeout(r, 900));
+    const b = fig.querySelector(".ns-view img, .ns-view canvas").getBoundingClientRect();
+    return { x: b.left + b.width / 2, y: b.top + b.height / 2, top: scrollY };
+  })()`);
+  if (!v) extra.push("phone: no figure with a loupe");
+  else {
+    await send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: v.x, y: v.y }] });
+    for (let k = 1; k <= 6; k++) await send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: v.x + k * 8, y: v.y - k * 12 }] });
+    await send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+    await wait(300);
+    const end = await ev(`(() => {
+      const view = document.querySelector(".ns-loupe .ns-view"), l = view.querySelector(".ns-lens"), b = view.querySelector("img, canvas").getBoundingClientRect(), r = l.getBoundingClientRect();
+      return { top: scrollY, fx: (r.left + r.width / 2 - b.left) / b.width };
+    })()`);
+    if (end.top !== v.top) extra.push("phone: dragging the loupe scrolls the page (" + v.top + " → " + end.top + ")");
+    if (!(end.fx > 0.55)) extra.push("phone: the loupe does not follow the finger (" + end.fx.toFixed(2) + ")");
+  }
 }
 await send("Emulation.setTouchEmulationEnabled", { enabled: false });
 await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 800, deviceScaleFactor: 1, mobile: false });

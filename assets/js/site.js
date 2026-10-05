@@ -288,7 +288,7 @@
      ---------------------------------------------------------------------- */
   (function reveal() {
     var SELECTOR =
-      ".lede, .photo-wall img, .project-card, .content h2, .content h3, .deploys, .content > p, .content > ul";
+      ".lede, .photo-wall img, .project-card, .content h2, .content h3, .deploys, .content > p, .content > ul, .content > aside";
     var targets = [].slice.call(document.querySelectorAll(SELECTOR));
     if (!targets.length) return;
 
