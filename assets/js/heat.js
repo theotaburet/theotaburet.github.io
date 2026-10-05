@@ -6,8 +6,9 @@
 // through them in order, D B C A, before it goes out.
 //
 // Three things add heat. The header carries a slow field of clouds that thins
-// out raggedly below it. The pointer leaves a short trail, and near a link it
-// grows an arrow pointing the rest of the way. A press charges for
+// out raggedly below it. The pointer leaves a short trail; near a link or a
+// heading it grows an arrow pointing the rest of the way, and near one of the
+// faces on the About page it is drawn in and colours the face. A press charges for
 // as long as it is held and lets go as a ring: a tap is a ripple, two seconds
 // is the whole screen.
 //
@@ -35,11 +36,14 @@
   var LEAD = 0.16; // share of the headline that is noise ahead of the front
   var SKIP = "a, button, input, textarea, select, summary, label, .footer-blocks";
   // What the pointer points at when it comes near: links in the copy and the
-  // project cards, not the lightbox link the theme wraps round every picture.
+  // project cards, not the lightbox link the theme wraps round every picture;
+  // and the headings.
   var AIM = ".content a:not(.img-link), .project-card";
+  var HEAD = ".content h2, .content h3";
   var NEAR = 140; // px from a target's edge where the trail turns into an arrow
   var SHAFT = 0.5; // the arrow's heat: C, with the spot running down it past D
-  var HUSH = ".smiley"; // colours itself in; the trail over it would only smudge it
+  var MOOD = { happy: 0.7, sad: 0.38 }; // each face's colour: B, and A
+  var LEVELS = [0.38, 0.54, 0.7, 0.84]; // the middle of each band, A C B D, for a face's twinkle
 
   var canvas = document.createElement("canvas");
   canvas.id = "field";
@@ -71,10 +75,18 @@
   var fy = -1;
   var idle = IDLE;
   var over = false; // the pointer is on something SKIP names
-  var hush = false; // ...or on something HUSH names
   var foot = 0; // page y where the header ends; 0 on a page without one
   var safes = [];
-  var aims = document.querySelectorAll(AIM);
+  // A heading is as wide as the column and its words are not, so it is aimed
+  // at by a range round its contents, which has the same line boxes a link does.
+  var aims = [].slice.call(document.querySelectorAll(AIM)).concat(
+    [].map.call(document.querySelectorAll(HEAD), function (h) {
+      var words = document.createRange();
+      words.selectNodeContents(h);
+      return words;
+    })
+  );
+  var faces = [].slice.call(document.querySelectorAll(".smiley"));
 
   var lede = document.querySelector(".lede");
   var title = document.querySelector(".lede h1");
@@ -189,6 +201,58 @@
     fx = px;
     fy = py;
   }
+
+  // Near a face the pointer is drawn into it: the blob slides toward the middle
+  // and shrinks while the face fills in from there, in its own colour, the
+  // whole of it once the pointer is on it. Like a hover it lasts as long as
+  // the pointer stays; a click heats it past its colour and it cools back.
+  // Says whether there was a face near, because then this is the trail.
+  function pull(dt) {
+    var near = 0;
+    var face = null;
+    for (var k = 0; k < faces.length && px >= 0; k++) {
+      var b = faces[k].getBoundingClientRect();
+      if (!b.width) continue;
+      var x = b.left + b.width / 2;
+      var y = b.top + b.height / 2;
+      var p = 1 - Math.sqrt((px - x) * (px - x) + (py - y) * (py - y)) / (b.width * 1.9);
+      if (p > near) {
+        near = p;
+        face = { el: faces[k], x: x, y: y, w: b.width, v: MOOD[faces[k].getAttribute("data-mood")] || EMBER };
+      }
+    }
+    var e = near * near * (3 - 2 * near); // eased: slow to take hold, slow to finish
+    var r = near > 0.16 ? Math.round(((face.w * 0.46) / CELL) * e) : -1; // in squares
+    // Once the colour is under the eyes and the mouth, the ink has to be the
+    // dark one: the dark theme's pale ink vanishes on these bands.
+    for (k = 0; k < faces.length; k++) faces[k].classList.toggle("lit", !!face && faces[k] === face.el && r >= 4);
+    if (!face) return false;
+    if (idle < IDLE && e < 0.82) {
+      var size = py + window.scrollY > foot ? BRUSH / 2 : BRUSH;
+      stamp(px + (face.x - px) * e, py + (face.y - py) * e, (0.16 * dt) / 16.7, size * (1 - 0.5 * e));
+    }
+    // Round the middle square of the face, which site.js keeps on the
+    // lattice: one flat colour, with a square in eight or so twinkling in
+    // any of the four, a different few every 140ms. Set rather than added
+    // to, or a twinkle would stay lit; but not over anything hotter than an
+    // ember, so a click still heats the face, and its embers stay a moment.
+    var cx = Math.floor(face.x / CELL);
+    var cy = Math.floor((face.y + window.scrollY) / CELL);
+    var tick = Math.floor(now / 140);
+    for (var j = -r; j <= r; j++) {
+      for (var i = -r; i <= r; i++) {
+        var c = cx + i;
+        var row = cy + j;
+        if (i * i + j * j > r * r + r || c < 0 || row < 0 || c >= cols || row >= rows) continue;
+        var n = row * cols + c;
+        if (heat[n] >= EMBER) continue;
+        heat[n] = hash(c + tick * 2.1, row - tick * 1.3) < 0.16 ? LEVELS[(hash(c * 1.7, row + tick) * 4) | 0] : face.v;
+      }
+    }
+    live = true;
+    return true;
+  }
+
 
   // Near a link and not on it, the trail grows an arrow from the pointer to
   // the nearest edge of it, with a hot spot running down the shaft to the tip.
@@ -480,12 +544,12 @@
     if (document.documentElement.scrollHeight > pageH) build();
     measure();
     cool(dt);
-    if (idle < IDLE) {
-      idle += dt;
-      // The blob steps aside while the trail is an arrow, and over a face.
-      // Starting afresh after, or the first stamp is a stroke from where it
-      // stopped.
-      if (hush || point()) fx = -1;
+    if (idle < IDLE) idle += dt;
+    // The blob steps aside while the trail is an arrow or a face. Starting
+    // afresh after, or the first stamp is a stroke from where it stopped.
+    if (pull(dt)) fx = -1;
+    else if (idle < IDLE) {
+      if (point()) fx = -1;
       else follow(dt);
     }
     if (press) {
@@ -585,19 +649,18 @@
       px = e.clientX;
       py = e.clientY;
       over = !!aimed(e);
-      hush = !!(e.target && e.target.closest && e.target.closest(HUSH));
       idle = 0;
       wake();
     });
     document.addEventListener("pointerleave", function () {
       idle = IDLE;
       fx = -1;
+      px = -1; // and no face is being looked at
     });
   }
 
   // What the rest of the page can ask the field to draw: the pointer resting
-  // on a project, a face asking to be coloured in, or a line going out of the
-  // well at the foot of the page. Each shape is lit, most of them at D, held a
+  // on a project, or a line going out of the well at the foot of the page. Each shape is lit, most of them at D, held a
   // moment so it reads as a shape, and cools.
   function mark(c, r, v, ms) {
     if (c < 0 || r < 0 || c >= cols || r >= rows) return;
@@ -626,18 +689,6 @@
         var a = Math.random() * 2 * Math.PI;
         var t = Math.sqrt(Math.random()) * r;
         mark(cx + Math.round(Math.cos(a) * t), cy + Math.round(Math.sin(a) * t), EMBER, 350);
-      }
-    },
-    // A round patch lit around the level it is given, each square a little
-    // either side of it and always the same square the same way, so a face
-    // fills in with a grain of the neighbouring bands and not a flat disc.
-    disc: function (cx, cy, d) {
-      var r = d.r || 6;
-      for (var y = -r; y <= r; y++) {
-        for (var x = -r; x <= r; x++) {
-          if (x * x + y * y > r * r + r) continue;
-          mark(cx + x, cy + y, (d.v || EMBER) + (hash(cx + x, cy + y) - 0.5) * 0.2, 350);
-        }
       }
     }
   };

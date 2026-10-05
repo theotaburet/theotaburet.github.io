@@ -1,12 +1,14 @@
 {%- comment -%}
   A pixel face, mood="happy" or "sad". Thirteen squares of 12 units a side, so
   drawn at 130px one square of the face is one square of the graph paper.
-  site.js nudges it onto the lattice and has the field colour it in on hover.
+  site.js nudges it onto the lattice, turns eyes and mouth toward the pointer
+  and makes it blink; heat.js colours it in as the pointer comes near. The sad
+  one's cheeks show only when it is shy.
 {%- endcomment -%}
-<svg class="smiley" viewBox="0 0 156 156" data-mood="{{ include.mood }}" aria-hidden="true"><g class="look"><g class="eyes"><rect x="48" y="60" width="12" height="12"/><rect x="96" y="60" width="12" height="12"/></g></g>
+<svg class="smiley" viewBox="0 0 156 156" data-mood="{{ include.mood }}" aria-hidden="true"><g class="look"><g class="eyes"><rect x="48" y="60" width="12" height="12"/><rect x="96" y="60" width="12" height="12"/></g>
 {%- if include.mood == "happy" -%}
 <path d="M48 84h12v12H48zM96 84h12v12H96zM60 96h36v12H60z"/>
 {%- else -%}
-<path d="M60 84h36v12H60zM48 96h12v12H48zM96 96h12v12H96z"/>
+<path d="M60 84h36v12H60zM48 96h12v12H48zM96 96h12v12H96z"/><path class="blush" d="M36 84h12v12H36zM108 84h12v12h-12z"/>
 {%- endif -%}
-</svg>
+</g></svg>

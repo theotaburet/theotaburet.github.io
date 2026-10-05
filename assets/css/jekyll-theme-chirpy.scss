@@ -168,11 +168,6 @@ $amber: #f8b862;
   }
 }
 
-/* Paused, the faces stop blinking too. */
-.motion-paused .smiley .eyes {
-  animation: none;
-}
-
 /* ---------------------------------------------------------------------------
    Colophon, moved out of the page foot and into the sidebar by site.js.
    Aligned on the icon row below it, which is what it now reads as a caption
@@ -626,8 +621,8 @@ body {
 
 /* ---------------------------------------------------------------------------
    Moods: a pair of pixel faces on the About page. Only the ink is drawn here;
-   the colour is the field's, which fills a face in while the pointer is on
-   it. 130px is thirteen squares of the paper, one per square of the face.
+   the colour is the field's, which fills a face in as the pointer comes
+   near. 130px is thirteen squares of the paper, one per square of the face.
    --------------------------------------------------------------------------- */
 .moods {
   display: grid;
@@ -638,6 +633,7 @@ body {
 }
 
 .mood {
+  position: relative; /* for the hearts */
   margin: 0;
 
   figcaption {
@@ -664,33 +660,78 @@ body {
   fill: currentColor;
 
   /* Filled in, it sits on the field's light bands, where only dark ink
-     reads: the dark theme's pale grey all but vanishes on the blue. */
-  &:hover {
+     reads: the dark theme's pale grey all but vanishes on the blue. heat.js
+     says when, since it does the filling. */
+  &.lit {
     color: #1b1b1e;
   }
 
-  /* A blink is the eyes shutting to a sliver and back, every few seconds,
-     the two faces out of step. */
+  /* site.js moves the face onto the lattice with `translate`, which leaves
+     `transform` to these. A blink is the eyes shut to a sliver for a moment,
+     whenever site.js says. */
+  transition: transform 0.2s;
+
   .eyes {
     transform-box: fill-box;
     transform-origin: center;
-    animation: blink 4.6s infinite;
+  }
+
+  &.blink .eyes {
+    transform: scaleY(0.15);
+  }
+
+  .blush {
+    fill: #d3381c;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  &.shy {
+    transform: scale(0.93) translateY(3px);
+
+    .blush {
+      opacity: 0.5;
+    }
+  }
+
+  &.jump {
+    animation: jump 0.62s cubic-bezier(0.3, 1.5, 0.5, 1);
   }
 }
 
-.mood + .mood .eyes {
-  animation-delay: -2.1s;
+.smiley-heart {
+  position: absolute;
+  top: 6px;
+  width: 24px;
+  height: 19px;
+  fill: #d3381c;
+  pointer-events: none;
+  animation: heart 1s ease-out forwards;
 }
 
-@keyframes blink {
-  0%,
-  95%,
-  100% {
+@keyframes jump {
+  28% {
+    transform: translateY(-18px);
+  }
+
+  52% {
     transform: none;
   }
+}
 
-  97.5% {
-    transform: scaleY(0.15);
+@keyframes heart {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(0.5);
+  }
+
+  14% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -72px) scale(1.1);
   }
 }
 
@@ -913,10 +954,6 @@ html.has-cursor {
   .cursor-dot,
   .cursor-ring {
     display: none;
-  }
-
-  .smiley .eyes {
-    animation: none;
   }
 
   .to-reveal {

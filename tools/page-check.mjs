@@ -218,13 +218,111 @@ else {
   await wait(300);
   if ((await ev(toggle + ".getAttribute('aria-pressed')")) !== "true") extra.push("pause button does not report being pressed");
   if (await moving()) extra.push("background still moving when paused");
-  if ((await ev("getComputedStyle(document.querySelector('.smiley .eyes')).animationName")) !== "none") extra.push("faces still blinking when paused");
   await open("/", []);
   if ((await ev(toggle + ".getAttribute('aria-pressed')")) !== "true") extra.push("pause forgotten on reload");
   if (await moving()) extra.push("background moving after a reload while paused");
   if ((await ev("getComputedStyle(document.querySelector('.lede h1')).maskImage")) !== "none") extra.push("headline left masked when loaded paused");
   await ev(toggle + ".click()");
   if (!(await moving())) extra.push("background does not start again when unpaused");
+}
+
+// The faces on the About page, under a mouse. They follow it with eyes and
+// mouth, by less than half a square; the happy one jumps and gives off hearts,
+// the sad one shrinks back and blushes; each blinks now and then; and the
+// field fills each in its own colour. Paused, none of it.
+const mouse = (x, y) => send("Input.dispatchMouseEvent", { type: "mouseMoved", x, y });
+const faces = `(() => {
+  const f = {};
+  document.querySelectorAll(".smiley").forEach(s => {
+    const b = s.getBoundingClientRect();
+    const at = 48 * b.width / 156; // where eyes and mouth start, at rest
+    f[s.dataset.mood] = {
+      x: b.left + b.width / 2, y: b.top + b.height / 2, w: b.width,
+      eye: s.querySelector("rect").getBoundingClientRect().left - b.left - at,
+      mouth: s.querySelector("path").getBoundingClientRect().left - b.left - at,
+      moving: s.getAnimations().length > 0,
+      hearts: s.parentElement.querySelectorAll("svg:not(.smiley)").length,
+      blush: [...s.querySelectorAll("*")].some(e => getComputedStyle(e).fill === "rgb(211, 56, 28)" && +getComputedStyle(e).opacity > 0)
+    };
+  });
+  return f;
+})()`;
+// Blinks seen per face over a while, frame by frame: an eye under half its height is shut.
+const blinks = ms => ev(`new Promise(done => {
+  const n = { happy: 0, sad: 0 }, shut = {}, end = performance.now() + ${ms};
+  (function look() {
+    document.querySelectorAll(".smiley").forEach(s => {
+      const m = s.dataset.mood;
+      const closed = s.querySelector("rect").getBoundingClientRect().height < s.getBoundingClientRect().height * 6 / 156;
+      if (closed && !shut[m]) n[m]++;
+      shut[m] = closed;
+    });
+    if (performance.now() < end) requestAnimationFrame(look);
+    else done(n);
+  })();
+})`);
+// The colour the field shows most of under a face, give or take the canvas's rounding.
+const like = (got, want) => got.split(",").every((v, i) => Math.abs(v - want.split(",")[i]) <= 3);
+const tint = mood => ev(`(() => {
+  const b = document.querySelector('.smiley[data-mood="${mood}"]').getBoundingClientRect();
+  const d = document.getElementById("field").getContext("2d").getImageData(b.left, b.top, b.width, b.height).data;
+  const n = {};
+  for (let i = 0; i < d.length; i += 4) if (d[i + 3]) n[d[i] + "," + d[i + 1] + "," + d[i + 2]] = (n[d[i] + "," + d[i + 1] + "," + d[i + 2]] || 0) + 1;
+  return (Object.entries(n).sort((a, b) => b[1] - a[1])[0] || ["paper"])[0];
+})()`);
+await open("/", []);
+await ev("document.querySelector('.moods').scrollIntoView({ block: 'center' })");
+await wait(800);
+const F = await ev(faces);
+if (!F.happy || !F.sad) extra.push("About page has no happy and sad face");
+else {
+  await mouse(F.happy.x + 300, F.happy.y);
+  await wait(800);
+  let G = await ev(faces);
+  if (!(G.happy.eye > 0.5 && G.happy.eye <= 5.5)) extra.push("face looks " + G.happy.eye.toFixed(1) + "px toward the pointer, expected a little, under half a square");
+  if (Math.abs(G.happy.mouth - G.happy.eye) > 0.5) extra.push("face's mouth does not move with its eyes");
+  await mouse(F.happy.x, F.happy.y);
+  await wait(200);
+  G = await ev(faces);
+  if (!G.happy.hearts) extra.push("happy face gives off no hearts under the pointer");
+  if (!G.happy.moving) extra.push("happy face does not jump under the pointer");
+  await wait(400);
+  if (!like(await tint("happy"), "248,184,98")) extra.push("happy face not filled in amber under the pointer: " + (await tint("happy")));
+  await mouse(F.sad.x, F.sad.y);
+  await wait(600);
+  G = await ev(faces);
+  if (!(G.sad.w < F.sad.w - 3)) extra.push("sad face does not shrink back under the pointer");
+  if (!G.sad.blush) extra.push("sad face does not blush under the pointer");
+  if (!like(await tint("sad"), "160,216,239")) extra.push("sad face not filled in blue under the pointer: " + (await tint("sad")));
+  // In the dark theme the ink is pale, which vanishes on a coloured face: it
+  // turns dark once the colour reaches it, before the pointer does.
+  await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: "dark" }] });
+  await mouse(F.happy.x + 85, F.happy.y);
+  await wait(400);
+  const ink = await ev(`getComputedStyle(document.querySelector('.smiley[data-mood="happy"]')).color`);
+  if (!/^rgb\((\d{1,2}), (\d{1,2}), (\d{1,2})\)$/.test(ink)) extra.push("dark theme: ink still pale (" + ink + ") on a face coloured in");
+  await send("Emulation.setEmulatedMedia", { features: [] });
+  await mouse(5, 5);
+  const seen = await blinks(7000);
+  if (!seen.happy || !seen.sad) extra.push("faces did not both blink in 7s: " + JSON.stringify(seen));
+
+  await ev(toggle + ".click()");
+  await mouse(F.happy.x + 300, F.happy.y + 100);
+  await wait(500);
+  const P0 = await ev(faces);
+  await mouse(F.happy.x - 300, F.happy.y - 100);
+  await wait(500);
+  if ((await ev(faces)).happy.eye !== P0.happy.eye) extra.push("faces follow the pointer when paused");
+  await mouse(F.happy.x, F.happy.y);
+  await wait(200);
+  G = await ev(faces);
+  if (G.happy.hearts || G.happy.moving) extra.push("happy face jumps or gives off hearts when paused");
+  await mouse(F.sad.x, F.sad.y);
+  await wait(600);
+  if ((await ev(faces)).sad.w < F.sad.w - 3) extra.push("sad face shrinks back when paused");
+  const still = await blinks(7000);
+  if (still.happy || still.sad) extra.push("faces blink when paused: " + JSON.stringify(still));
+  await ev(toggle + ".click()");
 }
 
 // The CV prints as a CV: the site's furniture gone, a letterhead in its

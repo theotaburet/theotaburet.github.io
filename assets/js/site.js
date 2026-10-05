@@ -157,23 +157,44 @@
   })();
 
   /* -------------------------------------------------------------------------
-     Faces. The pixel smileys on the About page look toward the pointer by a
-     square, and while it is on one the field colours it in: warm for the
-     happy face, cool for the other. The blink is the stylesheet's.
+     Faces. The pixel smileys on the About page blink now and then. Under a
+     mouse they turn eyes and mouth toward it, a little and smoothly; when it
+     reaches them the happy one jumps and gives off hearts, the sad one
+     shrinks back, looks away and blushes. Colouring them in is the field's,
+     in heat.js. The pause button stops all of it, as reduced motion does.
      ---------------------------------------------------------------------- */
   (function faces() {
     var els = [].slice.call(document.querySelectorAll(".smiley"));
-    if (!els.length || still.matches || coarse.matches) return;
+    if (!els.length || still.matches) return;
 
     var CELL = 10; // the field's pitch, as in heat.js
-    var LEVEL = { happy: 0.7, sad: 0.38 }; // B and A in the field's bands
-    var faces = [];
+    // Nine squares by seven.
+    var HEART = "M2 1h2v1H2zM5 1h2v1H5zM1 2h7v2H1zM2 4h5v1H2zM3 5h3v1H3zM4 6h1v1H4z";
+    var root = document.documentElement;
+    function paused() {
+      return root.classList.contains("motion-paused");
+    }
+
+    // Each on a clock of its own: two faces blinking together are a machine.
+    els.forEach(function blink(el) {
+      window.setTimeout(function () {
+        if (!paused() && !document.hidden) {
+          el.classList.add("blink");
+          window.setTimeout(function () {
+            el.classList.remove("blink");
+          }, 110);
+        }
+        blink(el);
+      }, 2200 + Math.random() * 4200);
+    });
+
+    if (coarse.matches) return;
 
     // Onto the lattice, so the ink and the field's squares are the same
     // squares. Where it lands depends on everything above it, which a late
-    // image can move, so this runs on every pointer move rather than once:
-    // the only time anyone is looking at the squares is when the pointer is
-    // about. Returns the centre, in the viewport.
+    // image can move, so this is redone while the pointer is about, the only
+    // time anyone is looking at the squares. Returns the centre, in the
+    // viewport. With `translate`, which leaves `transform` to the stylesheet.
     function snap(f) {
       var b = f.el.getBoundingClientRect();
       var left = b.left - f.dx;
@@ -185,57 +206,80 @@
       if (dx !== f.dx || dy !== f.dy) {
         f.dx = dx;
         f.dy = dy;
-        f.el.style.transform = "translate(" + dx + "px," + dy + "px)";
+        f.el.style.translate = dx + "px " + dy + "px";
       }
       return { x: left + dx + b.width / 2, y: top + dy - window.scrollY + b.height / 2 };
     }
 
-    els.forEach(function (el) {
-      var f = {
-        el: el,
-        look: el.querySelector(".look"),
-        v: LEVEL[el.getAttribute("data-mood")] || 0.5,
-        dx: 0,
-        dy: 0,
-        glance: "",
-        beat: null
-      };
-      // Half a square up and left of the centre: the field rounds to the
-      // nearest square, and the middle of thirteen is a square, not a line.
-      function fill() {
-        if (document.hidden) return;
-        var c = snap(f);
-        window.dispatchEvent(
-          new CustomEvent("field:pulse", {
-            detail: { shape: "disc", r: 6, v: f.v, x: c.x - CELL / 2, y: c.y - CELL / 2 }
-          })
-        );
+    function hearts(host) {
+      for (var i = 0; i < 4; i++) {
+        window.setTimeout(function () {
+          var h = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          h.setAttribute("class", "smiley-heart");
+          h.setAttribute("viewBox", "0 0 9 7");
+          h.setAttribute("aria-hidden", "true");
+          h.innerHTML = '<path d="' + HEART + '"/>';
+          h.style.left = 38 + Math.random() * 52 + "%"; // scattered up and to the right, as on craft.wild.as
+          h.addEventListener("animationend", function () {
+            h.remove();
+          });
+          host.appendChild(h);
+        }, i * 90);
       }
-      // Kept up for as long as the pointer stays, like a hover on a card.
-      el.addEventListener("pointerenter", function () {
-        fill();
-        f.beat = window.setInterval(fill, 200);
-      });
-      el.addEventListener("pointerleave", function () {
-        f.beat = window.clearInterval(f.beat);
-      });
-      faces.push(f);
+    }
+
+    var faces = els.map(function (el) {
+      var f = { el: el, look: el.querySelector(".look"), dx: 0, dy: 0, lx: 0, ly: 0, shy: false, at: "" };
+      if (el.getAttribute("data-mood") === "sad") {
+        el.addEventListener("pointerenter", function () {
+          if (paused()) return;
+          f.shy = true;
+          el.classList.add("shy");
+        });
+        el.addEventListener("pointerleave", function () {
+          f.shy = false;
+          el.classList.remove("shy");
+        });
+      } else {
+        el.addEventListener("animationend", function () {
+          el.classList.remove("jump");
+        });
+        el.addEventListener("pointerenter", function () {
+          if (paused() || el.classList.contains("jump")) return;
+          el.classList.add("jump");
+          hearts(el.parentNode);
+        });
+      }
+      return f;
     });
 
+    var px = -1;
+    var py = 0;
     window.addEventListener("pointermove", function (e) {
+      px = e.clientX;
+      py = e.clientY;
+    });
+
+    // Eased a little of the way every frame, so the eyes glide rather than
+    // jump. Toward the pointer by less than half a square, more the further
+    // off it is; the shy one away from it and down.
+    (function look() {
+      window.requestAnimationFrame(look);
+      if (px < 0 || paused()) return;
       faces.forEach(function (f) {
         var c = snap(f);
-        var dx = e.clientX - c.x;
-        var dy = e.clientY - c.y;
-        var d = Math.sqrt(dx * dx + dy * dy);
-        // A square at most, which in pixel art is the whole of a glance. Right
-        // on top of it, it looks back at you.
-        var glance = d < 40 ? "0 0" : Math.round(dx / d) * 12 + " " + Math.round(dy / d) * 12;
-        if (glance === f.glance) return;
-        f.glance = glance;
-        f.look.setAttribute("transform", "translate(" + glance + ")");
+        var dx = px - c.x;
+        var dy = py - c.y;
+        var d = Math.sqrt(dx * dx + dy * dy) || 1;
+        var m = f.shy ? -7 : Math.min(1, d / 420) * 5.5;
+        f.lx += ((dx / d) * m - f.lx) * 0.15;
+        f.ly += ((dy / d) * m + (f.shy ? 2.5 : 0) - f.ly) * 0.15;
+        var at = "translate(" + f.lx.toFixed(2) + " " + f.ly.toFixed(2) + ")";
+        if (at === f.at) return; // settled: writing it again would restyle the page for nothing
+        f.at = at;
+        f.look.setAttribute("transform", at);
       });
-    });
+    })();
   })();
 
   /* -------------------------------------------------------------------------

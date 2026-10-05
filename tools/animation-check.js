@@ -65,7 +65,16 @@ function stub(extra, view) {
     // #main-wrapper, so both lookups have to answer. The sidebar is not what
     // is being judged here: it is simply not there.
     querySelector: function (sel) { return /^#sidebar/.test(sel) ? null : host(); },
-    querySelectorAll: function () { return extra.all || []; },
+    // What a query finds: `all` names it by selector, when a test gives one.
+    querySelectorAll: function (sel) { return extra.all ? extra.all(sel) : []; },
+    // A range over a node's contents covers its text, which a stub node gives
+    // as `text`; without one, the node's own boxes.
+    createRange: function () {
+      return {
+        selectNodeContents: function (n) { this.n = n; },
+        getClientRects: function () { return this.n.text || this.n.getClientRects(); }
+      };
+    },
     addEventListener: function () {}
   };
   var box = {
@@ -145,8 +154,8 @@ function report(name, ok, detail) {
 /* -- the background field ------------------------------------------------- */
 
 // One field, wired to a stub canvas that reports what it draws and nothing
-// else: how many cells are lit and how far they reach. `all` is what any
-// querySelectorAll answers, for the links the pointer can point at.
+// else: how many cells are lit and how far they reach. `all` answers
+// querySelectorAll, for the links, headings and faces the pointer can find.
 function field(VW, VH, scroll, file, all) {
   var live = 0;
   var minX = 1e9;
@@ -159,7 +168,7 @@ function field(VW, VH, scroll, file, all) {
   // test here would agree with the bug instead of catching it.
   var corners = [[0, 0], [VW - 10, 0], [0, VH - 10], [VW - 10, VH - 10]];
   var hit = [false, false, false, false];
-  var cells = []; // every cell of the last frame, for measuring one band of it
+  var cells = []; // every cell of the last frame, with its colour, for measuring part of it
   var jolts = 0; // frames the field was drawn shifted
   var offGrid = 0; // ...by something other than whole cells
   var ctx = {
@@ -177,7 +186,7 @@ function field(VW, VH, scroll, file, all) {
     },
     fillRect: function (x, y) {
       live++;
-      cells.push(y);
+      cells.push({ x: x, y: y, fill: ctx.fillStyle });
       if (x < minX) minX = x;
       if (x > maxX) maxX = x;
       if (y < minY) minY = y;
@@ -223,9 +232,25 @@ function field(VW, VH, scroll, file, all) {
     // A band the click's front has not reached yet holds only what was drawn
     // into it, so this measures that shape and nothing else.
     band: function (y0, y1) {
-      var ys = cells.filter(function (y) { return y >= y0 && y <= y1; });
+      var ys = cells.map(function (c) { return c.y; }).filter(function (y) { return y >= y0 && y <= y1; });
       if (!ys.length) return 0;
       return Math.max.apply(null, ys) - Math.min.apply(null, ys) + 10;
+    },
+    // Where the cells inside a box are not the given colour, as one string.
+    odd: function (x0, y0, x1, y1, fill) {
+      return cells.filter(function (c) {
+        return c.x >= x0 && c.x < x1 && c.y >= y0 && c.y < y1 && c.fill !== fill;
+      }).map(function (c) { return c.x + "," + c.y; }).sort().join(" ");
+    },
+    // The lit cells inside a box, by colour.
+    inside: function (x0, y0, x1, y1) {
+      var n = { all: 0 };
+      cells.forEach(function (c) {
+        if (c.x < x0 || c.x >= x1 || c.y < y0 || c.y >= y1) return;
+        n.all++;
+        n[c.fill] = (n[c.fill] || 0) + 1;
+      });
+      return n;
     },
     at: function () { return now; }
   };
@@ -399,35 +424,79 @@ function field(VW, VH, scroll, file, all) {
   g.run(17);
   report("an ember scrolls with the page", before === 450 && g.seen().minY === 150, before + "px, then " + g.seen().minY + "px after scrolling 300px");
 
-  // A face fills in: a disc thirteen squares across, not a ring and not the
-  // square the face is drawn in (169).
-  var d = field(1440, 900, 0, "heat.js");
-  d.run(100);
-  d.fire("field:pulse", { detail: { shape: "disc", r: 6, v: 0.7, x: 720, y: 450 } });
-  d.run(17);
-  var disc = d.seen();
-  report("a face fills in as a disc", disc.live > 110 && disc.live < 150 && disc.maxX - disc.minX + 10 === 130,
-    disc.live + " cells, " + (disc.maxX - disc.minX + 10) + "px across");
+  // What a query finds, by selector: the links the pointer aims at, the
+  // headings, the faces.
+  function only(re, list) {
+    return function (sel) { return re.test(sel) ? list : []; };
+  }
+  var nowhere = { closest: function () { return null; } };
+
+  // A face fills in as the pointer comes near it, in its own colour: nothing
+  // from across the page, a patch in the middle from a little way off, and
+  // the face's disc, thirteen squares across, with the pointer on it.
+  var FACE_BOX = { left: 655, top: 385, right: 785, bottom: 515, width: 130, height: 130 };
+  var FACE = {
+    getAttribute: function () { return "happy"; },
+    getBoundingClientRect: function () { return FACE_BOX; },
+    classList: { toggle: function () {} }
+  };
+  function near(dx, then) {
+    var f = field(1440, 900, 0, "heat.js", only(/smiley/, [FACE]));
+    f.run(100);
+    f.fire("pointermove", { clientX: 720 + dx, clientY: 450, target: nowhere });
+    f.run(300);
+    if (!then) return f.inside(655, 385, 785, 515);
+    var odd = f.odd(655, 385, 785, 515, "#f8b862");
+    f.run(then);
+    return [odd, f.odd(655, 385, 785, 515, "#f8b862")];
+  }
+  var far = near(320);
+  var off = near(140);
+  var on = near(20);
+  // One flat colour, with a few squares twinkling in the others: which ones
+  // changes as you watch, as on craft.wild.as. A grain fixed to the squares
+  // reads as a stain.
+  var twinkle = near(20, 300);
+  report("a face stays paper with the pointer across the page", far.all === 0, far.all + " cells lit");
+  report("it starts filling in as the pointer comes near", off.all > 0 && off.all < on.all, off.all + " cells, then " + on.all + " on it");
+  report("in its own colour", on["#f8b862"] > on.all * 0.8 && on.all > 110 && on.all < 150,
+    (on["#f8b862"] || 0) + " of " + on.all + " cells amber");
+  report("a few squares of it twinkle", twinkle[0] && twinkle[1] && twinkle[0] !== twinkle[1],
+    "the odd squares were " + (twinkle[0] || "none") + ", then " + (twinkle[1] || "none"));
 
   // The arrow. A link 100px above the pointer: the pointer's own blob stays
   // within about 40px of it, so whatever is lit in the gap is the arrow. With
   // no link there, or with the pointer on the link, the gap stays paper.
   var BOX = { left: 700, top: 400, right: 800, bottom: 420, height: 20 };
-  var LINK = { // the stub hands it to every query, so it is copy as well as a link
+  var LINK = {
     getClientRects: function () { return [BOX]; },
     getBoundingClientRect: function () { return BOX; }
   };
-  function aimed(all, onIt) {
+  function aimed(all, onIt, x) {
     var f = field(1440, 900, 0, "heat.js", all);
     f.run(100);
-    f.fire("pointermove", { clientX: 750, clientY: 520, target: { closest: function () { return onIt; } } });
+    f.fire("pointermove", { clientX: x || 750, clientY: 520, target: { closest: function () { return onIt; } } });
     f.run(300);
     return f.band(425, 470);
   }
-  var toward = aimed([LINK], null);
+  var links = only(/project-card/, [LINK]);
+  var toward = aimed(links, null);
   report("near a link the pointer grows an arrow to it", toward >= 40, toward + "px of the gap lit");
-  report("with no link near, no arrow", aimed([], null) === 0, aimed([], null) + "px lit");
-  report("on the link itself, no arrow", aimed([LINK], {}) === 0, aimed([LINK], {}) + "px lit");
+  report("with no link near, no arrow", aimed(only(/x^/, []), null) === 0, aimed(only(/x^/, []), null) + "px lit");
+  report("on the link itself, no arrow", aimed(links, {}) === 0, aimed(links, {}) + "px lit");
+
+  // A heading is as wide as the column and its words are not: the arrow goes
+  // to the words. Under them it points; under the empty end of the line,
+  // 200px past them, it does not.
+  var HEADING = {
+    text: [BOX],
+    getClientRects: function () { return [{ left: 300, top: 400, right: 1100, bottom: 420, height: 20 }]; }
+  };
+  var heads = only(/h2/, [HEADING]);
+  var up = aimed(heads, null);
+  report("near a heading the pointer grows an arrow to it", up >= 40, up + "px of the gap lit");
+  report("aimed at its words, not the width of the column", aimed(heads, null, 1000) === 0, aimed(heads, null, 1000) + "px lit past them");
+
 })();
 
 if (failures.length) {
