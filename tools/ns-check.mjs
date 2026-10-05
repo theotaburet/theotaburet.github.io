@@ -245,5 +245,28 @@ const rel = (a, b) => Math.abs(a - b) / Math.abs(b);
   report("a patch too dark for any noise embeds nothing, and does not fail", dark.bits < 1, dark.err ? String(dark.err) : dark.bits.toFixed(3) + " bits");
 }
 
+// --- The data the figures are drawn from (tools/ns-data.py).
+{
+  const at = f => new URL("../assets/data/ns/" + f, import.meta.url);
+  let noise, hook;
+  try {
+    noise = JSON.parse(fs.readFileSync(at("noise.json")));
+    hook = JSON.parse(fs.readFileSync(at("hook.json")));
+  } catch (e) {
+    report("the figures' data exist (run tools/ns-data.py)", false, e.code || e.message);
+  }
+  if (noise && hook) {
+    const da = noise.iso200.a - noise.iso100.a;
+    report("noise grows with brightness, and faster at ISO 200", noise.iso100.a > 0 && noise.iso200.a > noise.iso100.a);
+    report("the slope gap estimated here is near the paper's 1.15", Math.abs(da - 1.15) < 0.5, "Δa = " + da.toFixed(2));
+    report("the hook's crop carries something", hook.bits > 1000 && hook.size === 256, (hook.bits / 8192).toFixed(1) + " KB");
+    const side = f => {
+      const b = fs.readFileSync(at(f));
+      return b.toString("ascii", 1, 4) === "PNG" ? b.readUInt32BE(16) + "×" + b.readUInt32BE(20) : "not a PNG";
+    };
+    report("the four crops are 256×256 PNGs", ["iso100", "iso200", "stego", "diff"].every(n => side(n + ".png") === "256×256"));
+  }
+}
+
 console.log(failures ? "\n" + failures + " problem(s)" : "\nall good");
 process.exit(failures ? 1 : 0);
