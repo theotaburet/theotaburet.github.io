@@ -182,5 +182,68 @@ const rel = (a, b) => Math.abs(a - b) / Math.abs(b);
     joint.h2.toFixed(2) + " < " + marginal.toFixed(2) + " bits");
 }
 
+// --- Development, DCT, lattices and the simulated embedding (sections III and V).
+{
+  const r = N.rng(11);
+  const raw = Float64Array.from({ length: 26 * 26 }, () => 1000 + 9000 * r());
+  const M = N.photositesToDct(3);
+  const Y = N.develop(raw, 26);
+  let w = 0;
+  N.BLOCK_ORDER[3].forEach((b, k) => {
+    const bi = Math.floor(b / 3) * 8;
+    const bj = (b % 3) * 8;
+    const x = new Float64Array(64);
+    for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) x[i * 8 + j] = Y[(bi + i) * 24 + bj + j];
+    const c = N.dct8(x);
+    for (let t = 0; t < 64; t++) {
+      const row = M.rows[k * 64 + t];
+      let s = 0;
+      row.idx.forEach((p, q) => (s += row.val[q] * raw[p]));
+      w = Math.max(w, Math.abs(c[t] - s) / 1e4);
+    }
+  });
+  report("developing then a DCT per block is M, block order included", w < 1e-12, "worst " + w.toExponential(1));
+  const x = Float64Array.from({ length: 64 }, () => r());
+  report("idct8 undoes dct8", N.idct8(N.dct8(x)).every((v, i) => Math.abs(v - x[i]) < 1e-12));
+
+  const red = N.photositesToDct(1, { luma: { R: 1, G: 0, B: 0 } });
+  const reds = red.rows.every(row => [...row.idx].every(p => N.cfa(Math.floor(p / 10), p % 10) === "R"));
+  report("a red-only development reads red photosites only", reds);
+  const blur = N.photositesToDct(1, { mosaic: false, kernel: [[1, 2, 1], [2, 4, 2], [1, 2, 1]].map(r => r.map(v => v / 16)) });
+  report("a plain low-pass, without the mosaic, reads every photosite under the block", blur.rows[0].idx.length === 100);
+
+  report("the four lattices are laid out as in Fig. 10", [0, 1].map(i => [0, 1, 2, 3].map(j => N.lattice(i, j)).join("")).join(" ") === "1313 4242");
+  let causal = true;
+  for (const L of [2, 3, 4]) {
+    const bi = L === 3 ? 2 : 3;
+    const bj = L === 4 ? 2 : 3;
+    if (N.lattice(bi, bj) !== L) causal = false;
+    N.GIVEN[L].slice(1).forEach(p => {
+      if (N.lattice(bi + N.AROUND[p][0], bj + N.AROUND[p][1]) >= L) causal = false;
+    });
+  }
+  report("each lattice is drawn knowing only lattices before it", causal);
+
+  const B = 10; // small enough to be quick, big enough for Λ4 blocks with all eight neighbours drawn
+  const flat = new Float64Array((8 * B + 2) ** 2).fill(6000);
+  const vOf = x => 16 * (1.15 * x - 1150);
+  const t0 = performance.now();
+  const e = N.embed(flat, B, vOf, new Array(64).fill(256), 5, N.rng(3));
+  const ms = performance.now() - t0;
+  const drawn = e.blocks.filter(Boolean);
+  report("the embedding draws the inner blocks, and leaves the border alone",
+    drawn.length > 0 && e.blocks[0] === null && drawn.every(b => b.length === 64 && b.every(Number.isFinite)), drawn.length + " blocks in " + ms.toFixed(0) + "ms");
+  const avg = L => e.perLattice[L].reduce((a, b) => a + b, 0) / e.perLattice[L].length;
+  report("every lattice gets blocks", [1, 2, 3, 4].every(L => e.perLattice[L].length > 0), [1, 2, 3, 4].map(L => e.perLattice[L].length).join("/"));
+  report("conditioning costs capacity: Λ1 blocks carry more than Λ4 ones", avg(1) > avg(4), avg(1).toFixed(1) + " > " + avg(4).toFixed(1) + " bits a block");
+  let dark;
+  try {
+    dark = N.embed(new Float64Array((8 * B + 2) ** 2).fill(900), B, vOf, new Array(64).fill(256), 5, N.rng(4));
+  } catch (err) {
+    dark = { bits: NaN, err };
+  }
+  report("a patch too dark for any noise embeds nothing, and does not fail", dark.bits < 1, dark.err ? String(dark.err) : dark.bits.toFixed(3) + " bits");
+}
+
 console.log(failures ? "\n" + failures + " problem(s)" : "\nall good");
 process.exit(failures ? 1 : 0);

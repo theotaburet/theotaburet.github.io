@@ -30,21 +30,31 @@ export const BLOCK_ORDER = { 1: [0], 3: [4, 1, 3, 5, 7, 0, 2, 6, 8] };
 
 // The luminance of pixel (p, q) as weights on the photosites: the demosaicked
 // R, G and B of photosite (p+1, q+1), mixed. The one-photosite border is what
-// the kernels reach past the blocks.
-function lumaRow(p, q, nc) {
+// the kernels reach past the blocks. opts.luma changes the mix (a single
+// channel, to see what demosaicking alone does); opts.mosaic === false drops
+// the mosaic and lays opts.kernel on every photosite, a plain low-pass filter
+// (Fig. 8b).
+function lumaRow(p, q, nc, opts = {}) {
   const w = new Map();
   const i = p + 1;
   const j = q + 1;
+  const add = (r, c, k) => {
+    if (r < 0 || c < 0 || r >= nc || c >= nc || !k) return;
+    const at = r * nc + c;
+    w.set(at, (w.get(at) || 0) + k);
+  };
+  if (opts.mosaic === false) {
+    for (let di = -1; di <= 1; di++) for (let dj = -1; dj <= 1; dj++) add(i + di, j + dj, opts.kernel[di + 1][dj + 1]);
+    return w;
+  }
+  const luma = opts.luma || LUMA;
   for (const ch of ["R", "G", "B"]) {
+    if (!luma[ch]) continue;
     for (let di = -1; di <= 1; di++) {
       for (let dj = -1; dj <= 1; dj++) {
         const r = i + di;
         const c = j + dj;
-        if (r < 0 || c < 0 || r >= nc || c >= nc || cfa(r, c) !== ch) continue;
-        const k = KERNEL[ch][di + 1][dj + 1];
-        if (!k) continue;
-        const at = r * nc + c;
-        w.set(at, (w.get(at) || 0) + LUMA[ch] * k);
+        if (r >= 0 && c >= 0 && r < nc && c < nc && cfa(r, c) === ch) add(r, c, luma[ch] * KERNEL[ch][di + 1][dj + 1]);
       }
     }
   }
@@ -56,14 +66,14 @@ function lumaRow(p, q, nc) {
 // block order, DCT). Rows: blocks in BLOCK_ORDER, then the 64 modes (u, v)
 // row-major. Columns: photosites row-major. Kept sparse, row by row: a
 // coefficient sees only the 10×10 photosites under its block.
-export function photositesToDct(nb) {
+export function photositesToDct(nb, opts = {}) {
   const nc = 8 * nb + 2;
   const rows = [];
   for (const b of BLOCK_ORDER[nb]) {
     const bi = Math.floor(b / nb) * 8;
     const bj = (b % nb) * 8;
     const luma = [];
-    for (let x = 0; x < 8; x++) for (let y = 0; y < 8; y++) luma.push(lumaRow(bi + x, bj + y, nc));
+    for (let x = 0; x < 8; x++) for (let y = 0; y < 8; y++) luma.push(lumaRow(bi + x, bj + y, nc, opts));
     for (let u = 0; u < 8; u++) {
       for (let v = 0; v < 8; v++) {
         const acc = new Map();
@@ -276,4 +286,103 @@ export function sampleSequential(mean, cov, n, steps, K, rand) {
     out.push({ m, s, ks, p, k, x, tried, h: entropy(p) });
   }
   return out;
+}
+
+// Develops a patch of photosites to luminance, pixel by pixel, with the
+// weights M uses: pixel (p, q) is photosite (p+1, q+1) demosaicked. nc is the
+// side of the patch; the result is (nc-2)², row-major.
+export function develop(raw, nc, opts = {}) {
+  const n = nc - 2;
+  const Y = new Float64Array(n * n);
+  for (let p = 0; p < n; p++) {
+    for (let q = 0; q < n; q++) {
+      let s = 0;
+      lumaRow(p, q, nc, opts).forEach((w, at) => (s += w * raw[at]));
+      Y[p * n + q] = s;
+    }
+  }
+  return Y;
+}
+
+// The 8×8 DCT of a block and its inverse, row-major: A x Aᵀ and Aᵀ c A.
+export function dct8(x) {
+  const c = new Float64Array(64);
+  for (let u = 0; u < 8; u++) {
+    for (let v = 0; v < 8; v++) {
+      let s = 0;
+      for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) s += A[u][i] * x[i * 8 + j] * A[v][j];
+      c[u * 8 + v] = s;
+    }
+  }
+  return c;
+}
+
+export function idct8(c) {
+  const x = new Float64Array(64);
+  for (let i = 0; i < 8; i++) {
+    for (let j = 0; j < 8; j++) {
+      let s = 0;
+      for (let u = 0; u < 8; u++) for (let v = 0; v < 8; v++) s += A[u][i] * c[u * 8 + v] * A[v][j];
+      x[i * 8 + j] = s;
+    }
+  }
+  return x;
+}
+
+// The four lattices of blocks (section V-A, Fig. 10): block (bi, bj) belongs
+// to one by the parity of its row and column.
+export function lattice(bi, bj) {
+  if (bi % 2 === 0) return bj % 2 === 0 ? 1 : 3;
+  return bj % 2 === 0 ? 4 : 2;
+}
+
+// The neighbourhood in M's block order (C, N, W, E, S, NW, NE, SW, SE): the
+// offset of each position, and which positions each lattice is drawn
+// knowing, the centre first. Λ1 knows nothing, Λ2 its diagonals, Λ3 its
+// sides, Λ4 all eight.
+export const AROUND = [[0, 0], [-1, 0], [0, -1], [0, 1], [1, 0], [-1, -1], [-1, 1], [1, -1], [1, 1]];
+export const GIVEN = { 1: [0], 2: [0, 5, 6, 7, 8], 3: [0, 1, 2, 3, 4], 4: [0, 1, 2, 3, 4, 5, 6, 7, 8] };
+
+// Simulated embedding over a patch (Algorithm 1): the blocks of a patch of
+// (8B+2)² photosites, B a side, drawn lattice by lattice, each given the
+// neighbours already drawn. vOf(x) is the stego variance of a photosite of
+// value x (set to 0 when negative, as the paper says); steps are the 64
+// quantisation steps; K half the alphabet. A block is drawn only if every
+// neighbour it needs was; the others stay null. Returns the 64 continuous
+// values drawn per block, the bits they carry, and the bits per block of
+// each lattice.
+export function embed(raw, B, vOf, steps, K, rand) {
+  const nc = 8 * B + 2;
+  const M = photositesToDct(3);
+  const blocks = new Array(B * B).fill(null);
+  const perLattice = { 1: [], 2: [], 3: [], 4: [] };
+  let bits = 0;
+  const v = new Float64Array(26 * 26);
+  for (const L of [1, 2, 3, 4]) {
+    for (let bi = 1; bi < B - 1; bi++) {
+      for (let bj = 1; bj < B - 1; bj++) {
+        if (lattice(bi, bj) !== L) continue;
+        const known = GIVEN[L].slice(1).map(p => blocks[(bi + AROUND[p][0]) * B + bj + AROUND[p][1]]);
+        if (known.some(b => !b)) continue;
+        for (let i = 0; i < 26; i++) {
+          for (let j = 0; j < 26; j++) v[i * 26 + j] = Math.max(0, vOf(raw[((bi - 1) * 8 + i) * nc + (bj - 1) * 8 + j]));
+        }
+        const S = covariance(M, v);
+        const idx = GIVEN[L].flatMap(p => Array.from({ length: 64 }, (_, t) => p * 64 + t));
+        const n = idx.length;
+        const Ss = new Float64Array(n * n);
+        for (let a = 0; a < n; a++) for (let b = 0; b < n; b++) Ss[a * n + b] = S[idx[a] * 576 + idx[b]] + (a === b ? 1e-3 : 0);
+        let mean = new Float64Array(64);
+        let cov = Ss;
+        if (n > 64) ({ mean, cov } = conditional(Ss, n, 64, known.flatMap(b => Array.from(b))));
+        for (let t = 0; t < 64; t++) cov[t * 65] += 1e-3; // what rounding leaves of a variance that is zero
+        const draw = sampleSequential(mean, cov, 64, steps, K, rand);
+        blocks[bi * B + bj] = Float64Array.from(draw, d => d.x);
+        const h = draw.reduce((a, d) => a + d.h, 0);
+        perLattice[L].push(h);
+        bits += h;
+      }
+    }
+  }
+  return { blocks, bits, perLattice };
 }
