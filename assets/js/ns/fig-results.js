@@ -48,7 +48,7 @@ export function mount(el, ctx) {
 
   Promise.all([fetch(new URL("results.json", DATA)).then(x => x.json()), fetch(new URL("hook.json", DATA)).then(x => x.json())]).then(([res, hook]) => {
     r = res;
-    note.text("At QF 100 that is about " + r.bpp[100] + " bit a pixel (Fig. 13a). The 256×256 crop that opens this article carries " + hook.kbytes.toFixed(1) + " KB.");
+    note.text("At QF 100 that is about " + r.bpp[100] + " bit a pixel (Fig. 13a). The 256×256 crop that opens this article could carry " + hook.kbytes.toFixed(1) + " KB.");
     paint();
   });
 

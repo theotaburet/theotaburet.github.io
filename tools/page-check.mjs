@@ -1058,6 +1058,29 @@ if (ARTICLE_UP) {
   }
 }
 
+// The text, whole: no draft note left, every section of the story in its
+// place, and every term coloured in the text known to a figure on the page.
+if (ARTICLE_UP) {
+  await open(ARTICLE, []);
+  const t = await ev(`(async () => {
+    const out = [];
+    if (/\\bDraft\\b/.test(document.querySelector(".content").textContent)) out.push("a draft note is left");
+    const want = ["The sensor's noise is a budget", "From photosites to JPEG coefficients", "Why neighbouring blocks move together", "Why drawing each coefficient on its own fails", "Four lattices of blocks", "The draw, in miniature", "Drawing one real block", "How much it carries", "Limits", "Going further"];
+    const got = [...document.querySelectorAll(".content > h2")].map(h => h.textContent.trim().replace(/[’]/g, "'"));
+    if (want.join("|") !== got.join("|")) out.push("sections are [" + got.join(" / ") + "]");
+    for (const f of document.querySelectorAll(".ns-inline, .ns-scrolly")) {
+      f.scrollIntoView({ block: "center", behavior: "instant" });
+      await new Promise(r => setTimeout(r, 300));
+    }
+    await new Promise(r => setTimeout(r, 800));
+    const known = new Set([...document.querySelectorAll("[data-keys]")].flatMap(f => f.dataset.keys.split(" ")));
+    const stray = [...new Set([...document.querySelectorAll(".ns-key[data-key]")].map(k => k.dataset.key))].filter(k => !known.has(k));
+    if (stray.length) out.push("terms no figure knows: " + stray.join(" "));
+    return out;
+  })()`);
+  if (t.length) extra.push("article text: " + t.join(", "));
+}
+
 // The CV prints as a CV: the site's furniture gone, a letterhead in its
 // place, and nothing left at the opacity the scroll reveals start from.
 // tools/cv-pdf.sh prints exactly this to the PDFs the pages link to.

@@ -169,7 +169,7 @@ export function mount(el, ctx) {
     y += fs * 6.4;
     if (step) {
       const mean = d3.mean(d3.range(1, step + 1), L => BITS[L]);
-      text(X0, y, "so far, on a flat grey patch at QF 100: " + mean.toFixed(1) + " bits a block, " + (mean / 64).toFixed(2) + " a pixel", c.ink, "start");
+      text(X0, y, "so far, on a flat, bright patch at QF 100: " + mean.toFixed(1) + " bits a block, " + (mean / 64).toFixed(2) + " a pixel", c.ink, "start");
     }
     // As tall as its text needs, which is taller on a phone.
     svg.attr("viewBox", "0 0 " + W + " " + Math.ceil(y + fs * 0.8));
