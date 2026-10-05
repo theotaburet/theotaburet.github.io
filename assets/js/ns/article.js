@@ -20,11 +20,18 @@ const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
 const still = () => reduce.matches || root.classList.contains("motion-paused");
 const live = [];
 
-// Read from the section's custom properties, so they follow the theme.
+// Read from the section's custom properties, so they follow the theme, and
+// written back by a canvas as #rrggbb: the dark theme writes rgb(r g b),
+// which d3 cannot read to mix.
+const pen = document.createElement("canvas").getContext("2d");
 function colors(el) {
   const cs = getComputedStyle(el);
-  const v = n => cs.getPropertyValue("--ns-" + n).trim();
-  return { A: v("a"), B: v("b"), C: v("c"), D: v("d"), hot: v("hot"), ink: v("ink"), muted: v("muted"), paper: v("paper"), rule: v("rule") };
+  const v = n => {
+    pen.fillStyle = "#000";
+    pen.fillStyle = cs.getPropertyValue("--ns-" + n).trim();
+    return pen.fillStyle;
+  };
+  return { A: v("a"), B: v("b"), C: v("c"), D: v("d"), blue: v("blue"), hot: v("hot"), ink: v("ink"), muted: v("muted"), paper: v("paper"), rule: v("rule") };
 }
 
 // The size, in an SVG's own units, of text that should read as 12px where

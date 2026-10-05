@@ -39,6 +39,37 @@ so that the result is distributed exactly as an ISO 200 shot of the same scene w
 Two RAW files are not much to measure a sensor with. The paper fits $a$ and $b$ over the whole of E1Base, 10,800 crops, and finds $a_2 - a_1 = 1.15$ and $b_2 - b_1 = -1150$.
 </aside>
 
+## From photosites to JPEG coefficients
+
+The stego signal is added where the noise lives, on the photosites, before the camera has done anything with them. The message, though, travels in a JPEG file, and between the two lies the whole development of the picture. Follow the noise of a single photosite through it.
+
+<section class="ns-scrolly l-page" data-fig="pipeline" markdown="1">
+<figure class="ns-fig" data-quiet>
+<div class="ns-canvas"></div>
+<figcaption>The noise of one red photosite, from the Bayer mosaic to quantised DCT coefficients: demosaicked, mixed into luminance, cut into 8×8 blocks, transformed and rounded. Red: positive values; blue: negative.</figcaption>
+</figure>
+<div class="ns-steps" markdown="1">
+<div class="ns-step" markdown="1">
+A sensor does not see colour. Each photosite sits under a red, a green or a blue filter, laid out in the Bayer pattern. Here is a patch of 26×26 of them, and one red photosite carrying a burst of noise. Every other photosite is left alone, so what follows is the trace of that one value.
+</div>
+<div class="ns-step" markdown="1">
+Demosaicking fills in, at every pixel, the two colours its photosite did not measure. With bilinear interpolation, the red of a pixel is a weighted average of the red photosites around it: 1 for its own, ½ for a side neighbour, ¼ for a diagonal one. The burst now shows in nine pixels. This is $D$.
+</div>
+<div class="ns-step" markdown="1">
+The paper works on greyscale JPEGs, which keep one plane, the luminance $Y = 0.299\,R + 0.587\,G + 0.114\,B$. The burst only touched red, so it reaches $Y$ at 0.299 of its strength, still over nine pixels. This is $L$.
+</div>
+<div class="ns-step" markdown="1">
+JPEG cuts the picture into 8×8 blocks. The photosite sat at the edge of one: its nine pixels straddle two blocks, the centre one, C, and its east neighbour, E. The rim of photosites around the blocks is there because demosaicking reads one photosite past them. $S$ selects the pixels of the blocks, $P$ puts them in block order.
+</div>
+<div class="ns-step" markdown="1">
+Each block goes through an 8×8 DCT, $T$: 64 coefficients, one per frequency, the low ones top left. One photosite now moves dozens of coefficients in two blocks at once, with fixed signs and proportions. That is one column of $M = T\,P\,S\,L\,D$, the linear map from photosites to DCT coefficients. Noise that was independent from one photosite to the next comes out correlated: within a block, and across the border between blocks.
+</div>
+<div class="ns-step" markdown="1">
+Last, each coefficient is divided by its step in the quantisation table of the chosen quality, and rounded to the integer the file stores. For anything to survive here, the burst is 1,500 DN, about ten times the noise of a bright photosite at ISO 200. Lower the quality and the steps grow: fewer coefficients survive. Natural steganography draws these integers, which is why it carries the most at high qualities.
+</div>
+</div>
+</section>
+
 *Draft: the rest of the article is on its way. This is one of its figures.*
 
 ## The draw, in miniature

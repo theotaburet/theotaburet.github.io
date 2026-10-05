@@ -12,7 +12,7 @@ export function cfa(i, j) {
 
 // Bilinear demosaicking, as the reference: each kernel is laid on the mosaic
 // and only the photosites of its own colour count.
-const KERNEL = {
+export const KERNEL = {
   R: [[0.25, 0.5, 0.25], [0.5, 1, 0.5], [0.25, 0.5, 0.25]],
   G: [[0, 0.25, 0], [0.25, 1, 0.25], [0, 0.25, 0]],
   B: [[0.25, 0.5, 0.25], [0.5, 1, 0.5], [0.25, 0.5, 0.25]]
@@ -386,3 +386,13 @@ export function embed(raw, B, vOf, steps, K, rand) {
   }
   return { blocks, bits, perLattice };
 }
+
+// The JPEG luminance quantisation tables of the reference code (NS/tools,
+// as libjpeg's convert writes them), 8-bit domain, row-major. Multiply by
+// 256 for the 16-bit domain the embedding works in.
+export const QTABLES = {
+  100: new Array(64).fill(1),
+  95: [2, 1, 1, 2, 2, 4, 5, 6, 1, 1, 1, 2, 3, 6, 6, 6, 1, 1, 2, 2, 4, 6, 7, 6, 1, 2, 2, 3, 5, 9, 8, 6, 2, 2, 4, 6, 7, 11, 10, 8, 2, 4, 6, 6, 8, 10, 11, 9, 5, 6, 8, 9, 10, 12, 12, 10, 7, 9, 10, 10, 11, 10, 10, 10],
+  85: [5, 3, 3, 5, 7, 12, 15, 18, 4, 4, 4, 6, 8, 17, 18, 17, 4, 4, 5, 7, 12, 17, 21, 17, 4, 5, 7, 9, 15, 26, 24, 19, 5, 7, 11, 17, 20, 33, 31, 23, 7, 11, 17, 19, 24, 31, 34, 28, 15, 19, 23, 26, 31, 36, 36, 30, 22, 28, 29, 29, 34, 30, 31, 30],
+  75: [8, 6, 5, 8, 12, 20, 26, 31, 6, 6, 7, 10, 13, 29, 30, 28, 7, 7, 8, 12, 20, 29, 35, 28, 7, 9, 11, 15, 26, 44, 40, 31, 9, 11, 19, 28, 34, 55, 52, 39, 12, 18, 28, 32, 41, 52, 57, 46, 25, 32, 39, 44, 52, 61, 60, 51, 36, 46, 48, 49, 56, 50, 52, 50]
+};

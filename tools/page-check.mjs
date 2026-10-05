@@ -753,6 +753,44 @@ if (ARTICLE_UP) {
   }
 }
 
+// From the image to the JPEG: one photosite's noise, demosaicked across a
+// block border, lands in two blocks of DCT coefficients; a coarser JPEG
+// keeps fewer of them.
+if (ARTICLE_UP) {
+  await open(ARTICLE, []);
+  const P = `document.querySelector('.ns-scrolly[data-fig="pipeline"]')`;
+  const f = await ev(`[...document.querySelectorAll(".ns-scrolly")].findIndex(s => s.dataset.fig === "pipeline")`);
+  if (f < 0) extra.push("article: no pipeline figure");
+  else {
+    const go = i => ev(`(() => { const s = ${P}.querySelectorAll(".ns-step")[${i}]; scrollTo({ top: scrollY + s.getBoundingClientRect().top - innerHeight * 0.5, behavior: "instant" }); })()`);
+    await go(4);
+    await wait(1500);
+    const blocks = await ev(`[...new Set([...${P}.querySelectorAll(".dct-cell")].filter(c => Math.abs(+c.dataset.v) > 1e-9).map(c => c.dataset.block))].sort().join(" ")`);
+    if (blocks !== "C E") extra.push("article pipeline: the DCT step shows coefficients in blocks [" + blocks + "], expected C and E");
+    await go(5);
+    await wait(1500);
+    const kept = q => ev(`(() => { const sel = ${P}.querySelector("select"); sel.value = "${q}"; sel.dispatchEvent(new Event("change")); return [...${P}.querySelectorAll(".q-cell")].filter(c => c.dataset.k !== "0").length; })()`);
+    const k100 = await kept(100);
+    const k75 = await kept(75);
+    if (!(k100 > 0 && k75 < k100)) extra.push("article pipeline: quantising keeps " + k100 + " coefficients at QF 100 and " + k75 + " at QF 75");
+    // Away from the noisy photosite the picture is the page, in either theme:
+    // the dark theme writes its colours as rgb(r g b), which d3 cannot read.
+    for (const theme of ["light", "dark"]) {
+      await ev(`document.documentElement.setAttribute("data-bs-theme", "${theme}")`);
+      await go(2);
+      await wait(1500);
+      const same = await ev(`(() => {
+        const g = document.createElement("canvas").getContext("2d");
+        const norm = v => { g.fillStyle = "#000"; g.fillStyle = v; return g.fillStyle; };
+        const corner = ${P}.querySelector(".ns-canvas svg rect");
+        return norm(corner.getAttribute("fill")) === norm(getComputedStyle(${P}).getPropertyValue("--ns-paper").trim());
+      })()`);
+      if (!same) extra.push("article pipeline, " + theme + " theme: the cells away from the noise are not the page's colour");
+    }
+    await ev(`document.documentElement.removeAttribute("data-bs-theme")`);
+  }
+}
+
 // The CV prints as a CV: the site's furniture gone, a letterhead in its
 // place, and nothing left at the opacity the scroll reveals start from.
 // tools/cv-pdf.sh prints exactly this to the PDFs the pages link to.
