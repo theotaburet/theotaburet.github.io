@@ -209,8 +209,12 @@ export function mount(el, ctx) {
 
     // The strip above the plot, once the panels are gone: the legend, L, or the bits.
     if (step === 3) {
-      text(layer.note, [60, 40], "● drawn as the scheme does,  ρ̂ = " + s.rJoint.toFixed(2), c.B);
-      text(layer.note, [60, 64], "● each drawn on its own,  ρ̂ = " + s.rIndep.toFixed(2), c.A);
+      // The colour on a dot, the words in ink: amber and pale blue are too
+      // light to be read as text on a light page.
+      layer.note.append("circle").attr("cx", 64).attr("cy", 36).attr("r", 5).attr("fill", c.B);
+      layer.note.append("circle").attr("cx", 64).attr("cy", 60).attr("r", 5).attr("fill", c.A);
+      text(layer.note, [76, 40], "drawn as the scheme does,  ρ̂ = " + s.rJoint.toFixed(2));
+      text(layer.note, [76, 64], "each drawn on its own,  ρ̂ = " + s.rIndep.toFixed(2));
     } else if (step === 4) {
       text(layer.note, [60, 40], "s = L n,   L = [ 1   0 ;  " + rho.toFixed(2) + "   " + sc.toFixed(2) + " ]");
       text(layer.note, [60, 64], "n: two independent standard normals", c.muted);
@@ -276,7 +280,8 @@ export function mount(el, ctx) {
     if (i === 1) playing.push(rejection(layer.tries1));
     if (i === 2) {
       playing.push(rejection(layer.tries2));
-      playing.push(gsap.from(layer.point.node(), { opacity: 0, duration: 0.4, delay: 0.25 * s.one[1].tried.length + 0.2 }));
+      // On the circle, not its layer: the layer's own fade-in above owns that opacity.
+      playing.push(gsap.from(layer.point.select("circle").node(), { opacity: 0, duration: 0.4, delay: 0.25 * s.one[1].tried.length + 0.2 }));
     }
     if (i === 3) playing.push(rain());
     if (i === 4) playing.push(unbend());

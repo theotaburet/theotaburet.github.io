@@ -404,12 +404,14 @@ if (ARTICLE_UP) {
     const aside = document.querySelector(".content > .l-gutter").getBoundingClientRect();
     return {
       text: Math.round(p.width), page: Math.round(page.width), gap: Math.round(aside.left - p.right),
+      beside: Math.round(aside.top - document.querySelector(".content > .l-gutter").previousElementSibling.getBoundingClientRect().top),
       doi: !!document.querySelector(".ns-byline a[href='https://doi.org/10.1109/TIFS.2020.3007354']")
     };
   })()`);
   if (grid.text > 736) extra.push("article: the text column is " + grid.text + "px wide, over 46rem");
   if (grid.page < grid.text + 150) extra.push("article: a wide figure is no wider than the text (" + grid.page + "px for " + grid.text + "px)");
   if (grid.gap < 0) extra.push("article: the aside is not in the margin beside the text");
+  if (Math.abs(grid.beside) > 4) extra.push("article: the aside is " + grid.beside + "px off the paragraph it follows");
   if (!grid.doi) extra.push("article: the byline does not link the paper's DOI");
   const cap = await ev(`getComputedStyle(document.querySelector(".ns-fig figcaption"), "::before").content`);
   if (!/Figure/.test(cap || "")) extra.push("article: figure caption not numbered: " + cap);
@@ -419,7 +421,8 @@ if (ARTICLE_UP) {
     await new Promise(r => setTimeout(r, 400));
     const f = s.querySelector(".ns-fig").getBoundingClientRect();
     const bar = document.getElementById("topbar-wrapper").getBoundingClientRect();
-    return f.top >= Math.max(0, bar.bottom) - 1 && f.top < 80 ? "" : "figure not pinned under the top bar: its top at " + Math.round(f.top) + "px, the bar ends at " + Math.round(bar.bottom) + "px";
+    // Right under the bar, with no strip between them for the text to show through.
+    return f.top >= Math.max(0, bar.bottom) - 1 && f.top <= Math.max(0, bar.bottom) + 1 ? "" : "figure not pinned right under the top bar: its top at " + Math.round(f.top) + "px, the bar ends at " + Math.round(bar.bottom) + "px";
   })()`);
   if (pin) extra.push("article: " + pin);
   if (thrown.length) extra.push("article: script error: " + thrown[0]);
@@ -454,6 +457,22 @@ if (ARTICLE_UP) {
   const at = f => ev(`${S}[${f}].querySelector(".ns-fig").dataset.step`);
   const toStep = (f, i) => ev(`(() => { const s = ${S}[${f}].querySelectorAll(".ns-step")[${i}]; scrollTo({ top: scrollY + s.getBoundingClientRect().top - innerHeight * 0.5, behavior: "instant" }); })()`);
   const moving = () => ev("gsap.globalTimeline.getChildren(true, true, false).some(t => t.isActive())");
+  // Whatever a figure writes is read against its paper: 4.5:1 at least, in
+  // the theme the page is in.
+  const faintAt = async (f, i) => {
+    const faint = await ev(`(() => {
+      const lum = c => { const [r, g, b] = c.match(/[\\d.]+/g).map(Number).map(v => v / 255).map(v => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+      const fig = ${S}[${f}].querySelector(".ns-fig");
+      const bg = lum(getComputedStyle(fig).backgroundColor);
+      return [...fig.querySelectorAll("svg text")].filter(t => {
+        for (let e = t; e && e !== fig; e = e.parentElement) if (getComputedStyle(e).opacity === "0") return false;
+        const l = lum(getComputedStyle(t).fill);
+        return (Math.max(l, bg) + 0.05) / (Math.min(l, bg) + 0.05) < 4.5;
+      }).map(t => t.textContent.slice(0, 30));
+    })()`);
+    const theme = await ev(`document.documentElement.getAttribute("data-bs-theme") || "auto"`);
+    if (faint.length) extra.push("article figure " + f + ", step " + i + ", " + theme + " theme: text too faint to read: " + faint.join(" | "));
+  };
   thrown.length = 0;
   await open(ARTICLE, []);
   const count = await ev(`${S}.length`);
@@ -465,6 +484,27 @@ if (ARTICLE_UP) {
       const got = await at(f);
       if (got !== String(i)) {
         extra.push("article figure " + f + ": step " + i + " of the text shows step " + got + " of the figure");
+        break;
+      }
+      await faintAt(f, i);
+    }
+    // Scrolled up from below, a step takes the figure over while its first
+    // line is still in view, not hidden behind the figure it drives.
+    for (let i = 1; i < n; i++) {
+      const r = await ev(`(async () => {
+        const s = ${S}[${f}], step = s.querySelectorAll(".ns-step")[${i}], fig = s.querySelector(".ns-fig");
+        scrollTo({ top: scrollY + step.getBoundingClientRect().top - innerHeight + 20, behavior: "instant" });
+        await new Promise(r => setTimeout(r, 200));
+        for (let k = 0; k < 80 && fig.dataset.step !== "${i}"; k++) {
+          scrollBy({ top: 20, behavior: "instant" });
+          await new Promise(r => setTimeout(r, 60));
+        }
+        const b = step.getBoundingClientRect();
+        const hit = document.elementFromPoint(b.left + 12, b.top + 12);
+        return { step: fig.dataset.step, readable: !!(hit && step.contains(hit)) };
+      })()`);
+      if (r.step !== String(i) || !r.readable) {
+        extra.push("article figure " + f + ": step " + i + (r.step !== String(i) ? " never takes the figure over" : " takes the figure over with its first line hidden"));
         break;
       }
     }
@@ -510,6 +550,11 @@ if (ARTICLE_UP) {
   await ev(`document.querySelector('.dropdown-item[data-theme-mode="${other}"]').click()`);
   await wait(900);
   if ((await ink()) === before) extra.push("article: figure text keeps its colour (" + before + ") after the theme switch");
+  for (let i = 0; i < (await ev(`${S}[0].querySelectorAll(".ns-step").length`)); i++) {
+    await toStep(0, i);
+    await wait(500);
+    await faintAt(0, i);
+  }
   await ev(`document.querySelector('.dropdown-item[data-theme-mode="${was}"]').click()`);
   await wait(600);
 
@@ -540,6 +585,8 @@ if (ARTICLE_UP) {
     await toStep(toy, 2);
     await wait(2500);
     const pt = () => ev(`${T}.querySelector(".toy-point")?.getAttribute("cx")`);
+    const shown = await ev(`(() => { const c = ${T}.querySelector(".toy-point"); return !!c && [c, c.parentNode].every(e => getComputedStyle(e).opacity === "1"); })()`);
+    if (!shown) extra.push("article toy: the point drawn at step 3 is not visible once its animation is over");
     const p0 = await pt();
     await ev(`${T}.querySelector(".ns-controls button").click()`);
     await wait(300);
@@ -664,8 +711,12 @@ if (ARTICLE_UP) {
     scrollTo({ top: scrollY + s.getBoundingClientRect().top + 200, behavior: "instant" });
     await new Promise(r => setTimeout(r, 800));
     const f = s.querySelector(".ns-fig").getBoundingClientRect();
-    return { h: f.height, w: f.width, vw: innerWidth, vh: innerHeight };
+    const bar = document.getElementById("toc-bar")?.getBoundingClientRect();
+    return { h: f.height, w: f.width, vw: innerWidth, vh: innerHeight, gap: bar && bar.height ? Math.round(f.top - bar.bottom) : null };
   })()`);
+  // Under the theme's title bar, which stays at the top of a post on a phone,
+  // with no strip between them for the text to show through.
+  if (fit.gap !== null && Math.abs(fit.gap) > 1) extra.push("phone: the pinned figure is " + fit.gap + "px off the title bar above it");
   if (fit.h > fit.vh * 0.6 + 1) extra.push("phone: the pinned figure takes " + Math.round((fit.h / fit.vh) * 100) + "% of the screen");
   if (fit.w > fit.vw) extra.push("phone: the pinned figure is wider than the screen");
 }

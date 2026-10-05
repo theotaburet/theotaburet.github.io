@@ -91,11 +91,21 @@ async function start(section) {
     dots.forEach((d, k) => d.setAttribute("aria-current", k === i ? "step" : "false"));
     view.show(i, animate && !still());
   }
+  // Where a step takes the figure over: just under the figure when it is
+  // pinned above the text, so the step's first line is in view as it does;
+  // mid-screen when the steps run beside it. Measured, not assumed, and
+  // measured again on every refresh.
+  const column = section.querySelector(".ns-steps");
+  const line = () => {
+    const f = fig.getBoundingClientRect();
+    if (column.getBoundingClientRect().left >= f.right - 1) return "55%";
+    return Math.round(parseFloat(getComputedStyle(fig).top) + f.height + 16) + "px";
+  };
   const triggers = steps.map((step, i) =>
     window.ScrollTrigger.create({
       trigger: step,
-      start: "top 60%",
-      end: "bottom 60%",
+      start: () => "top " + line(),
+      end: () => "bottom " + line(),
       onToggle: self => {
         if (self.isActive && !still() && !jumping) go(i, true);
       }

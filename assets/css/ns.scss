@@ -14,8 +14,9 @@
     [body-end gutter-start] minmax(0, 17rem)
     [gutter-end page-end] minmax(0, 1fr)
     [screen-end];
-  // Dense, so an aside goes up beside the paragraph before it.
-  grid-auto-flow: row dense;
+  // Not dense: in the default packing an item for the margin, coming after
+  // one in the text column, takes the same row, beside the paragraph it
+  // comments on. Dense would send it up to the first free margin cell.
   counter-reset: ns-fig;
 
   > * {
@@ -111,7 +112,9 @@
 
 .ns-fig {
   position: sticky;
-  top: 3.5rem; // the top bar is 3rem
+  // Under the theme's title bar, which stays at the top of a post below
+  // 1200px and is 3rem high; flush with the top of the screen above that.
+  top: 3rem;
   z-index: 1;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -132,16 +135,37 @@
   }
 }
 
-// Wide enough, the caption moves into the margin, beside its figure.
+// Wide enough, the steps run beside the figure instead of under it, as on
+// Distill and The Pudding, and the figure gets the height of the screen,
+// caption and all.
 @media (min-width: 1200px) {
+  .ns-scrolly {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 19rem);
+    column-gap: 2.5rem;
+    align-items: start;
+  }
+
   .ns-fig {
-    grid-template-columns: minmax(0, 46rem) minmax(0, 17rem);
-    align-items: center;
+    top: 0;
+    max-height: 100vh;
 
     figcaption {
       display: block;
-      padding-left: 2rem;
     }
+  }
+
+  .ns-canvas svg {
+    max-height: calc(100vh - 14rem);
+  }
+
+  .ns-steps {
+    max-width: none;
+    padding: 25vh 0 15vh;
+  }
+
+  .ns-step {
+    min-height: 70vh;
   }
 }
 
