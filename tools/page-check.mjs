@@ -824,6 +824,30 @@ if (ARTICLE_UP) {
   }
 }
 
+// Why the naive embedding fails: over 20 draws made by the figure, pixels
+// on either side of a block border move together when the coefficients are
+// drawn jointly and not when drawn each on its own, for the same spread.
+if (ARTICLE_UP) {
+  await open(ARTICLE, []);
+  const F = `document.querySelector('.ns-inline[data-fig="naive"]')`;
+  const ok = await ev(`(async () => { const f = ${F}; if (!f) return false; f.scrollIntoView({ block: "center", behavior: "instant" }); await new Promise(r => setTimeout(r, 1500)); return !!f.querySelector(".ns-canvas").dataset.borderB; })()`);
+  if (!ok) extra.push("article: no naive figure with its border correlations");
+  else {
+    const m = await ev(`(() => {
+      const f = ${F};
+      const d = f.querySelector(".ns-canvas").dataset;
+      const sum = { borderA: 0, borderB: 0, sdA: 0, sdB: 0 };
+      for (let i = 0; i < 20; i++) {
+        f.querySelector("button").click();
+        Object.keys(sum).forEach(k => (sum[k] += +d[k] / 20));
+      }
+      return sum;
+    })()`);
+    if (!(m.borderB - m.borderA > 0.2)) extra.push("article naive: across a block border, pixels correlate " + m.borderA.toFixed(2) + " drawn independently and " + m.borderB.toFixed(2) + " drawn jointly");
+    if (!(Math.abs(m.sdA / m.sdB - 1) < 0.1)) extra.push("article naive: the two draws spread differently, " + m.sdA.toFixed(3) + " and " + m.sdB.toFixed(3));
+  }
+}
+
 // The CV prints as a CV: the site's furniture gone, a letterhead in its
 // place, and nothing left at the opacity the scroll reveals start from.
 // tools/cv-pdf.sh prints exactly this to the PDFs the pages link to.

@@ -91,6 +91,19 @@ The picture on the right says why. It is the chosen coefficient's column of $\Si
 Under the loupe, $\Sigma$ is a $576\times576$ matrix: 64 coefficients for each of 9 blocks, in the paper's order, centre first, then N, W, E, S and the diagonals.
 </aside>
 
+## Why drawing each coefficient on its own fails
+
+Knowing $\Sigma$, the tempting shortcut is to keep only its diagonal: draw each coefficient on its own, with the right variance. Every coefficient then has exactly the right histogram.
+
+<figure class="ns-inline" data-fig="naive" data-quiet>
+<div class="ns-canvas"></div>
+<figcaption>Two draws of the stego signal over 8×8 blocks, back in pixels, on the same grey scale. (a) Each DCT coefficient drawn on its own, with its own variance. (b) All drawn together, as the sensor makes it: independent noise on the photosites, developed. That is the law $s = L\,n$ draws from, $L$ being the Cholesky factor of $\Sigma$. Below: their histograms, and how much pixels side by side move together, inside a block and across a block border.</figcaption>
+</figure>
+
+Back in pixels, the eye can hardly tell them apart. The numbers can. Inside a block, neighbouring pixels move together about as much in both draws: the DCT of a single block does not see the problem. Across a block border, the independent draw has nothing tying the two sides together, and the correlation drops to zero. The joint draw runs on across the border, like the noise of a real sensor.
+
+A detector that looks at the picture relative to the 8×8 grid, as phase-aware features such as DCTR do, sees this at once. The paper measures it with $P_E$, the error of the best detector, from 0 % (always caught) to 50 % (a coin toss). Drawn coefficient by coefficient, the signal is caught every time at QF 100, $P_E = 0.0\,\%$. Drawing each block's 64 coefficients jointly but the blocks independently of each other does no better. J-Cov-NS, which ties the blocks together, stays at 42.9 %.
+
 *Draft: the rest of the article is on its way. This is one of its figures.*
 
 ## The draw, in miniature
