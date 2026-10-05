@@ -450,6 +450,21 @@ if (ARTICLE_UP) {
   if (cut.mute) extra.push("article without its libraries: " + cut.mute + " caption(s) gone");
 }
 
+// Text in a figure against the figure's paper, as the eye gets it: its fill
+// mixed with the paper by the opacity of the text and of every group around
+// it, so faded text is judged faded. Infinity when it is not shown at all.
+const CONTRAST = `const contrast = (t, fig) => {
+  const rgb = c => c.match(/[\\d.]+/g).slice(0, 3).map(Number);
+  const lum = ([r, g, b]) => [r, g, b].map(v => v / 255).map(v => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)).reduce((s, v, i) => s + v * [0.2126, 0.7152, 0.0722][i], 0);
+  let a = 1;
+  for (let e = t; e && e !== fig; e = e.parentElement) a *= parseFloat(getComputedStyle(e).opacity);
+  if (!a) return Infinity;
+  const bg = rgb(getComputedStyle(fig).backgroundColor);
+  const l = lum(rgb(getComputedStyle(t).fill).map((v, i) => a * v + (1 - a) * bg[i]));
+  const b = lum(bg);
+  return (Math.max(l, b) + 0.05) / (Math.min(l, b) + 0.05);
+};`;
+
 // The figures, as a reader meets them: walking the text moves each through
 // its steps in order; landing mid-section shows that step at once; the strip
 // of steps goes straight where it is asked; the theme repaints; the pause
@@ -463,15 +478,12 @@ if (ARTICLE_UP) {
   // Whatever a figure writes is read against its paper: 4.5:1 at least, in
   // the theme the page is in.
   const faintAt = async (f, i) => {
+    // Judged at rest: mid-entrance a dissolve is faded on purpose.
+    for (let k = 0; k < 30 && (await moving()); k++) await wait(100);
     const faint = await ev(`(() => {
-      const lum = c => { const [r, g, b] = c.match(/[\\d.]+/g).map(Number).map(v => v / 255).map(v => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+      ${CONTRAST}
       const fig = ${S}[${f}].querySelector(".ns-fig");
-      const bg = lum(getComputedStyle(fig).backgroundColor);
-      return [...fig.querySelectorAll("svg text")].filter(t => {
-        for (let e = t; e && e !== fig; e = e.parentElement) if (getComputedStyle(e).opacity === "0") return false;
-        const l = lum(getComputedStyle(t).fill);
-        return (Math.max(l, bg) + 0.05) / (Math.min(l, bg) + 0.05) < 4.5;
-      }).map(t => t.textContent.slice(0, 30));
+      return [...fig.querySelectorAll("svg text")].filter(t => contrast(t, fig) < 4.5).map(t => t.textContent.slice(0, 30));
     })()`);
     const theme = await ev(`document.documentElement.getAttribute("data-bs-theme") || "auto"`);
     if (faint.length) extra.push("article figure " + f + ", step " + i + ", " + theme + " theme: text too faint to read: " + faint.join(" | "));
@@ -634,17 +646,12 @@ if (ARTICLE_UP) {
     await wait(500);
     for (let f = 0; f < inline; f++) {
       const m = await ev(`(async () => {
-        const lum = c => { const [r, g, b] = c.match(/[\\d.]+/g).map(Number).map(v => v / 255).map(v => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+        ${CONTRAST}
         const fig = ${I}[${f}];
         fig.scrollIntoView({ block: "center", behavior: "instant" });
         await new Promise(r => setTimeout(r, 900));
         const box = fig.getBoundingClientRect();
-        const bg = lum(getComputedStyle(fig).backgroundColor);
-        const faint = [...fig.querySelectorAll("svg text")].filter(t => {
-          for (let e = t; e && e !== fig; e = e.parentElement) if (getComputedStyle(e).opacity === "0") return false;
-          const l = lum(getComputedStyle(t).fill);
-          return (Math.max(l, bg) + 0.05) / (Math.min(l, bg) + 0.05) < 4.5;
-        }).map(t => t.textContent.slice(0, 24));
+        const faint = [...fig.querySelectorAll("svg text")].filter(t => contrast(t, fig) < 4.5).map(t => t.textContent.slice(0, 24));
         const out = [...fig.querySelectorAll(".ns-canvas *")].filter(e => {
           if (e.closest(".ns-lens")) return false;
           const b = e.getBoundingClientRect();
@@ -896,11 +903,14 @@ if (ARTICLE_UP) {
   else {
     await ev(`(() => { const s = ${F}.querySelectorAll(".ns-step")[3]; scrollTo({ top: scrollY + s.getBoundingClientRect().top - innerHeight * 0.5, behavior: "instant" }); })()`);
     await wait(2500);
-    const total = qf => ev(`(() => {
+    // The block is drawn off the page's thread: the total says which quality
+    // it is for once the draw is back.
+    const total = qf => ev(`(async () => {
       const r = ${F}.querySelector('input[value="${qf}"]');
       if (!r) return null;
       r.click();
-      const shown = ${F}.querySelector(".h-total");
+      for (let k = 0; k < 50 && ${F}.querySelector(".h-total")?.dataset.qf !== "${qf}"; k++) await new Promise(r => setTimeout(r, 100));
+      const shown = ${F}.querySelector('.h-total[data-qf="${qf}"]');
       const sum = [...${F}.querySelectorAll(".h-bar")].reduce((s, b) => s + +b.dataset.h, 0);
       return shown ? [parseFloat(shown.textContent.replace(/^[^0-9]*/, "")), sum] : null;
     })()`);
@@ -911,6 +921,12 @@ if (ARTICLE_UP) {
       if (Math.abs(at100[0] - at100[1]) > 0.01) extra.push("article block: the total says " + at100[0] + " bits, the coefficients add up to " + at100[1].toFixed(3));
       if (!(at95[0] < at100[0])) extra.push("article block: QF 95 carries " + at95[0] + " bits and QF 100 " + at100[0]);
     }
+    // A new draw leaves the page free, on a phone's CPU too: the 576-dimension
+    // maths runs in a worker, not in the click.
+    await send("Emulation.setCPUThrottlingRate", { rate: 4 });
+    const ms = await ev(`(() => { const t = performance.now(); ${F}.querySelector(".ns-controls button").click(); return performance.now() - t; })()`);
+    await send("Emulation.setCPUThrottlingRate", { rate: 1 });
+    if (ms > 50) extra.push("article block: a new draw holds the page for " + Math.round(ms) + " ms at a phone's speed");
   }
 }
 

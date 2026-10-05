@@ -8,9 +8,9 @@
 // coefficient by coefficient (maths.sampleSequential): PMF, integer,
 // rejection. Their σ narrow as the block fills in, and what each carries is
 // the entropy of its PMF; the block's capacity is their sum (Fig. 14).
+// The maths run in block-worker.js, off the page's thread.
 const STEPS = 4;
-const K = 5;
-const V = 16 * (1.15 * 6000 - 1150); // the stego variance of a 6000 DN photosite, 16-bit
+const K = 5; // half the alphabet, as block-worker.js draws it
 const W = 480;
 const PW = 56;
 const PH = 34;
@@ -28,31 +28,23 @@ export function mount(el, ctx) {
   let law = null; // the block given its neighbours: { mean, cov }
   let draw = null; // sampleSequential's 64 steps
   let playing = [];
+  let shown = qf; // the quality of the draw on screen
 
-  // Σ for 3×3 blocks of the grey patch, and the Cholesky factor of the
-  // neighbours' part, once.
-  const M = maths.photositesToDct(3);
-  const S = maths.covariance(M, new Float64Array(M.cols).fill(V));
-  for (let i = 0; i < 576; i++) S[i * 577] += 1e-3;
-  const n = 512;
-  const Sn = new Float64Array(n * n);
-  for (let a = 0; a < n; a++) for (let b = 0; b < n; b++) Sn[a * n + b] = S[(64 + a) * 576 + 64 + b];
-  const Ln = maths.cholesky(Sn, n);
-
-  function sample() {
-    // The neighbours: the same for both qualities, so they compare.
-    const rand = maths.rng(seed);
-    const z = Float64Array.from({ length: n }, () => maths.gauss(rand));
-    const obs = new Float64Array(n);
-    for (let i = 0; i < n; i++) {
-      let s = 0;
-      for (let k = 0; k <= i; k++) s += Ln[i * n + k] * z[k];
-      obs[i] = s;
-    }
-    law = maths.conditional(S, 576, 64, obs);
-    for (let t = 0; t < 64; t++) law.cov[t * 65] += 1e-3; // as embed: what rounding leaves of a zero variance
-    draw = maths.sampleSequential(law.mean, law.cov, 64, maths.QTABLES[qf].map(q => 256 * q), K, maths.rng(seed + 1000));
-  }
+  // A draw is asked of the worker; only the answer to the last question is
+  // painted, so quick clicks never show an old one.
+  const worker = new Worker(new URL("./block-worker.js", import.meta.url), { type: "module" });
+  let asked = 0;
+  const sample = () => worker.postMessage({ id: ++asked, seed, qf });
+  worker.onmessage = ({ data }) => {
+    if (data.id !== asked) return;
+    ({ law, draw } = data);
+    shown = data.qf;
+    show(step, false);
+  };
+  worker.onerror = () => {
+    svg.selectAll("*").remove();
+    svg.append("text").attr("x", 10).attr("y", 30).attr("font-size", 14).attr("fill", ctx.colors().ink).text("This figure could not be drawn: its worker did not start.");
+  };
 
   el.textContent = "";
   const svg = d3.select(el).append("svg").attr("role", "img")
@@ -71,7 +63,6 @@ export function mount(el, ctx) {
       .on("change", () => {
         qf = q;
         sample();
-        show(step, false);
       });
     l.append("span").text(q);
   });
@@ -79,7 +70,6 @@ export function mount(el, ctx) {
     .on("click", () => {
       seed++;
       sample();
-      show(step, !ctx.still());
     });
 
   // A law in a panel: bins of the quantisation around integer c, the curve
@@ -91,11 +81,12 @@ export function mount(el, ctx) {
   };
 
   function paint() {
+    if (!draw) return; // the first draw is on its way
     const c = ctx.colors();
     const fs = ctx.textSize(svg.node());
     panels.selectAll("*").remove();
     strip.selectAll("*").remove();
-    const steps = maths.QTABLES[qf].map(q => 256 * q);
+    const steps = maths.QTABLES[shown].map(q => 256 * q);
 
     draw.forEach((d, i) => {
       const q = steps[i];
@@ -150,7 +141,7 @@ export function mount(el, ctx) {
       strip.selectAll("rect.h-bar").data(draw).join("rect").attr("class", "h-bar").attr("data-h", d => d.h)
         .attr("x", (d, i) => x(i) - 2.5).attr("width", 5).attr("y", d => y(d.h)).attr("height", d => y1 - y(d.h)).attr("fill", c.B);
       strip.append("line").attr("x1", x(0) - 3).attr("x2", x(63) + 3).attr("y1", y1).attr("y2", y1).attr("stroke", c.muted);
-      text(W - X0, y1 + fs * 1.4, "total: " + total.toFixed(2) + " bits, " + (total / 64).toFixed(2) + " a pixel", c.ink, "end").attr("class", "h-total").attr("font-weight", 700);
+      text(W - X0, y1 + fs * 1.4, "total: " + total.toFixed(2) + " bits, " + (total / 64).toFixed(2) + " a pixel", c.ink, "end").attr("class", "h-total").attr("data-qf", shown).attr("font-weight", 700);
     }
     svg.attr("viewBox", "0 0 " + W + " " + Math.ceil(y1 + fs * 2));
   }
@@ -168,7 +159,7 @@ export function mount(el, ctx) {
     }
     if (i === 2) {
       const tw = { t: 0 };
-      const steps = maths.QTABLES[qf].map(q => 256 * q);
+      const steps = maths.QTABLES[shown].map(q => 256 * q);
       const laws = panels.selectAll("path.law").nodes();
       const sync = () =>
         draw.forEach((d, n) => {

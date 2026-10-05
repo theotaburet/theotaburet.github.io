@@ -163,7 +163,7 @@ export function mount(el, ctx) {
       const x = X0 + (n % 2) * (W / 2);
       const yy = y + Math.floor(n / 2) * fs * 3.2;
       notes.append("rect").attr("x", x).attr("y", yy - fs * 0.8).attr("width", fs * 0.8).attr("height", fs * 0.8).attr("rx", 2).attr("fill", hue[L]).attr("opacity", on ? 1 : 0.3);
-      text(x + fs * 1.3, yy, words, on ? c.ink : c.muted, "start").attr("font-weight", L === step ? 700 : 400).attr("opacity", on ? 1 : 0.6);
+      text(x + fs * 1.3, yy, words, on ? c.ink : c.muted, "start").attr("font-weight", L === step ? 700 : 400); // muted when still to come, never faded
       if (on) text(x + fs * 1.3, yy + fs * 1.3, BITS[L].toFixed(1) + " bits a block", c.muted, "start").attr("class", "lat-bits").attr("data-lattice", L).attr("data-bits", BITS[L]);
     });
     y += fs * 6.4;

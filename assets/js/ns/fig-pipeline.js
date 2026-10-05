@@ -185,8 +185,9 @@ export function mount(el, ctx) {
     FACTORS.forEach(([f, name, from], n) => {
       const on = s >= from;
       const fx = X0 + 76 + n * 80;
-      text(fx, fy, f, on ? c.ink : c.muted, "middle").attr("font-weight", on ? 700 : 400).attr("opacity", on ? 1 : 0.5);
-      text(fx, fy + fs * 1.3, name, c.muted, "middle").attr("opacity", on ? 1 : 0.5);
+      text(fx, fy, f, on ? c.ink : c.muted, "middle").attr("font-weight", on ? 700 : 400);
+      // Still to come: muted, never faded under what can be read.
+      text(fx, fy + fs * 1.3, name, on ? c.ink : c.muted, "middle");
       if (n) text(fx - 40, fy, "·", c.muted, "middle");
     });
   }
