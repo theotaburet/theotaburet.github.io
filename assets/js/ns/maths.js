@@ -80,3 +80,88 @@ export function photositesToDct(nb) {
   }
   return { rows, cols: nc * nc };
 }
+
+// Σ = M diag(v) Mᵀ, dense n×n, row-major: the covariance of the stego signal
+// in the DCT domain (eq. (24)). v is its variance at each photosite, where
+// the covariance is diagonal, since photosites are independent. Sparse rows
+// make it a few tens of milliseconds for 3×3 blocks.
+export function covariance(M, v) {
+  const n = M.rows.length;
+  const S = new Float64Array(n * n);
+  const w = new Float64Array(M.cols);
+  for (let i = 0; i < n; i++) {
+    const a = M.rows[i];
+    for (let t = 0; t < a.idx.length; t++) w[a.idx[t]] = a.val[t] * v[a.idx[t]];
+    for (let j = i; j < n; j++) {
+      const b = M.rows[j];
+      let s = 0;
+      for (let t = 0; t < b.idx.length; t++) s += w[b.idx[t]] * b.val[t];
+      S[i * n + j] = S[j * n + i] = s;
+    }
+    for (let t = 0; t < a.idx.length; t++) w[a.idx[t]] = 0;
+  }
+  return S;
+}
+
+// Lower-triangular L with L Lᵀ = S. Throws if S is not positive definite.
+export function cholesky(S, n) {
+  const L = new Float64Array(n * n);
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j <= i; j++) {
+      let s = S[i * n + j];
+      for (let k = 0; k < j; k++) s -= L[i * n + k] * L[j * n + k];
+      if (i === j) {
+        if (!(s > 0)) throw new Error("not positive definite at " + i);
+        L[i * n + i] = Math.sqrt(s);
+      } else L[i * n + j] = s / L[j * n + j];
+    }
+  }
+  return L;
+}
+
+// Solves L Lᵀ x = b, in place.
+function cholSolve(L, n, b) {
+  for (let i = 0; i < n; i++) {
+    let s = b[i];
+    for (let k = 0; k < i; k++) s -= L[i * n + k] * b[k];
+    b[i] = s / L[i * n + i];
+  }
+  for (let i = n - 1; i >= 0; i--) {
+    let s = b[i];
+    for (let k = i + 1; k < n; k++) s -= L[k * n + i] * b[k];
+    b[i] = s / L[i * n + i];
+  }
+  return b;
+}
+
+// The first k of n jointly Gaussian zero-mean variables, given the other n-k
+// observed: mean S12 S22⁻¹ obs, covariance S11 - S12 S22⁻¹ S21, the Schur
+// complement (eqs. (26)-(27)). The reference uses a pseudo-inverse; S22 is
+// positive definite here, so a Cholesky solve gives the same, faster.
+export function conditional(S, n, k, obs) {
+  const m = n - k;
+  const S22 = new Float64Array(m * m);
+  for (let i = 0; i < m; i++) for (let j = 0; j < m; j++) S22[i * m + j] = S[(k + i) * n + k + j];
+  const L22 = cholesky(S22, m);
+  const alpha = cholSolve(L22, m, Float64Array.from(obs));
+  const X = new Float64Array(m * k); // S22⁻¹ S21, column by column
+  const col = new Float64Array(m);
+  for (let j = 0; j < k; j++) {
+    for (let i = 0; i < m; i++) col[i] = S[(k + i) * n + j];
+    cholSolve(L22, m, col);
+    for (let i = 0; i < m; i++) X[i * k + j] = col[i];
+  }
+  const mean = new Float64Array(k);
+  const cov = new Float64Array(k * k);
+  for (let i = 0; i < k; i++) {
+    let s = 0;
+    for (let t = 0; t < m; t++) s += S[i * n + k + t] * alpha[t];
+    mean[i] = s;
+    for (let j = 0; j < k; j++) {
+      let c = S[i * n + j];
+      for (let t = 0; t < m; t++) c -= S[i * n + k + t] * X[t * k + j];
+      cov[i * k + j] = c;
+    }
+  }
+  return { mean, cov };
+}

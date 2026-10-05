@@ -49,5 +49,72 @@ const rel = (a, b) => Math.abs(a - b) / Math.abs(b);
   report("the 8×8 DCT is orthonormal", wa < 1e-14, "worst " + wa.toExponential(1));
 }
 
+// --- Covariance and conditioning (sections III-H, IV and V-B).
+{
+  const M3 = N.photositesToDct(3);
+  const n = 576;
+  const S = N.covariance(M3, R.v);
+  for (let i = 0; i < n; i++) S[i * (n + 1)] += 1e-3; // the reference sampler's eps
+  let ws = 0;
+  R.S_diag.forEach((d, i) => (ws = Math.max(ws, rel(S[i * (n + 1)], d))));
+  for (const [r, row] of Object.entries(R.S_rows)) {
+    row.forEach((x, c) => {
+      if (Math.abs(x) > 1e-9 * R.S_diag[r]) ws = Math.max(ws, rel(S[+r * n + c], x));
+    });
+  }
+  report("Σ = M diag(v) Mᵀ matches the reference", ws < 1e-9, "worst relative " + ws.toExponential(1));
+  let sym = true;
+  for (let i = 0; i < n && sym; i++) for (let j = 0; j < i; j++) if (S[i * n + j] !== S[j * n + i]) sym = false;
+  report("Σ is symmetric", sym);
+
+  // Blocks in the order C, N, W, E, S, NW, NE, SW, SE; the largest correlation
+  // between two of them, on a flat photosite variance.
+  const U = N.covariance(M3, new Float64Array(676).fill(1));
+  const peak = (a, b) => {
+    let m = 0;
+    for (let i = 0; i < 64; i++) {
+      for (let j = 0; j < 64; j++) {
+        const p = a * 64 + i;
+        const q = b * 64 + j;
+        m = Math.max(m, Math.abs(U[p * n + q]) / Math.sqrt(U[p * (n + 1)] * U[q * (n + 1)]));
+      }
+    }
+    return m;
+  };
+  report("blocks that do not touch are uncorrelated (NW–NE, W–E, N–S)", peak(5, 6) === 0 && peak(2, 3) === 0 && peak(1, 4) === 0);
+  report("side neighbours correlate with the centre", [1, 2, 3, 4].every(b => peak(0, b) > 0.05), [1, 2, 3, 4].map(b => peak(0, b).toFixed(3)).join(" "));
+  report("diagonal neighbours barely do", [5, 6, 7, 8].every(b => peak(0, b) < 0.01), [5, 6, 7, 8].map(b => peak(0, b).toFixed(4)).join(" "));
+  report("NE and SW, which share three photosites, more than NW and SE, which share two",
+    Math.min(peak(0, 6), peak(0, 7)) > Math.max(peak(0, 5), peak(0, 8)));
+
+  const L = N.cholesky(S, n);
+  let wl = 0;
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j <= i; j++) {
+      let s = 0;
+      for (let k = 0; k <= j; k++) s += L[i * n + k] * L[j * n + k];
+      wl = Math.max(wl, Math.abs(s - S[i * n + j]) / S[i * (n + 1)]);
+    }
+  }
+  report("Cholesky: L Lᵀ = Σ", wl < 1e-12, "worst " + wl.toExponential(1));
+  let threw = false;
+  try {
+    N.cholesky(Float64Array.from([1, 2, 2, 1]), 2);
+  } catch (e) {
+    threw = true;
+  }
+  report("Cholesky refuses a matrix that is not positive definite", threw);
+
+  const C = N.conditional(S, n, 64, R.obs);
+  const big = Math.max(...R.cov.map(Math.abs));
+  let wm = 0;
+  let wc = 0;
+  C.mean.forEach((m, i) => (wm = Math.max(wm, Math.abs(m - R.mean[i]) / Math.sqrt(R.cov[i * 65]))));
+  C.cov.forEach((x, i) => (wc = Math.max(wc, Math.abs(x - R.cov[i]) / big)));
+  report("conditional mean of a Λ4 block matches the reference", wm < 1e-9, "worst " + wm.toExponential(1) + " sd");
+  report("conditional covariance (Schur complement) matches the reference", wc < 1e-9, "worst " + wc.toExponential(1));
+  report("knowing the neighbours never adds variance", C.cov.every((x, i) => i % 65 || x <= S[(i / 65) * (n + 1)] + 1e-9));
+}
+
 console.log(failures ? "\n" + failures + " problem(s)" : "\nall good");
 process.exit(failures ? 1 : 0);
