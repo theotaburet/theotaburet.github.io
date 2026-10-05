@@ -945,6 +945,49 @@ if (ARTICLE_UP) {
   }
 }
 
+// Citations and notes open in a bubble: on hover, and on focus, which Escape
+// closes, leaving the focus where it was. A citation names a reference that
+// exists; its bubble says which.
+if (ARTICLE_UP) {
+  await open(ARTICLE, []);
+  const missing = await ev(`document.querySelectorAll(".ns-cite-missing").length`);
+  if (missing) extra.push("article: " + missing + " citation(s) of a reference not in _data/ns-refs.yml");
+  // Numbered in the order they are first cited: [1], then [2], never [3] first.
+  const firsts = await ev(`[...new Set([...document.querySelectorAll(".content .ns-cite")].map(a => a.textContent))]`);
+  if (firsts.some((n, i) => n !== "[" + (i + 1) + "]")) extra.push("article: citations first appear as " + firsts.join(" ") + ", not in the order of _data/ns-refs.yml");
+  // Headless, the page never has the focus, and focus events never fire.
+  await send("Emulation.setFocusEmulationEnabled", { enabled: true });
+  for (const [sel, what] of [[".content .ns-cite", "citation"], [".content a.footnote", "note"]]) {
+    const r = await ev(`(async () => {
+      const a = document.querySelector(${JSON.stringify(sel)});
+      if (!a) return "none";
+      a.scrollIntoView({ block: "center", behavior: "instant" });
+      await new Promise(r => setTimeout(r, 300));
+      const tip = () => { const t = document.querySelector('.ns-note[role="tooltip"]'); return t && !t.hidden && t.getClientRects().length ? t : null; };
+      const want = a.classList.contains("ns-cite") ? a.dataset.title : document.getElementById(decodeURIComponent(a.hash.slice(1)))?.textContent.replace("↩", "").trim().slice(0, 30);
+      const out = [];
+      a.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+      await new Promise(r => setTimeout(r, 100));
+      if (!tip()) out.push("hover opens nothing");
+      else if (!want || !tip().textContent.includes(want)) out.push("the bubble does not say " + JSON.stringify(want));
+      a.dispatchEvent(new MouseEvent("mouseleave", { bubbles: true }));
+      await new Promise(r => setTimeout(r, 400));
+      if (tip()) out.push("leaving does not close it");
+      a.focus();
+      await new Promise(r => setTimeout(r, 100));
+      if (!tip()) out.push("focus opens nothing");
+      document.activeElement.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+      await new Promise(r => setTimeout(r, 100));
+      if (tip()) out.push("Escape does not close it");
+      if (document.activeElement !== a) out.push("Escape moves the focus");
+      return out.join(", ");
+    })()`);
+    if (r === "none") extra.push("article: no " + what + " to open");
+    else if (r) extra.push("article " + what + ": " + r);
+  }
+  await send("Emulation.setFocusEmulationEnabled", { enabled: false });
+}
+
 // The CV prints as a CV: the site's furniture gone, a letterhead in its
 // place, and nothing left at the opacity the scroll reveals start from.
 // tools/cv-pdf.sh prints exactly this to the PDFs the pages link to.
@@ -1149,6 +1192,19 @@ if (ARTICLE_UP) {
     return out;
   })()`);
   if (clash.length) extra.push("phone: figure text runs into other text: " + clash.slice(0, 4).join(" | ") + (clash.length > 4 ? " (+" + (clash.length - 4) + ")" : ""));
+  // A tap opens a citation's bubble, inside the screen; a tap elsewhere closes it.
+  const cite = await ev(`(async () => { const a = document.querySelector(".content .ns-cite"); if (!a) return null; a.scrollIntoView({ block: "center", behavior: "instant" }); await new Promise(r => setTimeout(r, 300)); const r = a.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, top: scrollY }; })()`);
+  if (cite) {
+    const bubble = `(() => { const t = document.querySelector('.ns-note[role="tooltip"]'); if (!t || t.hidden || !t.getClientRects().length) return null; const r = t.getBoundingClientRect(); return { l: r.left, r: r.right, vw: innerWidth }; })()`;
+    for (const type of ["touchStart", "touchEnd"]) await send("Input.dispatchTouchEvent", { type, touchPoints: type === "touchEnd" ? [] : [{ x: cite.x, y: cite.y }] });
+    await wait(400);
+    const b = await ev(bubble);
+    if (!b) extra.push("phone: tapping a citation opens no bubble");
+    else if (b.l < 0 || b.r > b.vw) extra.push("phone: the citation's bubble runs off the screen (" + Math.round(b.l) + " to " + Math.round(b.r) + ")");
+    for (const type of ["touchStart", "touchEnd"]) await send("Input.dispatchTouchEvent", { type, touchPoints: type === "touchEnd" ? [] : [{ x: 20, y: cite.y > 300 ? 120 : 600 }] });
+    await wait(400);
+    if (await ev(bubble)) extra.push("phone: a tap elsewhere leaves the citation's bubble open");
+  }
 }
 await send("Emulation.setTouchEmulationEnabled", { enabled: false });
 await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 800, deviceScaleFactor: 1, mobile: false });

@@ -423,3 +423,30 @@
   outline: 2px solid var(--ns-ink);
   outline-offset: 1px;
 }
+
+// A citation, [n], and the bubble that opens on it or on a note
+// (assets/js/ns/notes.js). The bubble hangs off the body, outside .content,
+// so it reads the theme's own colours.
+.ns-cite {
+  font-size: 0.85em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.ns-note {
+  position: absolute;
+  z-index: 1080;
+  max-width: min(24rem, calc(100vw - 16px));
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--main-border-color);
+  border-radius: 6px;
+  background-color: var(--main-bg);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 18%);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--text-color);
+
+  p {
+    margin: 0;
+  }
+}

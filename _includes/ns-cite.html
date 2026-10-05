@@ -1,0 +1,10 @@
+{%- comment -%}
+  A citation in the natural steganography article: [n], n being the rank of
+  the reference in _data/ns-refs.yml, linked to its entry in the appendix and
+  carrying what assets/js/ns/notes.js shows in its bubble. An unknown key
+  shows [?], which tools/page-check.mjs catches. One line of output, so it
+  sits inside a paragraph.
+    {% include ns-cite.html key="denemark2018" %}
+{%- endcomment -%}
+{%- assign ns_ref = nil -%}{%- for r in site.data["ns-refs"] -%}{%- if r.key == include.key -%}{%- assign ns_ref = r -%}{%- assign ns_n = forloop.index -%}{%- endif -%}{%- endfor -%}
+{%- if ns_ref -%}<a class="ns-cite" href="#ref-{{ ns_ref.key }}" data-title="{{ ns_ref.title | escape }}" data-note="{{ ns_ref.authors | escape }}. {{ ns_ref.title | escape }}. {{ ns_ref.venue | escape }}, {{ ns_ref.year }}.">[{{ ns_n }}]</a>{%- else -%}<a class="ns-cite ns-cite-missing">[?]</a>{%- endif -%}

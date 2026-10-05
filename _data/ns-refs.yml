@@ -1,0 +1,95 @@
+# The references of the natural steganography article, in the order the text
+# first cites them: _includes/ns-cite.html numbers a citation by its entry's
+# rank here, and _includes/ns-appendix.html lists them in this order.
+# Checked against Crossref, HAL and the publishers' pages, 2026-10-05.
+
+- key: taburet2021
+  authors: T. Taburet, P. Bas, W. Sawaya, J. Fridrich
+  title: Natural Steganography in JPEG Domain With a Linear Development Pipeline
+  venue: IEEE Transactions on Information Forensics and Security, vol. 16, pp. 173–186
+  year: 2021
+  url: https://doi.org/10.1109/TIFS.2020.3007354
+
+- key: bas2016
+  authors: P. Bas
+  title: Steganography via Cover-Source Switching
+  venue: IEEE International Workshop on Information Forensics and Security (WIFS)
+  year: 2016
+  url: https://hal.science/hal-01360024
+
+- key: denemark2018
+  authors: T. Denemark, P. Bas, J. Fridrich
+  title: Natural Steganography in JPEG Compressed Images
+  venue: Electronic Imaging, Media Watermarking, Security, and Forensics
+  year: 2018
+  url: https://hal.science/hal-01687194
+
+- key: holub2015
+  authors: V. Holub, J. Fridrich
+  title: Low-Complexity Features for JPEG Steganalysis Using Undecimated DCT
+  venue: IEEE Transactions on Information Forensics and Security, vol. 10, no. 2, pp. 219–228
+  year: 2015
+  url: https://doi.org/10.1109/TIFS.2014.2364918
+
+- key: holub2014
+  authors: V. Holub, J. Fridrich, T. Denemark
+  title: Universal Distortion Function for Steganography in an Arbitrary Domain
+  venue: EURASIP Journal on Information Security, vol. 2014, no. 1
+  year: 2014
+  url: https://doi.org/10.1186/1687-417X-2014-1
+
+- key: taburet2019ei
+  authors: T. Taburet, P. Bas, W. Sawaya, J. Fridrich
+  title: A Natural Steganography Embedding Scheme Dedicated to Color Sensors in the JPEG Domain
+  venue: Electronic Imaging, Media Watermarking, Security, and Forensics
+  year: 2019
+  url: https://hal.science/hal-02005407
+
+- key: boroumand2019
+  authors: M. Boroumand, M. Chen, J. Fridrich
+  title: Deep Residual Network for Steganalysis of Digital Images
+  venue: IEEE Transactions on Information Forensics and Security, vol. 14, no. 5, pp. 1181–1193
+  year: 2019
+  url: https://doi.org/10.1109/TIFS.2018.2871749
+
+- key: filler2011
+  authors: T. Filler, J. Judas, J. Fridrich
+  title: Minimizing Additive Distortion in Steganography Using Syndrome-Trellis Codes
+  venue: IEEE Transactions on Information Forensics and Security, vol. 6, no. 3, pp. 920–935
+  year: 2011
+  url: https://doi.org/10.1109/TIFS.2011.2134094
+
+- key: taburet2018iwdw
+  authors: T. Taburet, L. Filstroff, P. Bas, W. Sawaya
+  title: An Empirical Study of Steganography and Steganalysis of Color Images in the JPEG Domain
+  venue: International Workshop on Digital Watermarking (IWDW), Springer
+  year: 2018
+  url: https://hal.science/hal-01904482
+
+- key: taburet2019ihmmsec
+  authors: T. Taburet, P. Bas, J. Fridrich, W. Sawaya
+  title: Computing Dependencies between DCT Coefficients for Natural Steganography in JPEG Domain
+  venue: ACM Workshop on Information Hiding and Multimedia Security, pp. 57–62
+  year: 2019
+  url: https://doi.org/10.1145/3335203.3335715
+
+- key: taburet2020ihmmsec
+  authors: T. Taburet, P. Bas, W. Sawaya, R. Cogranne
+  title: JPEG Steganography and Synchronization of DCT Coefficients for a Given Development Pipeline
+  venue: ACM Workshop on Information Hiding and Multimedia Security, pp. 139–149
+  year: 2020
+  url: https://doi.org/10.1145/3369412.3395074
+
+- key: taburet2020thesis
+  authors: T. Taburet
+  title: Méthodes de stéganographie fondées sur la prise en compte du bruit de capteur
+  venue: PhD thesis, École Centrale de Lille
+  year: 2020
+  url: https://hal.science/tel-04393785
+
+- key: taburet2024notebooks
+  authors: T. Taburet, W. Sawaya, P. Bas, J. Fridrich
+  title: "Python Implementation of Natural Steganography: Notebooks Accompanying the Paper Published in IEEE TIFS"
+  venue: Software
+  year: 2024
+  url: https://hal.science/hal-04456456

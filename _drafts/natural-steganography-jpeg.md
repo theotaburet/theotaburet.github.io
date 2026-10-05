@@ -22,18 +22,18 @@ Two photographs of the same piece of cloth. One was taken at ISO 200. The other 
 
 ## The sensor's noise is a budget
 
-A camera sensor counts photons, and the count is noisy. This *photonic noise* is Gaussian to a very good approximation, and its variance grows with the light: $\sigma^2 = a\,\mu + b$, where $\mu$ is the noiseless value of the photosite. Raise the ISO and the sensor amplifies harder, so the same scene shot at <span class="ns-key" data-key="iso200">ISO 200</span> is noisier than at <span class="ns-key" data-key="iso100">ISO 100</span>.
+A camera sensor counts photons, and the count is noisy. This *photonic noise* is Gaussian to a very good approximation, and its variance grows with the light{% include ns-cite.html key="taburet2021" %}: $\sigma^2 = a\,\mu + b$, where $\mu$ is the noiseless value of the photosite. Raise the ISO and the sensor amplifies harder, so the same scene shot at <span class="ns-key" data-key="iso200">ISO 200</span> is noisier than at <span class="ns-key" data-key="iso100">ISO 100</span>.
 
 <figure class="ns-inline l-page" data-fig="noise" data-quiet>
 <div class="ns-canvas"></div>
 <figcaption>Noise variance against brightness, measured on the two RAW files: green photosites, the variance of each 8×8 tile around a smooth local mean, and in each brightness bin the lower fifth of the tiles, where texture adds least. The lines are fitted to the points.</figcaption>
 </figure>
 
-Natural steganography lives in that gap. Starting from an ISO 100 picture $x$, it adds at every photosite a stego signal
+Natural steganography{% include ns-cite.html key="bas2016" %} lives in that gap. Starting from an ISO 100 picture $x$, it adds at every photosite a stego signal
 
 $$S \sim \mathcal{N}\big(0,\ (a_2 - a_1)\,x + b_2 - b_1\big),$$
 
-so that the result is distributed exactly as an ISO 200 shot of the same scene would be. Nothing is hidden by keeping the changes small. A whole layer of noise is added, and it is allowed to be there: the only limit on how much it can carry is the gap between the two ISOs.
+so that the result is distributed exactly as an ISO 200 shot of the same scene would be.[^dark] Nothing is hidden by keeping the changes small. A whole layer of noise is added, and it is allowed to be there: the only limit on how much it can carry is the gap between the two ISOs.
 
 <aside class="l-gutter" markdown="1">
 Two RAW files are not much to measure a sensor with. The paper fits $a$ and $b$ over the whole of E1Base, 10,800 crops, and finds $a_2 - a_1 = 1.15$ and $b_2 - b_1 = -1150$.
@@ -93,7 +93,7 @@ Under the loupe, $\Sigma$ is a $576\times576$ matrix: 64 coefficients for each o
 
 ## Why drawing each coefficient on its own fails
 
-Knowing $\Sigma$, the tempting shortcut is to keep only its diagonal: draw each coefficient on its own, with the right variance. Every coefficient then has exactly the right histogram.
+Knowing $\Sigma$, the tempting shortcut is to keep only its diagonal: draw each coefficient on its own, with the right variance, as the first JPEG version of natural steganography did{% include ns-cite.html key="denemark2018" %}. Every coefficient then has exactly the right histogram.
 
 <figure class="ns-inline" data-fig="naive" data-quiet>
 <div class="ns-canvas"></div>
@@ -102,7 +102,7 @@ Knowing $\Sigma$, the tempting shortcut is to keep only its diagonal: draw each 
 
 Back in pixels, the eye can hardly tell them apart. The numbers can. Inside a block, neighbouring pixels move together about as much in both draws: the DCT of a single block does not see the problem. Across a block border, the independent draw has nothing tying the two sides together, and the correlation drops to zero. The joint draw runs on across the border, like the noise of a real sensor.
 
-A detector that looks at the picture relative to the 8×8 grid, as phase-aware features such as DCTR do, sees this at once. The paper measures it with $P_E$, the error of the best detector, from 0 % (always caught) to 50 % (a coin toss). Drawn coefficient by coefficient, the signal is caught every time at QF 100, $P_E = 0.0\,\%$. Drawing each block's 64 coefficients jointly but the blocks independently of each other does no better. J-Cov-NS, which ties the blocks together, stays at 42.9 %.
+A detector that looks at the picture relative to the 8×8 grid, as phase-aware features such as DCTR{% include ns-cite.html key="holub2015" %} do, sees this at once. The paper measures it with $P_E$, the error of the best detector, from 0 % (always caught) to 50 % (a coin toss). Drawn coefficient by coefficient, the signal is caught every time at QF 100, $P_E = 0.0\,\%$. Drawing each block's 64 coefficients jointly but the blocks independently of each other does no better. J-Cov-NS, which ties the blocks together, stays at 42.9 %.
 
 ## Four lattices of blocks
 
@@ -207,7 +207,7 @@ The paper measures security as the field does. It trains the best detector it ca
 <figcaption>The detector's error $P_E$ on E1Base for each way of drawing the stego signal, by JPEG quality, with the payload under each quality (Table I of the paper, DCTR features and a linear classifier). Hollow points: J-Cov-NS against SRNet, a deep detector (Table III), and with an alphabet of $2K+1$ integers (Table IV), $K$ on the slider. Hover a point for its value.</figcaption>
 </figure>
 
-At QF 100, J-Cov-NS hides 2 bits in every non-zero AC coefficient, and the detector is wrong 42.9 % of the time: barely better than a coin toss. In the same test, SI-UNIWARD, a classic adaptive scheme that hides by changing as little as it can, is caught every time with half that payload. Drawing the coefficients independently, or the blocks independently, is caught every time too. Against SRNet, a deep detector, J-Cov-NS still keeps 31 to 37 %.
+At QF 100, J-Cov-NS hides 2 bits in every non-zero AC coefficient, and the detector is wrong 42.9 % of the time: barely better than a coin toss. In the same test, SI-UNIWARD{% include ns-cite.html key="holub2014" %}, a classic adaptive scheme that hides by changing as little as it can, is caught every time with half that payload. Drawing the coefficients independently, or the blocks independently, is caught every time too. Against SRNet, a deep detector, J-Cov-NS still keeps 31 to 37 %.
 
 The alphabet has to be wide enough as well. Each coefficient is drawn among the $2K+1$ integers around the centre of its law; with $K = 1$, too few to follow the tails of the Gaussian, the detector catches J-Cov-NS at QF 100 99 times out of 100. With $K = 5$ it is back to 40 %.
 
@@ -216,3 +216,5 @@ bpnzAC: bits per non-zero AC coefficient, the usual unit of JPEG steganography. 
 </aside>
 
 *Draft: the figures are all here; the text around them is still being written.*
+
+[^dark]: Where $(a_2 - a_1)\,x + b_2 - b_1$ would be negative, in the darkest parts of the picture, the paper sets the variance to 0: nothing is added there, and nothing can be carried.

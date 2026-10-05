@@ -14,6 +14,7 @@
 // motion reduced or the site paused it still does, at once, without
 // animating: holding still is about movement, not about what is shown.
 import * as maths from "./maths.js";
+import "./notes.js";
 
 const root = document.documentElement;
 const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
