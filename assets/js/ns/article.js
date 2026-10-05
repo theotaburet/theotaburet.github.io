@@ -10,8 +10,9 @@
 //   mount(el, ctx) → { steps, show(step, animate), redraw() }
 // ctx hands it d3, gsap, the maths, the theme's colours and whether motion
 // must hold still. This file does the rest: it loads a figure as it comes
-// near, shows the state that matches the step of text in view, and, with
-// motion reduced or the site paused, shows each figure as it ends.
+// near and shows the state that matches the step of text in view. With
+// motion reduced or the site paused it still does, at once, without
+// animating: holding still is about movement, not about what is shown.
 import * as maths from "./maths.js";
 
 const root = document.documentElement;
@@ -72,8 +73,8 @@ async function start(section) {
       const release = () => (jumping = false);
       window.addEventListener("scrollend", release, { once: true });
       setTimeout(release, 2000); // no scrollend where it is not supported, or when nothing scrolled
-      const top = window.scrollY + step.getBoundingClientRect().top - window.innerHeight * 0.5;
-      window.scrollTo({ top, behavior: still() ? "instant" : "smooth" });
+      // Just past where the step takes over, so its first line lands in view.
+      window.scrollTo({ top: triggers[i].start + 1, behavior: still() ? "instant" : "smooth" });
       go(i, true);
     });
     strip.appendChild(b);
@@ -107,17 +108,20 @@ async function start(section) {
       start: () => "top " + line(),
       end: () => "bottom " + line(),
       onToggle: self => {
-        if (self.isActive && !still() && !jumping) go(i, true);
+        if (self.isActive && !jumping) go(i, true);
       }
     })
   );
   // Where the reader already is: a reload or a jump lands mid-section.
   const here = triggers.findIndex(t => t.isActive);
-  go(still() ? view.steps - 1 : Math.max(0, here), false);
+  go(Math.max(0, here), false);
   live.push({
-    end: () => {
+    // Redrawn where it is, so a pause stops what is playing, and a resume
+    // fades the other steps again.
+    hold: () => {
+      const i = current;
       current = -1;
-      go(view.steps - 1, false);
+      go(i, false);
     },
     redraw: () => view.redraw()
   });
@@ -136,10 +140,9 @@ function boot() {
   );
   document.querySelectorAll(".ns-scrolly").forEach(s => near.observe(s));
 
-  // Paused or reduced, every figure goes to where it ends and stays there.
-  const settle = () => {
-    if (still()) live.forEach(f => f.end());
-  };
+  // Paused or reduced, or back from either: each figure is redrawn on its
+  // step, with nothing left playing.
+  const settle = () => live.forEach(f => f.hold());
   window.addEventListener("motion:pause", settle);
   reduce.addEventListener("change", settle);
 

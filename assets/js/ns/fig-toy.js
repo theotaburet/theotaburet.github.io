@@ -64,11 +64,14 @@ export function mount(el, ctx) {
   LAYERS.forEach(n => (layer[n] = svg.append("g")));
 
   const controls = d3.select(el).append("div").attr("class", "ns-controls");
-  function slider(label, min, max, by, value, set) {
+  // Short labels, the symbols the caption explains, so the controls take two
+  // lines on a phone and not three; the full names are for screen readers.
+  function slider(label, name, min, max, by, value, set) {
     const l = controls.append("label");
     l.append("span").text(label);
     l.append("input")
       .attr("type", "range")
+      .attr("aria-label", name)
       .attr("min", min)
       .attr("max", max)
       .attr("step", by)
@@ -81,8 +84,8 @@ export function mount(el, ctx) {
       });
     const out = l.append("output").text(value.toFixed(2));
   }
-  slider("Correlation ρ", 0, 0.95, 0.05, rho, v => (rho = v));
-  slider("Quantisation step", 0.2, 1.5, 0.1, q, v => (q = v));
+  slider("ρ", "Correlation ρ", 0, 0.95, 0.05, rho, v => (rho = v));
+  slider("q", "Quantisation step q", 0.2, 1.5, 0.1, q, v => (q = v));
   controls
     .append("button")
     .attr("type", "button")
@@ -123,13 +126,16 @@ export function mount(el, ctx) {
     side = d3.scaleLinear([0, peak], [368, 470]);
   }
 
+  // 12 units where the figure is drawn at its full 480px; more where it is
+  // drawn narrower, so the words never fall under about 11px on a phone.
+  let size = 12;
   function text(g, at, words, fill, anchor) {
     return g
       .append("text")
       .attr("x", at[0])
       .attr("y", at[1])
       .attr("fill", fill || c.ink)
-      .attr("font-size", 12)
+      .attr("font-size", size)
       .attr("text-anchor", anchor || "start")
       .text(words);
   }
@@ -154,6 +160,8 @@ export function mount(el, ctx) {
 
   function paint() {
     c = ctx.colors();
+    const drawn = svg.node().getBoundingClientRect().width;
+    size = drawn ? Math.max(12, (12 * 480 * 0.95) / drawn) : 12;
     LAYERS.forEach(n => layer[n].selectAll("*").remove());
     const [d1, d2] = s.one;
     const sc = Math.sqrt(1 - rho * rho);
@@ -286,6 +294,14 @@ export function mount(el, ctx) {
     if (i === 3) playing.push(rain());
     if (i === 4) playing.push(unbend());
   }
+
+  // Drawn at another width, the words are resized: repainted, not replayed.
+  let width = 0;
+  new ResizeObserver(([e]) => {
+    const w = Math.round(e.contentRect.width);
+    if (width && w !== width) show(step, false);
+    width = w;
+  }).observe(svg.node());
 
   compute();
   return { steps: STEPS, show, redraw: () => show(step, false) };

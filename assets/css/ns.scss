@@ -130,8 +130,8 @@
     display: -webkit-box;
     overflow: hidden;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
   }
 }
 
@@ -182,7 +182,9 @@
     width: 100%;
     max-width: 480px;
     height: auto;
-    max-height: calc(60vh - 7.5rem);
+    // What the rest of a pinned figure takes on a phone: two lines of
+    // controls, the strip of steps, two lines of caption, gaps and padding.
+    max-height: calc(60vh - 10rem);
   }
 }
 

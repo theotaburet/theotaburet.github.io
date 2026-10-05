@@ -558,24 +558,39 @@ if (ARTICLE_UP) {
   await ev(`document.querySelector('.dropdown-item[data-theme-mode="${was}"]').click()`);
   await wait(600);
 
+  // The pause button stops the animation, not the figure: it stays on the
+  // step being read, nothing moves, no text is dimmed; and while paused it
+  // still follows the text, a step at a time, without animating.
   await toStep(0, 1);
   await wait(200);
   await ev(toggle + ".click()");
   await wait(400);
-  const last = String((await ev(`${S}[0].querySelectorAll(".ns-step").length`)) - 1);
-  if ((await at(0)) !== last) extra.push("article: paused mid-animation, the first figure shows step " + (await at(0)) + ", not its last");
+  if ((await at(0)) !== "1") extra.push("article: paused mid-animation, the first figure left step 1 for step " + (await at(0)));
   if (await moving()) extra.push("article: still animating while paused");
   if (await ev(`[...${S}[0].querySelectorAll(".ns-step")].some(s => getComputedStyle(s).opacity !== "1")`)) extra.push("article: text left dimmed while paused");
+  await toStep(0, 2);
+  await wait(500);
+  if ((await at(0)) !== "2") extra.push("article: paused, step 2 of the text shows step " + (await at(0)) + " of the figure");
+  if (await moving()) extra.push("article: paused, going to the next step animates");
   await ev(toggle + ".click()");
 
+  // Reduced motion: each step of text shows its state at once, nothing moving.
   await open(ARTICLE, [{ name: "prefers-reduced-motion", value: "reduce" }]);
   for (let f = 0; f < count; f++) {
-    await ev(`${S}[${f}].scrollIntoView({ behavior: "instant" })`);
-    await wait(500);
-    const end = String((await ev(`${S}[${f}].querySelectorAll(".ns-step").length`)) - 1);
-    if ((await at(f)) !== end) extra.push("article, reduced motion: figure " + f + " shows step " + (await at(f)) + ", not its last");
+    const n = await ev(`${S}[${f}].querySelectorAll(".ns-step").length`);
+    for (let i = 0; i < n; i++) {
+      await toStep(f, i);
+      await wait(400);
+      if ((await at(f)) !== String(i)) {
+        extra.push("article, reduced motion: step " + i + " of the text shows step " + (await at(f)) + " of figure " + f);
+        break;
+      }
+      if (await moving()) {
+        extra.push("article, reduced motion: figure " + f + " animates at step " + i);
+        break;
+      }
+    }
   }
-  if (await moving()) extra.push("article, reduced motion: something is animating");
 
   await open(ARTICLE, []);
   const toy = await ev(`[...${S}].findIndex(s => s.dataset.fig === "toy")`);
@@ -704,21 +719,46 @@ if (ARTICLE_UP) {
   if (!one) extra.push("phone: the article's aside is not under its paragraph");
 }
 // On a phone the pinned figure, controls, strip and caption included, leaves
-// the text most of the screen.
+// the text most of the screen, on a short phone as on a tall one; nothing in
+// it spills over the text; what it writes can be read; and a click in its
+// strip of steps lands the step's first line in view, not under the figure.
 if (ARTICLE_UP) {
-  const fit = await ev(`(async () => {
-    const s = document.querySelector(".ns-scrolly");
-    scrollTo({ top: scrollY + s.getBoundingClientRect().top + 200, behavior: "instant" });
-    await new Promise(r => setTimeout(r, 800));
-    const f = s.querySelector(".ns-fig").getBoundingClientRect();
-    const bar = document.getElementById("toc-bar")?.getBoundingClientRect();
-    return { h: f.height, w: f.width, vw: innerWidth, vh: innerHeight, gap: bar && bar.height ? Math.round(f.top - bar.bottom) : null };
-  })()`);
-  // Under the theme's title bar, which stays at the top of a post on a phone,
-  // with no strip between them for the text to show through.
-  if (fit.gap !== null && Math.abs(fit.gap) > 1) extra.push("phone: the pinned figure is " + fit.gap + "px off the title bar above it");
-  if (fit.h > fit.vh * 0.6 + 1) extra.push("phone: the pinned figure takes " + Math.round((fit.h / fit.vh) * 100) + "% of the screen");
-  if (fit.w > fit.vw) extra.push("phone: the pinned figure is wider than the screen");
+  for (const h of [667, 800]) {
+    await send("Emulation.setDeviceMetricsOverride", { width: 375, height: h, deviceScaleFactor: 1, mobile: true });
+    await open(ARTICLE, []);
+    const fit = await ev(`(async () => {
+      const s = document.querySelector(".ns-scrolly");
+      scrollTo({ top: scrollY + s.getBoundingClientRect().top + 200, behavior: "instant" });
+      await new Promise(r => setTimeout(r, 800));
+      const fig = s.querySelector(".ns-fig"), f = fig.getBoundingClientRect();
+      const bar = document.getElementById("toc-bar")?.getBoundingClientRect();
+      const low = Math.max(...[...fig.querySelectorAll(".ns-canvas > *, figcaption")].map(e => e.getBoundingClientRect().bottom));
+      const svg = fig.querySelector("svg"), k = svg.getBoundingClientRect().width / svg.viewBox.baseVal.width;
+      const tiny = [...svg.querySelectorAll("text")].filter(t => {
+        for (let e = t; e && e !== svg; e = e.parentElement) if (getComputedStyle(e).opacity === "0") return false;
+        return parseFloat(getComputedStyle(t).fontSize) * k < 11;
+      }).map(t => t.textContent.slice(0, 20));
+      return { h: f.height, w: f.width, vw: innerWidth, vh: innerHeight, gap: bar && bar.height ? Math.round(f.top - bar.bottom) : null, spill: Math.round(low - f.bottom), tiny };
+    })()`);
+    const at = "phone 375×" + h + ": ";
+    // Under the theme's title bar, which stays at the top of a post on a phone,
+    // with no strip between them for the text to show through.
+    if (fit.gap !== null && Math.abs(fit.gap) > 1) extra.push(at + "the pinned figure is " + fit.gap + "px off the title bar above it");
+    if (fit.h > fit.vh * 0.6 + 1) extra.push(at + "the pinned figure takes " + Math.round((fit.h / fit.vh) * 100) + "% of the screen");
+    if (fit.spill > 1) extra.push(at + "the pinned figure spills " + fit.spill + "px over the text below it");
+    if (fit.w > fit.vw) extra.push(at + "the pinned figure is wider than the screen");
+    if (fit.tiny.length) extra.push(at + "figure text under 11px: " + fit.tiny.join(" | "));
+    const landed = await ev(`(async () => {
+      const s = document.querySelector(".ns-scrolly");
+      s.querySelectorAll(".ns-stepper button")[4].click();
+      await new Promise(r => setTimeout(r, 2000));
+      const step = s.querySelectorAll(".ns-step")[4], b = step.getBoundingClientRect();
+      const hit = document.elementFromPoint(b.left + 12, b.top + 12);
+      return !!(hit && step.contains(hit));
+    })()`);
+    if (!landed) extra.push(at + "a click on step 5 of the strip leaves the step's first line under the figure");
+  }
+  await send("Emulation.setDeviceMetricsOverride", { width: 375, height: 800, deviceScaleFactor: 1, mobile: true });
 }
 await send("Emulation.setTouchEmulationEnabled", { enabled: false });
 await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 800, deviceScaleFactor: 1, mobile: false });
