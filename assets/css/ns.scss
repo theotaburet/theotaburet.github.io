@@ -501,3 +501,58 @@
     color: var(--heading-color);
   }
 }
+
+// The opening figure's payload as text, scrolling past; hovered or focused,
+// it stops. Held still, it is a box the reader scrolls.
+.ns-payload-wrap {
+  max-width: 34rem;
+  margin: 0.75rem auto 0;
+}
+
+.ns-payload {
+  height: 9rem;
+  overflow: hidden;
+  padding: 0 0.75rem;
+  border: 1px solid var(--ns-rule);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  color: var(--ns-ink);
+  mask-image: linear-gradient(transparent, #000 12%, #000 88%, transparent);
+}
+
+.ns-payload-text {
+  animation: ns-payload var(--ns-payload-time, 60s) linear infinite;
+}
+
+.ns-payload:hover .ns-payload-text,
+.ns-payload:focus .ns-payload-text {
+  animation-play-state: paused;
+}
+
+@keyframes ns-payload {
+  to {
+    transform: translateY(var(--ns-payload-shift, 0));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ns-payload {
+    overflow-y: auto;
+    mask-image: none;
+  }
+
+  .ns-payload-text {
+    animation: none;
+  }
+}
+
+.motion-paused .ns-payload {
+  overflow-y: auto;
+  mask-image: none;
+}
+
+.motion-paused .ns-payload-text {
+  animation: none;
+}

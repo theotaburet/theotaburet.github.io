@@ -2,7 +2,8 @@
 // photograph, one taken at ISO 200, the other taken at ISO 100 with a
 // payload embedded. Which is which? A loupe shows the same spot in both.
 // After a choice, the answer, and four views: the original, ISO 200, the
-// embedding, and the difference the embedding made.
+// embedding, and the difference the embedding made; then how much text the
+// payload is: the opening of this article, cut to its size, scrolling past.
 //
 // The crops and what they carry come from tools/ns-data.py.
 import { loupe } from "./loupe.js";
@@ -20,6 +21,7 @@ export function mount(el) {
   const pair = Math.random() < 0.5 ? ["iso200", "stego"] : ["stego", "iso200"];
   let answered = false;
   let lens = null;
+  let hook = null; // hook.json, once loaded
   const grey = {}; // the pixels of each crop, for the value under the lens
 
   el.textContent = "";
@@ -37,7 +39,10 @@ export function mount(el) {
 
   fetch(new URL("hook.json", DATA))
     .then(r => r.json())
-    .then(h => (question.textContent = "One of these two crops could carry " + h.kbytes.toFixed(1) + " KB. Which one?"));
+    .then(h => {
+      hook = h;
+      question.textContent = "One of these two crops could carry " + h.kbytes.toFixed(1) + " KB. Which one?";
+    });
 
   function view(name, labelled) {
     const v = document.createElement("div");
@@ -97,9 +102,52 @@ export function mount(el) {
         : "No: the " + side.toLowerCase() + " one is a real ISO 200 photograph. The payload is in the other.";
       choices.remove();
       lay(["iso100", "iso200", "stego", "diff"], true);
+      if (hook) payload(hook.kbytes);
     });
     choices.appendChild(b);
   });
+
+  // The payload, as text: the words of this article, paragraphs and steps,
+  // cut to as many bytes as the crop could carry.
+  function payload(kb) {
+    const want = Math.round(kb * 1000);
+    const enc = new TextEncoder();
+    // An equation as its TeX, which MathJax keeps for each one it typeset.
+    const tex = new Map();
+    try {
+      for (const m of window.MathJax.startup.document.math) tex.set(m.typesetRoot, m.math);
+    } catch {}
+    const parts = [...document.querySelectorAll(".content > p, .content > h2, .content .ns-step")].map(n => {
+      const c = n.cloneNode(true);
+      const math = [...n.querySelectorAll("mjx-container")];
+      c.querySelectorAll("mjx-container").forEach((m, i) => m.replaceWith(tex.get(math[i]) || ""));
+      c.querySelectorAll(".ns-cite, sup").forEach(m => m.remove());
+      return c.textContent.replace(/\s+/g, " ").trim();
+    }).filter(Boolean);
+    let text = "";
+    while (parts.length && enc.encode(text).length < want) text += (text ? "\n\n" : "") + parts.shift();
+    while (enc.encode(text).length > want) text = text.slice(0, -1);
+    const wrap = document.createElement("div");
+    wrap.className = "ns-payload-wrap";
+    const say = document.createElement("p");
+    say.className = "ns-view-label";
+    say.textContent = kb.toFixed(1) + " KB is this much text: the opening of this article, word for word.";
+    const box = document.createElement("div");
+    box.className = "ns-payload";
+    box.tabIndex = 0;
+    box.setAttribute("role", "region");
+    box.setAttribute("aria-label", kb.toFixed(1) + " KB of text, the size of the payload");
+    const inner = document.createElement("div");
+    inner.className = "ns-payload-text";
+    inner.textContent = text;
+    box.appendChild(inner);
+    wrap.append(say, box);
+    el.appendChild(wrap);
+    // Up the whole text and round again, at a pace that can be read.
+    const shift = inner.scrollHeight - box.clientHeight;
+    box.style.setProperty("--ns-payload-shift", -Math.max(0, shift) + "px");
+    box.style.setProperty("--ns-payload-time", Math.max(10, shift / 20) + "s");
+  }
 
   lay(pair, false);
   el.classList.add("ns-loupe");

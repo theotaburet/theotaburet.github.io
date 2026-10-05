@@ -1028,6 +1028,36 @@ if (ARTICLE_UP) {
   if (a.length) extra.push("article appendix: " + a.join(", "));
 }
 
+// After the choice, the opening figure shows how much text its payload is:
+// as many bytes as hook.json says the crop could carry, scrolling past, or,
+// with motion reduced, still, in a box the reader scrolls.
+if (ARTICLE_UP) {
+  for (const reduced of [false, true]) {
+    await open(ARTICLE, reduced ? [{ name: "prefers-reduced-motion", value: "reduce" }] : []);
+    const r = await ev(`(async () => {
+      const f = document.querySelector('.ns-inline[data-fig="hook"]');
+      f.scrollIntoView({ block: "center", behavior: "instant" });
+      await new Promise(r => setTimeout(r, 1200));
+      f.querySelector("[data-choice]").click();
+      await new Promise(r => setTimeout(r, 800));
+      const box = f.querySelector(".ns-payload");
+      if (!box) return { none: true };
+      const kb = (await (await fetch("/assets/data/ns/hook.json")).json()).kbytes;
+      const bytes = new TextEncoder().encode(box.textContent).length;
+      const moving = box.getAnimations({ subtree: true }).some(a => a.playState === "running");
+      return { kb, bytes, moving, scrolls: getComputedStyle(box).overflowY === "auto", focusable: box.tabIndex === 0, named: !!box.getAttribute("aria-label") };
+    })()`);
+    const at = "article hook" + (reduced ? ", reduced motion" : "") + ": ";
+    if (r.none) extra.push(at + "no payload text after the choice");
+    else {
+      if (Math.abs(r.bytes - r.kb * 1000) > r.kb * 10) extra.push(at + "the payload text is " + r.bytes + " bytes for " + r.kb + " KB");
+      if (reduced ? r.moving : !r.moving) extra.push(at + (reduced ? "the payload text moves" : "the payload text does not scroll past"));
+      if (reduced && !r.scrolls) extra.push(at + "the payload text cannot be scrolled by hand");
+      if (!r.focusable || !r.named) extra.push(at + "the payload box is not a named, focusable region");
+    }
+  }
+}
+
 // The CV prints as a CV: the site's furniture gone, a letterhead in its
 // place, and nothing left at the opacity the scroll reveals start from.
 // tools/cv-pdf.sh prints exactly this to the PDFs the pages link to.
