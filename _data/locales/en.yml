@@ -1,0 +1,8 @@
+# Deep-merged over the theme's own en.yml, so only what it lacks goes here.
+# The theme titles a tab page from this list alone; without an entry the
+# page's <title> is just " | Théo Taburet".
+tabs:
+  cv: CV
+  publications: Publications
+  projects: Projects
+  photos: Photos

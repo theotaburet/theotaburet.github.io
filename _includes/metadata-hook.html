@@ -1,4 +1,7 @@
 <!-- Chirpy leaves this include empty as an extension point in <head>. -->
+<!-- The theme's viewport says user-scalable=no, which stops anyone zooming in
+     on a phone. Rewritten here, before first paint, rather than forking head.html. -->
+<script>document.querySelector('meta[name="viewport"]').content = "width=device-width, initial-scale=1, viewport-fit=cover";</script>
 <script defer src="{{ '/assets/js/lang-switch.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/js/heat.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/js/site.js' | relative_url }}"></script>

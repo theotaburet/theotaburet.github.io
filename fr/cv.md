@@ -65,7 +65,7 @@ Formation pluridisciplinaire : mécanique, électronique et informatique.
 
 ## Compétences
 
-| Domaine | |
+| Domaine | Compétences |
 |---|---|
 | **Apprentissage automatique** | Deep learning · CNN · Détection d'anomalies · Détection d'objets · Segmentation · Détection de fraude |
 | **Vision par ordinateur** | Traitement d'image · Stéganographie · Détection de manipulations · Suivi d'objets · Segmentation |

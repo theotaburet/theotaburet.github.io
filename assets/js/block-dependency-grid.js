@@ -8,7 +8,7 @@
   var N = 8;
   var COLORS = { A: "#a0d8ef", B: "#f8b862", C: "#8db255", D: "#d3381c" };
   // Labels default to English; the French page overrides them with data-legend
-  // (four entries, pipe separated) and data-hint on the container.
+  // (four entries, pipe separated), data-hint and data-label on the container.
   var LEGEND_TEXT = (
     root.dataset.legend ||
     "independent|depends on A|depends on A, B|depends on A, B, C"
@@ -68,6 +68,14 @@
 
   var grid = document.createElement("div");
   grid.className = "dg-grid";
+  // One picture to a screen reader, not 64 of them: the cells are only the
+  // pattern, and the legend under it says in words what depends on what.
+  grid.setAttribute("role", "img");
+  grid.setAttribute(
+    "aria-label",
+    root.dataset.label ||
+      "An 8 by 8 block of DCT coefficients split into four interleaved lattices: A and C alternate on odd rows, D and B on even rows."
+  );
   var cells = [];
 
   for (var r = 0; r < N; r++) {
@@ -78,8 +86,6 @@
       el.style.backgroundColor = COLORS[t];
       el.textContent = t;
       el.dataset.pos = r + "," + c;
-      el.setAttribute("role", "img");
-      el.setAttribute("aria-label", "lattice " + t + " at row " + (r + 1) + ", column " + (c + 1));
       grid.appendChild(el);
       cells.push(el);
     }
@@ -112,7 +118,7 @@
   var hint = document.createElement("p");
   hint.className = "dg-hint";
   hint.textContent =
-    root.dataset.hint || "Hover a cell to see everything it depends on.";
+    root.dataset.hint || "Hover or tap a cell to see everything it depends on.";
 
   var legend = document.createElement("div");
   legend.className = "dg-legend";

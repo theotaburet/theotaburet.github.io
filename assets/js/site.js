@@ -294,6 +294,22 @@
   })();
 
   /* -------------------------------------------------------------------------
+     Screen readers. The emoji are decoration, and read aloud they put
+     "radio" in front of a heading. The theme's # beside every heading is a
+     link with no name that only points back at the heading it sits in, so
+     it leaves the tab order too; a pointer can still use it.
+     ---------------------------------------------------------------------- */
+  (function quiet() {
+    document.querySelectorAll(".emo").forEach(function (el) {
+      el.setAttribute("aria-hidden", "true");
+    });
+    document.querySelectorAll("a.anchor").forEach(function (a) {
+      a.setAttribute("aria-hidden", "true");
+      a.tabIndex = -1;
+    });
+  })();
+
+  /* -------------------------------------------------------------------------
      The colophon. The theme parks it under the article, where it falls
      between the end of the text and the top of the well and belongs to
      neither. It says who the site is, so it goes where the site's name is.

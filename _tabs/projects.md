@@ -33,7 +33,7 @@ except that each one started as a problem I had personally.
 </div>
 
 
-## 📻 diapason {#diapason}
+## <span class="emo">📻</span> diapason {#diapason}
 
 *Your own radio, broadcast from a phone.*
 
@@ -66,7 +66,7 @@ I built it for bike rides.
 
 <p class="stack"><span>Rust</span><span>axum</span><span>WebAssembly</span><span>TypeScript</span><span>Astro</span><span>Opus</span><span>Web Audio</span><span>PWA</span></p>
 
-## 🚲 Ravitools {#ravitools}
+## <span class="emo">🚲</span> Ravitools {#ravitools}
 
 <div class="deploys" data-cursor="wheel">
 <span><a href="https://github.com/theotaburet/Ravitools">Source</a> <em class="env">GitHub</em></span>
@@ -78,7 +78,7 @@ to know when the next tap is.
 
 <p class="stack"><span>Python</span><span>GPX</span><span>OpenStreetMap</span></p>
 
-## 🌾 Natural steganography in the JPEG domain {#stego}
+## <span class="emo">🌾</span> Natural steganography in the JPEG domain {#stego}
 
 *PhD research, 2017-2020*
 
@@ -91,7 +91,7 @@ DCT domain, reaching high security (P<sub>E</sub> ≥ 40%) at over 2 bpnzAC.
 
 The scheme splits the DCT coefficients into four interleaved lattices and embeds
 into them in order, so that each lattice can be conditioned on the ones already
-written. Hover a cell below to see what it depends on:
+written. Hover or tap a cell below to see what it depends on:
 
 <div id="dct-grid" data-cursor="grain"></div>
 <script src="{{ '/assets/js/block-dependency-grid.js' | relative_url }}"></script>

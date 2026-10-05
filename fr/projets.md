@@ -35,7 +35,7 @@ qu'il n'y paraît, sauf que chacune est partie d'un problème que j'avais.
 </div>
 
 
-## 📻 diapason {#diapason}
+## <span class="emo">📻</span> diapason {#diapason}
 
 *Votre propre radio, diffusée depuis un téléphone.*
 
@@ -69,7 +69,7 @@ Je l'ai construit pour les sorties vélo.
 
 <p class="stack"><span>Rust</span><span>axum</span><span>WebAssembly</span><span>TypeScript</span><span>Astro</span><span>Opus</span><span>Web Audio</span><span>PWA</span></p>
 
-## 🚲 Ravitools {#ravitools}
+## <span class="emo">🚲</span> Ravitools {#ravitools}
 
 <div class="deploys" data-cursor="wheel">
 <span><a href="https://github.com/theotaburet/Ravitools">Source</a> <em class="env">GitHub</em></span>
@@ -81,7 +81,7 @@ exactement là où ils ont le plus besoin de savoir où est le prochain robinet.
 
 <p class="stack"><span>Python</span><span>GPX</span><span>OpenStreetMap</span></p>
 
-## 🌾 Stéganographie naturelle dans le domaine JPEG {#stego}
+## <span class="emo">🌾</span> Stéganographie naturelle dans le domaine JPEG {#stego}
 
 *Travaux de thèse, 2017-2020*
 
@@ -95,9 +95,9 @@ le domaine DCT, et atteignent une sécurité élevée (P<sub>E</sub> ≥ 40 %) �
 
 Le schéma découpe les coefficients DCT en quatre réseaux entrelacés et insère dedans
 dans l'ordre, de sorte que chaque réseau puisse être conditionné par ceux déjà écrits.
-Survolez une case pour voir ce dont elle dépend :
+Survolez ou touchez une case pour voir ce dont elle dépend :
 
-<div id="dct-grid" data-cursor="grain" data-hint="Survolez une case pour voir tout ce dont elle dépend." data-legend="indépendant|dépend de A|dépend de A, B|dépend de A, B, C"></div>
+<div id="dct-grid" data-cursor="grain" data-hint="Survolez ou touchez une case pour voir tout ce dont elle dépend." data-label="Un bloc 8 × 8 de coefficients DCT réparti en quatre réseaux entrelacés : A et C alternent sur les lignes impaires, D et B sur les lignes paires." data-legend="indépendant|dépend de A|dépend de A, B|dépend de A, B, C"></div>
 <script src="{{ '/assets/js/block-dependency-grid.js' | relative_url }}"></script>
 
 Les articles sont sur la page [publications]({{ '/fr/publications/' | relative_url }}).

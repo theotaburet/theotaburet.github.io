@@ -28,6 +28,8 @@
     a.className = "lang-switch";
     a.textContent = label;
     a.hreflang = label === "FR" ? "fr-FR" : "en";
+    // The label is in the language it switches to, so say it in that voice.
+    a.lang = label === "FR" ? "fr" : "en";
     a.setAttribute(
       "aria-label",
       label === "FR" ? "Passer en français" : "Switch to English"

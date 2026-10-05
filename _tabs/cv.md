@@ -64,7 +64,7 @@ Multidisciplinary engineering: mechanical, electronics, and computer science.
 
 ## Skills
 
-| Area | |
+| Area | Skills |
 |---|---|
 | **Machine Learning** | Deep Learning · CNNs · Anomaly Detection · Object Detection · Segmentation · Fraud Detection |
 | **Computer Vision** | Image Processing · Steganography · Image Manipulation Detection · Object Tracking · Segmentation |
