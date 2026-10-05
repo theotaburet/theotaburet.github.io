@@ -1004,6 +1004,30 @@ if (ARTICLE_UP) {
   await send("Emulation.setFocusEmulationEnabled", { enabled: false });
 }
 
+// The appendix, as on Distill: acknowledgements, the references the text
+// cites, each at the number the text gives it, a BibTeX entry with the DOI,
+// and the code and data.
+if (ARTICLE_UP) {
+  await open(ARTICLE, []);
+  const a = await ev(`(() => {
+    const ap = document.querySelector(".ns-appendix");
+    if (!ap) return ["no appendix"];
+    const out = [];
+    const heads = [...ap.querySelectorAll("h2, h3")].map(h => h.textContent.trim());
+    ["Acknowledgements", "References", "Cite this work", "Code and data"].forEach(h => { if (!heads.includes(h)) out.push("no '" + h + "'"); });
+    if (!ap.classList.contains("l-page")) out.push("not page-wide");
+    document.querySelectorAll(".content .ns-cite").forEach(c => {
+      const ref = document.getElementById(c.getAttribute("href").slice(1));
+      if (!ref || !ap.contains(ref)) out.push(c.textContent + " points nowhere");
+      else if (c.textContent !== "[" + ([...ref.parentElement.children].indexOf(ref) + 1) + "]") out.push(c.textContent + " is entry " + ([...ref.parentElement.children].indexOf(ref) + 1));
+    });
+    if (!(ap.querySelector("pre")?.textContent || "").includes("10.1109/TIFS.2020.3007354")) out.push("no BibTeX with the DOI");
+    ["gitlab.cristal.univ-lille.fr/ttaburet/tifs-ns", "gitlab.cristal.univ-lille.fr/ttaburet/e1base", "hal.science/hal-04456456"].forEach(u => { if (!ap.querySelector('a[href*="' + u + '"]')) out.push("no link to " + u); });
+    return [...new Set(out)];
+  })()`);
+  if (a.length) extra.push("article appendix: " + a.join(", "));
+}
+
 // The CV prints as a CV: the site's furniture gone, a letterhead in its
 // place, and nothing left at the opacity the scroll reveals start from.
 // tools/cv-pdf.sh prints exactly this to the PDFs the pages link to.

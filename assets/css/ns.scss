@@ -450,3 +450,54 @@
     margin: 0;
   }
 }
+
+// The appendix, as on Distill: set apart by a rule across the page, its
+// lines no longer than the text's, smaller and quieter.
+.ns-appendix {
+  margin-top: 1.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--main-border-color);
+  font-size: 0.9rem;
+
+  > * {
+    max-width: 46rem;
+  }
+
+  h2 {
+    margin: 1.5rem 0 0.5rem;
+    font-size: 1.05rem;
+  }
+
+  .ns-refs li {
+    margin-bottom: 0.35rem;
+  }
+
+  // Scrolled to from a citation: the entry says it is the one.
+  .ns-refs li:target {
+    outline: 2px solid var(--ns-hot);
+    outline-offset: 2px;
+  }
+
+  pre {
+    margin: 0 0 0.5rem;
+    padding: 0.75rem;
+    overflow-x: auto;
+    border: 1px solid var(--ns-rule);
+    border-radius: 4px;
+    font-size: 0.8rem;
+  }
+}
+
+// The notes kramdown gathers at the very end, under the appendix.
+.content > .footnotes {
+  font-size: 0.9rem;
+
+  &::before {
+    content: "Notes";
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--heading-color);
+  }
+}

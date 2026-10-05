@@ -1,0 +1,37 @@
+<section class="ns-appendix l-page" aria-label="Appendix">
+
+<h2>Acknowledgements</h2>
+<p>From the paper: the authors thank Solène Bernard (CRIStAL, Lille) for running the experiments with SRNet. The work was granted access to the HPC resources of IDRIS under the allocation 2020-AP010611583 made by GENCI, and to those of the University of Lille. It was funded in part by the French National Research Agency, through the ALASKA project (ANR-18-ASTR-0009) and the DEFALS program (ANR-16-DEFA-0003).</p>
+<p>This page draws its figures in your browser with <a href="https://d3js.org">D3</a> and <a href="https://gsap.com">GSAP</a>, from the RAW files and the reference code that come with the paper. Its layout owes everything to <a href="https://distill.pub">Distill</a>.</p>
+
+<h2>References</h2>
+<ol class="ns-refs">
+{%- for r in site.data["ns-refs"] %}
+<li id="ref-{{ r.key }}">{{ r.authors }}. <a class="ns-ref-title" href="{{ r.url }}">{{ r.title }}</a>. <em>{{ r.venue }}</em>, {{ r.year }}.</li>
+{%- endfor %}
+</ol>
+
+<h2>Cite this work</h2>
+<p>The paper this article explains:</p>
+<div class="ns-bibtex">
+<pre id="ns-bibtex" tabindex="0" aria-label="BibTeX entry">@article{taburet2021natural,
+  author  = {Taburet, Th{\'e}o and Bas, Patrick and Sawaya, Wadih and Fridrich, Jessica},
+  title   = {Natural Steganography in {JPEG} Domain With a Linear Development Pipeline},
+  journal = {IEEE Transactions on Information Forensics and Security},
+  volume  = {16},
+  pages   = {173--186},
+  year    = {2021},
+  doi     = {10.1109/TIFS.2020.3007354}
+}</pre>
+<button type="button" class="btn btn-sm btn-outline-secondary" data-copy="ns-bibtex">Copy</button>
+</div>
+
+<h2>Code and data</h2>
+<ul>
+<li>The paper, open access: <a href="https://hal.science/hal-02910206">HAL hal-02910206</a>, and on <a href="https://doi.org/10.1109/TIFS.2020.3007354">IEEE Xplore</a>.</li>
+<li>The reference code, notebooks and the two RAW files these figures start from: <a href="https://gitlab.cristal.univ-lille.fr/ttaburet/tifs-ns">tifs-ns</a>, also archived as <a href="https://hal.science/hal-04456456">HAL hal-04456456</a>.</li>
+<li>E1Base, the 10,800 RAW crops of the experiments: <a href="https://gitlab.cristal.univ-lille.fr/ttaburet/e1base">e1base</a>.</li>
+<li>The code of this page and its tests: <a href="https://github.com/theotaburet/theotaburet.github.io/tree/main/assets/js/ns">assets/js/ns</a>, with the maths checked against the reference code in <a href="https://github.com/theotaburet/theotaburet.github.io/blob/main/tools/ns-check.mjs">tools/ns-check.mjs</a>.</li>
+</ul>
+
+</section>

@@ -217,4 +217,6 @@ bpnzAC: bits per non-zero AC coefficient, the usual unit of JPEG steganography. 
 
 *Draft: the figures are all here; the text around them is still being written.*
 
+{% include ns-appendix.html %}
+
 [^dark]: Where $(a_2 - a_1)\,x + b_2 - b_1$ would be negative, in the darkest parts of the picture, the paper sets the variance to 0: nothing is added there, and nothing can be carried.

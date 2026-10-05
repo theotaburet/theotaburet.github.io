@@ -187,6 +187,21 @@ function boot() {
     k.addEventListener("blur", () => to(false));
   });
 
+  // The BibTeX entry of the appendix, copied with a click; where the
+  // clipboard is refused, selected, for the reader to copy.
+  document.querySelectorAll("[data-copy]").forEach(b =>
+    b.addEventListener("click", async () => {
+      const src = document.getElementById(b.dataset.copy);
+      try {
+        await navigator.clipboard.writeText(src.textContent);
+        b.textContent = "Copied";
+      } catch {
+        getSelection().selectAllChildren(src);
+        b.textContent = "Selected: copy it with Ctrl+C";
+      }
+    })
+  );
+
   // Paused or reduced, or back from either: each figure is redrawn on its
   // step, with nothing left playing.
   const settle = () => live.forEach(f => f.hold());
