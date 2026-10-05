@@ -403,6 +403,40 @@
   })();
 
   /* -------------------------------------------------------------------------
+     Light and dark, at the top of every page. The theme's own switch is a
+     menu at the foot of the sidebar, behind the menu button on a phone; this
+     is one tap, to whichever of the two is not showing. It goes through that
+     menu, so the theme remembers the choice and fade() below cross-fades it.
+     "System" is still in the menu.
+     ---------------------------------------------------------------------- */
+  (function theme() {
+    var bar = document.querySelector(".topbar-switches"); // lang-switch.js
+    if (!bar || !document.querySelector(".dropdown-item[data-theme-mode]")) return;
+    var root = document.documentElement;
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "topbar-theme btn btn-link";
+    btn.setAttribute("aria-label", root.lang.indexOf("fr") === 0 ? "Mode sombre" : "Dark mode");
+    // Drawn in squares like the faces: at this size the icon font's sun has
+    // pointed rays all round, and reads as a cog.
+    btn.innerHTML =
+      '<svg class="moon" viewBox="0 -.5 9 9" aria-hidden="true"><path d="M2 0h2v1H2zM1 1h2v1H1zM0 2h3v2H0zM0 4h4v1H0zM0 5h5v1H0zM7 5h2v1H7zM1 6h7v1H1zM2 7h5v1H2z"/></svg>' +
+      '<svg class="sun" viewBox="0 0 9 9" aria-hidden="true"><path d="M4 0h1v1H4zM1 1h1v1H1zM7 1h1v1H7zM3 2h3v1H3zM2 3h5v3H2zM0 4h1v1H0zM8 4h1v1H8zM3 6h3v1H3zM1 7h1v1H1zM7 7h1v1H7zM4 8h1v1H4z"/></svg>';
+    // Pressed is dark, however it got there: this button, the menu, or the
+    // system changing under a visitor who never picked.
+    function show() {
+      btn.setAttribute("aria-pressed", String(root.getAttribute("data-bs-theme") === "dark"));
+    }
+    show();
+    new MutationObserver(show).observe(root, { attributes: true, attributeFilter: ["data-bs-theme"] });
+    btn.addEventListener("click", function () {
+      var want = root.getAttribute("data-bs-theme") === "dark" ? "light" : "dark";
+      document.querySelector('.dropdown-item[data-theme-mode="' + want + '"]').click();
+    });
+    bar.insertBefore(btn, bar.firstChild);
+  })();
+
+  /* -------------------------------------------------------------------------
      Theme switch. The theme flips every colour at once; this has the browser
      cross-fade the page instead. The click on the menu is caught on its way
      down, before the theme's own handler hears it, and played again inside

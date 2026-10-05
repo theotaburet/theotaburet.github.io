@@ -62,9 +62,9 @@ function stub(extra, view) {
     createElement: function () { return extra.canvas; },
     getElementById: function () { return host(); },
     // The well hangs on the content column and measures itself against
-    // #main-wrapper, so both lookups have to answer. The sidebar is not what
-    // is being judged here: it is simply not there.
-    querySelector: function (sel) { return /^#sidebar/.test(sel) ? null : host(); },
+    // #main-wrapper, so both lookups have to answer. The sidebar and the top
+    // bar are not what is being judged here: they are simply not there.
+    querySelector: function (sel) { return /^(#sidebar|\.topbar-switches)/.test(sel) ? null : host(); },
     // What a query finds: `all` names it by selector, when a test gives one.
     querySelectorAll: function (sel) { return extra.all ? extra.all(sel) : []; },
     // A range over a node's contents covers its text, which a stub node gives

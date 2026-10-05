@@ -115,7 +115,15 @@ const CHECKS = page => `((page, THIN, PAIRED) => {
   if (PAIRED.includes(page)) {
     const alt = [...document.querySelectorAll('link[rel="alternate"][hreflang]')].map(l => l.hreflang).sort().join(",");
     if (alt !== "en,fr,x-default") bad.push("hreflang alternates: [" + alt + "], expected en, fr, x-default");
-    if (!document.querySelector(".lang-switch")) bad.push("no language switch");
+    if (!document.querySelector("#topbar .lang-switch")) bad.push("no language switch in the top bar");
+  }
+
+  // Light and dark, one tap away at the top of every page, not in a menu.
+  const theme = document.querySelector("#topbar button[aria-pressed]");
+  if (!theme || !shown(theme)) bad.push("no light/dark button in the top bar");
+  else {
+    const b = theme.getBoundingClientRect();
+    if (b.left < 0 || b.right > innerWidth || b.width < 24 || b.height < 24) bad.push("light/dark button off screen or under 24px");
   }
 
   return bad;
@@ -388,15 +396,33 @@ await tap("#sidebar-trigger");
 await tap("#mode-toggle");
 if (!(await tap('.dropdown-item[data-theme-mode="light"]'))) extra.push("phone: the theme menu does not open under a finger");
 else if ((await ev("document.documentElement.getAttribute('data-bs-theme')")) !== "light") extra.push("phone: tapping Light does not switch to light");
+
+// The top bar's own two: light/dark and the language, one tap each, with no
+// menu to open first. The theme picked there is kept, and the search box,
+// when it opens, still has the bar to itself.
+const mode = () => ev("document.documentElement.getAttribute('data-bs-theme') + ' ' + document.querySelector('#topbar button[aria-pressed]')?.getAttribute('aria-pressed')");
+await open("/", []); // light, from the menu above
+if (!(await tap("#topbar button[aria-pressed]"))) extra.push("phone: no light/dark button in the top bar");
+else {
+  if ((await mode()) !== "dark true") extra.push("phone: the top bar button does not switch light to dark: " + (await mode()));
+  await open("/", []);
+  if ((await mode()) !== "dark true") extra.push("phone: the theme picked in the top bar is forgotten on reload: " + (await mode()));
+  await tap("#topbar button[aria-pressed]");
+  if ((await mode()) !== "light false") extra.push("phone: the top bar button does not switch dark to light: " + (await mode()));
+}
+await tap("#search-trigger");
+const searching = await ev(`(() => {
+  const gone = sel => [...document.querySelectorAll(sel)].every(e => !e.getClientRects().length);
+  const box = document.getElementById("search-input").getBoundingClientRect();
+  return { gone: gone("#topbar button[aria-pressed], #topbar .lang-switch"), w: Math.round(box.width), right: box.right };
+})()`);
+if (!searching.gone || searching.w < 150 || searching.right > 375) extra.push("phone: the search box shares the top bar: " + JSON.stringify(searching));
 await open("/", []);
-await tap("#sidebar-trigger");
-await tap("#mode-toggle"); // the tap that used to set the row jumping
-await ev("document.body.click()"); // and close the menu it opens
-await wait(300);
 const went = new Promise(r => (loaded = r));
-if (!(await tap(".lang-switch"))) extra.push("phone: no language link in the sidebar");
+if (!(await tap("#topbar .lang-switch"))) extra.push("phone: no language link in the top bar");
 await Promise.race([went, wait(3000)]);
 if ((await ev("location.pathname")) !== "/fr/") extra.push("phone: tapping FR does not go to the French page");
+else if ((await ev("document.querySelector('#topbar .lang-switch')?.textContent")) !== "EN") extra.push("phone: the French page offers no way back to English");
 await send("Emulation.setTouchEmulationEnabled", { enabled: false });
 await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 800, deviceScaleFactor: 1, mobile: false });
 

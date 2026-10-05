@@ -4,7 +4,7 @@
 // Sidebar language handling, injected through _includes/metadata-hook.html so
 // no theme file is forked.
 //
-//   - every page in PAIRS gets an FR/EN switch next to the theme toggle
+//   - every page in PAIRS gets an FR/EN switch at the right of the top bar
 //   - French pages get their sidebar repointed at the French equivalents
 //
 // Pages outside PAIRS (archives, categories, tags, posts) exist in English
@@ -20,10 +20,22 @@
     return path.replace(/\/?$/, "/");
   }
 
-  function addSwitch(bottom, target, label) {
+  // The top bar's switches: this language link, and the light/dark button
+  // site.js puts in front of it. Made here, on every page, because this
+  // script runs first.
+  function bar() {
+    var top = document.getElementById("topbar");
+    if (!top) return null;
+    var group = document.createElement("div");
+    group.className = "topbar-switches";
+    top.insertBefore(group, document.getElementById("search-trigger"));
+    return group;
+  }
+
+  function addSwitch(group, target, label) {
     var a = document.createElement("a");
     a.href = target;
-    a.className = "lang-switch";
+    a.className = "lang-switch btn btn-link";
     a.textContent = label;
     a.hreflang = label === "FR" ? "fr-FR" : "en";
     // The label is in the language it switches to, so say it in that voice.
@@ -32,10 +44,7 @@
       "aria-label",
       label === "FR" ? "Passer en français" : "Switch to English"
     );
-
-    var toggle = bottom.querySelector(".btn-group");
-    if (toggle) toggle.insertAdjacentElement("afterend", a);
-    else bottom.insertBefore(a, bottom.firstChild);
+    group.appendChild(a);
   }
 
   // The sidebar is rendered from the English tabs on every page, including the
@@ -57,6 +66,7 @@
   }
 
   function init() {
+    var group = bar();
     var here = normalize(location.pathname);
     var target = PAIRS[here];
     var label = "FR";
@@ -74,8 +84,7 @@
 
     if (label === "EN") localizeSidebar(here);
 
-    var bottom = document.querySelector(".sidebar-bottom");
-    if (bottom) addSwitch(bottom, target, label);
+    if (group) addSwitch(group, target, label);
   }
 
   if (document.readyState === "loading") {

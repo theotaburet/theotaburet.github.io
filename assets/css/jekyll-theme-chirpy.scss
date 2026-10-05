@@ -128,12 +128,43 @@ $amber: #f8b862;
 }
 
 /* ---------------------------------------------------------------------------
-   Language switch, injected into the sidebar bottom row by lang-switch.js.
-   Text rather than an icon, because a flag is a country and not a language.
+   Top bar switches: light/dark (site.js) and the language (lang-switch.js),
+   at the right of every page, against the search. On a phone the search box
+   takes the whole bar when it opens, so they step out of its way.
    --------------------------------------------------------------------------- */
 
+.topbar-switches {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+
+  #topbar:has(#search-cancel.d-block) & {
+    display: none;
+  }
+}
+
+/* The moon in the light theme and the sun in the dark: the one it switches to. */
+.topbar-theme {
+  color: #999999; /* the theme's colour for the top bar's buttons */
+
+  svg {
+    display: block;
+    width: 18px; /* two pixels a square */
+    height: 18px;
+    fill: currentColor;
+    shape-rendering: crispEdges;
+  }
+
+  [data-bs-theme='dark'] & .moon,
+  :root:not([data-bs-theme='dark']) & .sun {
+    display: none;
+  }
+}
+
+/* Text rather than an icon, because a flag is a country and not a language. */
 .lang-switch {
-  font-size: 0.76rem;
+  color: var(--text-muted-color);
+  font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-decoration: none;
