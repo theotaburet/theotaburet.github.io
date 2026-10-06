@@ -351,10 +351,13 @@ export const GIVEN = { 1: [0], 2: [0, 5, 6, 7, 8], 3: [0, 1, 2, 3, 4], 4: [0, 1,
 // coefficient is the DCT of the luminance ×4. Each coefficient is drawn
 // around the cover's own, c + m, so the PMF is over the integer the file
 // stores, as the paper's code gets by rounding cover + signal; eq. (29), as
-// printed, centres it on the signal's mean alone. A block is drawn only if every neighbour it needs was; the
-// others stay null. Returns, per block, the stego signal s (the draw less
-// the cover) and the integers stored, round((c + s) / q); the bits they
-// carry; and the bits per block of each lattice.
+// printed, centres it on the signal's mean alone. Every block but the outer
+// ring is drawn, given those of its lattice's neighbours that were: next to
+// the ring, the ones on it never are, and are left out of its law. The ring
+// stays null. Returns, per block, the stego signal s (the draw less the
+// cover) and the integers stored, round((c + s) / q); the bits they carry;
+// and the bits per block of each lattice, over the blocks drawn with all
+// their neighbours.
 export function embed(raw, B, vOf, steps, K, rand) {
   const nc = 8 * B + 2;
   const M = photositesToDct(3);
@@ -368,13 +371,14 @@ export function embed(raw, B, vOf, steps, K, rand) {
     for (let bi = 1; bi < B - 1; bi++) {
       for (let bj = 1; bj < B - 1; bj++) {
         if (lattice(bi, bj) !== L) continue;
-        const known = GIVEN[L].slice(1).map(p => blocks[(bi + AROUND[p][0]) * B + bj + AROUND[p][1]]);
-        if (known.some(b => !b)) continue;
+        const at = p => blocks[(bi + AROUND[p][0]) * B + bj + AROUND[p][1]];
+        const have = GIVEN[L].filter((p, n) => n === 0 || at(p));
+        const known = have.slice(1).map(at);
         for (let i = 0; i < 26; i++) {
           for (let j = 0; j < 26; j++) v[i * 26 + j] = Math.max(0, vOf(raw[((bi - 1) * 8 + i) * nc + (bj - 1) * 8 + j]));
         }
         const S = covariance(M, v);
-        const idx = GIVEN[L].flatMap(p => Array.from({ length: 64 }, (_, t) => p * 64 + t));
+        const idx = have.flatMap(p => Array.from({ length: 64 }, (_, t) => p * 64 + t));
         const n = idx.length;
         const Ss = new Float64Array(n * n);
         for (let a = 0; a < n; a++) for (let b = 0; b < n; b++) Ss[a * n + b] = S[idx[a] * 576 + idx[b]] + (a === b ? 1e-3 : 0);
@@ -389,7 +393,7 @@ export function embed(raw, B, vOf, steps, K, rand) {
         blocks[bi * B + bj] = Float64Array.from(draw, (d, t) => d.x - c[t]);
         ints[bi * B + bj] = Int32Array.from(draw, d => d.k);
         const h = draw.reduce((a, d) => a + d.h, 0);
-        perLattice[L].push(h);
+        if (have.length === GIVEN[L].length) perLattice[L].push(h);
         bits += h;
       }
     }

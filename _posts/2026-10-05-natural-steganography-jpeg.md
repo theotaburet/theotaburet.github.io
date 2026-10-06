@@ -9,7 +9,7 @@ Two photographs of the same piece of cloth. One was taken at ISO 200. The other 
 
 <figure class="ns-inline l-page" data-fig="hook" data-quiet>
 <div class="ns-canvas"></div>
-<figcaption>A 256×256 crop of the Z CAM E1 RAW files that come with the paper's code, developed (bilinear demosaicking, then luminance) and put through a JPEG round trip at quality 100: DCT, rounding to the quantisation steps, inverse DCT, then shown through the same tone curve. The loupe shows the same spot in every view. A block is drawn only once the neighbours it depends on are, so near the edges, where some fall outside the crop, a frame up to four blocks deep is left as it was: 759 of the 1,024 blocks are drawn.</figcaption>
+<figcaption>A 256×256 crop of the Z CAM E1 RAW files that come with the paper's code, developed (bilinear demosaicking, then luminance) and put through a JPEG round trip at quality 100: DCT, rounding to the quantisation steps, inverse DCT, then shown through the same tone curve. The loupe shows the same spot in every view. The outer ring of blocks, whose neighbours fall outside the crop, is left as it was; the blocks next to it are drawn given the neighbours they have: 900 of the 1,024.</figcaption>
 </figure>
 
 <div class="ns-byline wide-page l-page">
@@ -187,7 +187,7 @@ The reference code also ships a rejection sampler, the class `RJ`, which this pa
 Take two DCT coefficients whose noise moves together, with a correlation $\rho$. Their joint law is a Gaussian, drawn here as an ellipse. The grid is the JPEG quantisation: one square for each pair of integers the file can store.
 </div>
 <div class="ns-step" markdown="1">
-The first coefficient is drawn from its own law. Quantised, that law becomes a handful of probabilities, one per integer: the PMF of eq. (29). An integer is picked from it. Then a continuous value that rounds to that integer is found again by *rejection*: draw from the Gaussian, keep the first value that lands in the right square.
+The first coefficient is drawn from its own law. Quantised, that law becomes a handful of probabilities, one per integer: the PMF of eq. (29).[^eq29] An integer is picked from it. Then a continuous value that rounds to that integer is found again by *rejection*: draw from the Gaussian, keep the first value that lands in the right square.
 </div>
 <div class="ns-step" markdown="1">
 The second is drawn knowing the first. Its law is still Gaussian, but slid to $\rho\,s_1$ and narrowed to $\sqrt{1-\rho^2}$: the Schur complement, at the size of a $2\times2$ matrix. Same routine: PMF, integer, rejection.
@@ -248,7 +248,7 @@ At QF 100, J-Cov-NS has room for 2 bits per non-zero AC coefficient on average, 
 
 The other points are other ways of drawing the stego signal, all from the paper's Table I. *Pseudo-embedding* adds the noise on the photosites and develops the result, as a camera would. It carries no message, but it is the reference for what the noise should look like, and J-Cov-NS matches it. *Covariance scaling*, our earlier scheme{% include ns-cite.html key="taburet2019ei" %}, estimated $\Sigma$ once on a flat picture and scaled it by each block's average colour: good enough at QF 85 and 75, caught far more often at 100 and 95. Coefficients drawn independently, from histograms learnt mode by mode{% include ns-cite.html key="denemark2018" %}, and blocks drawn independently with their inner correlations kept, are both caught every time at QF 100. Against SRNet{% include ns-cite.html key="boroumand2019" %}, a deep detector, J-Cov-NS still keeps 31 to 37 %.
 
-In bits per pixel, J-Cov-NS carries about 0.45 at QF 100 and 0.2 at QF 95 on E1Base (the paper's Fig. 13a, read off the plot): some 15 KB in a 512×512 picture at QF 100, and 6.5 KB at QF 95. The crop at the top of this page could carry about 5 KB in 256×256 pixels, more per pixel than E1Base's average. At the crop's rate, 0.6 bit per pixel, a 16-megapixel photograph would carry over a megabyte; that is an extrapolation, not a measurement.
+In bits per pixel, J-Cov-NS carries about 0.45 at QF 100 and 0.2 at QF 95 on E1Base (the paper's Fig. 13a, read off the plot): some 15 KB in a 512×512 picture at QF 100, and 6.5 KB at QF 95. The crop at the top of this page could carry almost 6 KB in 256×256 pixels, more per pixel than E1Base's average. At the crop's rate, 0.7 bit per pixel, a 16-megapixel photograph would carry over a megabyte; that is an extrapolation, not a measurement.
 
 The alphabet has to be wide enough as well. Each coefficient is drawn among the $2K+1$ integers around the centre of its law; with $K = 1$, too few to follow the tails of the Gaussian, the detector catches J-Cov-NS at QF 100 99 times out of 100. With $K = 5$ it is back to 40 %.
 
@@ -273,3 +273,5 @@ The paper{% include ns-cite.html key="taburet2020" %} has what this article leav
 {% include ns-appendix.html %}
 
 [^dark]: Where $(a_2 - a_1)\,x + b_2 - b_1$ would be negative, in the darkest parts of the picture, the paper sets the variance to 0: nothing is added there, and nothing can be carried.
+
+[^eq29]: Eq. (29) centres these probabilities on the stego signal's mean alone, as if the cover's coefficient sat on a quantisation step. This page centres them on the cover's coefficient plus that mean: the law of the integer the file stores, which is also what the paper's code gets by rounding the cover plus the signal. Where the cover's coefficient falls between two steps, that integer is less certain, and carries more: on the crop at the top of this page, 4.5 % more bits at QF 100 and 20 % more at QF 95.

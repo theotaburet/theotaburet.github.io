@@ -266,8 +266,11 @@ const rel = (a, b) => Math.abs(a - b) / Math.abs(b);
   const e = N.embed(flat, B, vOf, new Array(64).fill(256), 5, N.rng(3));
   const ms = performance.now() - t0;
   const drawn = e.blocks.filter(Boolean);
-  report("the embedding draws the inner blocks, and leaves the border alone",
-    drawn.length > 0 && e.blocks[0] === null && drawn.every(b => b.length === 64 && b.every(Number.isFinite)), drawn.length + " blocks in " + ms.toFixed(0) + "ms");
+  // Every block inside the outer ring is drawn, given the neighbours it has:
+  // next to the ring, some of them are missing, and none of its dependants
+  // is left out for that.
+  report("the embedding draws every block inside the outer ring, and leaves the ring alone",
+    drawn.length === (B - 2) ** 2 && e.blocks[0] === null && drawn.every(b => b.length === 64 && b.every(Number.isFinite)), drawn.length + " of " + (B - 2) ** 2 + " blocks in " + ms.toFixed(0) + "ms");
   const avg = L => e.perLattice[L].reduce((a, b) => a + b, 0) / e.perLattice[L].length;
   report("every lattice gets blocks", [1, 2, 3, 4].every(L => e.perLattice[L].length > 0), [1, 2, 3, 4].map(L => e.perLattice[L].length).join("/"));
   report("conditioning costs capacity: Λ1 blocks carry more than Λ4 ones", avg(1) > avg(4), avg(1).toFixed(1) + " > " + avg(4).toFixed(1) + " bits a block");
