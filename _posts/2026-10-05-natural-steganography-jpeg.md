@@ -207,7 +207,7 @@ Back to the two coefficients of the miniature, now at full size: a block of 64, 
 <section class="ns-scrolly l-page" data-fig="block" markdown="1">
 <figure class="ns-fig" data-quiet>
 <div class="ns-canvas"></div>
-<figcaption>One <span class="ns-key" data-key="L4">Λ4</span> block of a flat grey patch (6000 DN), its eight neighbours drawn. First the nine blocks' DCT coefficients, as the blocks lie. Then one panel per coefficient of the centre block, low frequencies top left, each at the scale of its quantisation step: eleven bins, the integers the file can store around the law's centre.</figcaption>
+<figcaption>One <span class="ns-key" data-key="L4">Λ4</span> block of a flat grey patch (6000 DN), its eight neighbours drawn. First the nine blocks' DCT coefficients, as the blocks lie. Then the centre block's 64 coefficients, low frequencies top left, and one of them up close, at the scale of its quantisation step: eleven bins, the integers the file can store around the law's centre. Hover a coefficient, tap it or walk the block with the arrow keys to look at another.</figcaption>
 </figure>
 <div class="ns-steps" markdown="1">
 <div class="ns-step" markdown="1">
@@ -217,13 +217,13 @@ Conditioning happens in the DCT domain. Here are a <span class="ns-key" data-key
 Its spread narrows too, to $\Sigma_{cc} - \Sigma_{cn}\,\Sigma_{nn}^{-1}\,\Sigma_{nc}$, the Schur complement. Here is each centre coefficient's $\sigma$ given the neighbours over its $\sigma$ alone. The low frequencies learn the most: at (1, 1), $\sigma$ falls to 0.66. The high ones keep about 0.9. In all, the neighbours account for a third of the block's variance, and what they already say, the block can no longer carry.
 </div>
 <div class="ns-step" markdown="1">
-Now each coefficient on its own, one panel each, its law against its quantisation bins. At QF 100 the low frequencies spread over several bins; the high ones, which demosaicking smooths away, fit in one.
+Now the centre block alone, and one coefficient up close: its law against the integers the file can store, each bin one quantisation step wide. The block is coloured by that law's $\sigma$ over the step. At QF 100 the low frequencies spread over several integers: (0, 1) has $\sigma$ = 0.79 steps. The high ones, which demosaicking smooths away, fit inside one: (7, 7) has 0.04. Hover or tap them to compare.
 </div>
 <div class="ns-step" markdown="1">
-The block is drawn coefficient by coefficient, in this order, each given the neighbours and the coefficients already drawn: its PMF over the integers, an integer picked (red), then a value inside that bin found by rejection, the ticks along the bottom, misses faint.
+The block is drawn coefficient by coefficient, row by row, each given the neighbours and the coefficients already drawn, and it fills in with the integers drawn. Up close, the coefficient's PMF over the integers, the one picked in red, then a value inside that bin found by rejection: the ticks under the axis, misses faint.
 </div>
 <div class="ns-step" markdown="1">
-Each coefficient drawn tells something about the ones after it, so their laws narrow as the block fills in: dashed, given the neighbours only; solid, given the coefficients before it too. Below, $\sigma$ against the quantisation step, for all 64.
+Each coefficient drawn tells something about the ones after it, so their laws narrow as the block fills in. The block shows by how much: the first rows hardly, the last ones, drawn after nearly all the others, the most. Up close, dashed, the law given the neighbours only; solid, given the coefficients before it too. Pick (4, 0): $\sigma$ falls from 0.65 of a step to 0.21.
 </div>
 <div class="ns-step" markdown="1">
 What a coefficient carries is the entropy of its PMF, and the block's capacity is their sum, as in the paper's Fig. 14. Switch to QF 95: the high frequencies get steps up to 12 times wider, their laws fit in a single integer, and their bits are gone.

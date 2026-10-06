@@ -1000,6 +1000,36 @@ if (ARTICLE_UP) {
     await wait(2500);
     const low = await ev(`(() => { const c = [...${F}.querySelectorAll('.cond-cell[data-block="C"]')].sort((a, b) => a.dataset.ratio - b.dataset.ratio)[0]; return c ? c.dataset.t + " " + (+c.dataset.ratio).toFixed(2) : ""; })()`);
     if (low !== "9 0.66") extra.push("article block: σ given the neighbours falls most at coefficient " + low + ", expected 9 (1, 1) at 0.66");
+    // The centre alone, one coefficient up close. At QF 100 the low
+    // frequencies spread over several integers, (0, 1) at σ/q 0.79; the high
+    // ones fit inside one, (7, 7) at 0.04, as the text says. A coefficient
+    // tapped takes the loupe, and the arrow keys walk the block.
+    await to(2);
+    await wait(2500);
+    const near = await ev(`(() => { const c = t => (+${F}.querySelector('.blk-cell[data-t="' + t + '"]')?.dataset.sq).toFixed(2); return [${F}.querySelectorAll(".blk-cell").length, c(1), c(63), ${F}.querySelector(".loupe")?.dataset.t].join(" "); })()`);
+    if (near !== "64 0.79 0.04 1") extra.push("article block: the centre alone shows [coefficients, σ/q at (0, 1), at (7, 7), loupe on] " + near + ", expected 64 0.79 0.04 1");
+    const walked = await ev(`(() => {
+      ${F}.querySelector('.blk-cell[data-t="63"]').dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      const svg = ${F}.querySelector(".ns-canvas svg");
+      svg.focus();
+      svg.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }));
+      return ${F}.querySelector(".loupe")?.dataset.t;
+    })()`);
+    if (walked !== "62") extra.push("article block: tapping (7, 7) then the left arrow puts the loupe on " + walked + ", expected 62, (7, 6)");
+    // Drawn: the loupe's PMF over its eleven integers adds up to 1, one of
+    // them drawn, and the rejection tried at least once.
+    await to(3);
+    await wait(2500);
+    const pmf = await ev(`(() => { const b = [...${F}.querySelectorAll(".loupe .pmf-bar")]; return [b.length, b.filter(x => x.classList.contains("is-drawn")).length, +b.reduce((s, x) => s + +x.dataset.p, 0).toFixed(9), ${F}.querySelectorAll(".loupe .try").length]; })()`);
+    if (!(pmf[0] === 11 && pmf[1] === 1 && pmf[2] === 1 && pmf[3] >= 1)) extra.push("article block: the loupe's PMF has " + pmf[0] + " bars, " + pmf[1] + " drawn, adding up to " + pmf[2] + ", and " + pmf[3] + " tries; expected 11, 1, 1 and some");
+    // Narrowed by the coefficients drawn before: most at (7, 0), to 0.03; at
+    // (4, 0) from 0.65 of a step to 0.21, as the text says.
+    await to(4);
+    await wait(2500);
+    const least = await ev(`(() => { const c = [...${F}.querySelectorAll(".blk-cell")].sort((a, b) => a.dataset.ratio - b.dataset.ratio)[0]; return c ? c.dataset.t + " " + (+c.dataset.ratio).toFixed(2) : ""; })()`);
+    if (least !== "56 0.03") extra.push("article block: the coefficients before narrow σ most at " + least + ", expected 56 (7, 0) at 0.03");
+    const narrowed = await ev(`(() => { ${F}.querySelector('.blk-cell[data-t="32"]').dispatchEvent(new MouseEvent("click", { bubbles: true })); return ${F}.querySelector(".loupe-value")?.textContent; })()`);
+    if (narrowed !== "σ/q 0.65 → 0.21") extra.push("article block: the loupe on (4, 0) says " + narrowed + ", expected σ/q 0.65 → 0.21, as the text says");
     await to(-1);
     await wait(2500);
     // The block is drawn off the page's thread: the total says which quality
@@ -1010,7 +1040,7 @@ if (ARTICLE_UP) {
       r.click();
       for (let k = 0; k < 50 && ${F}.querySelector(".h-total")?.dataset.qf !== "${qf}"; k++) await new Promise(r => setTimeout(r, 100));
       const shown = ${F}.querySelector('.h-total[data-qf="${qf}"]');
-      const sum = [...${F}.querySelectorAll(".h-bar")].reduce((s, b) => s + +b.dataset.h, 0);
+      const sum = [...${F}.querySelectorAll(".blk-cell")].reduce((s, b) => s + +b.dataset.h, 0);
       return shown ? [parseFloat(shown.textContent.replace(/^[^0-9]*/, "")), sum] : null;
     })()`);
     const at100 = await total(100);
