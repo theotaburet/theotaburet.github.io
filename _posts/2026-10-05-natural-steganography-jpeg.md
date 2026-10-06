@@ -74,6 +74,15 @@ Last, each coefficient is divided by its step in the quantisation table of the c
 </div>
 </section>
 
+The DCT step is worth a closer look, because a DCT coefficient is not a pixel: it measures a pattern. Each of a block's 64 coefficients belongs to one of the 64 patterns below, products of two cosines, one across the block and one down it, slow at the top left and fast at the bottom right. The coefficient is how much of its pattern the block holds: the block and the pattern multiplied pixel by pixel, then summed. The patterns are orthogonal, so the block is also the sum of its 64 patterns, each weighted by its coefficient: that is the inverse DCT.
+
+<figure class="ns-inline l-page" data-fig="dct" data-quiet>
+<div class="ns-canvas"></div>
+<figcaption>The 64 patterns of the 8×8 DCT, each where its coefficient sits in a block. Hover one, tap it or walk them with the arrow keys: it is laid over blocks C and E of the previous figure, multiplied pixel by pixel by the luminance the burst left there, and summed. The two sums are that pattern's coefficients in C and E, in DN, for the burst of 1,500 DN. Red positive, blue negative, each pattern at its own scale.</figcaption>
+</figure>
+
+The burst sits on the right edge of C and the left edge of E, and every pattern has something there, so every pattern picks it up. That is why one photosite moves dozens of coefficients in two blocks, with signs and proportions that the patterns alone decide, whatever the photosite's value. Pattern (0, 1), half a cosine across the block, is positive on the left and negative on the right: it meets the burst on its negative side in C and on its positive side in E, and the two coefficients come out with opposite signs. The quantisation table of the last step is laid out the same way, one step per pattern, coarse for the fast ones.
+
 That was one photosite. A real stego signal puts its own noise on every photosite at once, each independent of the others, and each leaves its own column of $M$ in the DCT domain. Their sum is a field of noise whose coefficients are tied together: within a block, because a block is made of the same photosites, and across blocks, because demosaicking reads one photosite past each block's edge.
 
 <aside class="l-gutter" markdown="1">
@@ -95,7 +104,7 @@ where $v$ is the variance of the stego signal at each photosite. The photosites 
 
 Pick a coefficient of the centre block. It moves most with the other coefficients of its own block, less but clearly with the four blocks that share a side with it, and hardly at all with the four diagonal ones, which only meet it at a corner. The three developments take this apart, as Fig. 8 of the paper does. With the red channel alone, the Bayer pattern shows through: the red photosites sit on one side of each 2×2 cell, so the dependencies lean towards north and east. With a plain low-pass filter and no mosaic, the four sides are alike again.
 
-The picture on the right says why. It is the chosen coefficient's column of $\Sigma$ put back through the inverse DCT: what knowing that one coefficient tells about each pixel around. Inside its block, its own waveform. Past each side, a trace one or two pixels deep, where the neighbouring block was demosaicked from the same photosites as the edge of this one. Nothing reaches the diagonal blocks but a corner.
+The picture on the right says why. It is the chosen coefficient's column of $\Sigma$ put back through the inverse DCT: what knowing that one coefficient tells about each pixel around. Inside its block, its own DCT pattern. Past each side, a trace one or two pixels deep, where the neighbouring block was demosaicked from the same photosites as the edge of this one. Nothing reaches the diagonal blocks but a corner.
 
 <aside class="l-gutter" markdown="1">
 Under the loupe, $\Sigma$ is a $576\times576$ matrix: 64 coefficients for each of 9 blocks, in the reference code's order: centre first, then N, W, E, S and the diagonals.
@@ -196,11 +205,17 @@ Back to the two coefficients of the miniature, now at full size: a block of 64, 
 <section class="ns-scrolly l-page" data-fig="block" markdown="1">
 <figure class="ns-fig" data-quiet>
 <div class="ns-canvas"></div>
-<figcaption>One <span class="ns-key" data-key="L4">Λ4</span> block of a flat grey patch (6000 DN), its eight neighbours drawn. One panel per coefficient, low frequencies top left, each at the scale of its quantisation step: eleven bins, the integers the file can store around the law's centre.</figcaption>
+<figcaption>One <span class="ns-key" data-key="L4">Λ4</span> block of a flat grey patch (6000 DN), its eight neighbours drawn. First the nine blocks' DCT coefficients, as the blocks lie. Then one panel per coefficient of the centre block, low frequencies top left, each at the scale of its quantisation step: eleven bins, the integers the file can store around the law's centre.</figcaption>
 </figure>
 <div class="ns-steps" markdown="1">
 <div class="ns-step" markdown="1">
-Given its eight neighbours, the block's 64 coefficients have a Gaussian law, the Schur complement of the neighbours in $\Sigma$. Each panel shows one coefficient's share of it against its quantisation bins. At QF 100 the low frequencies spread over several bins; the high ones, which demosaicking smooths away, fit in one.
+Conditioning happens in the DCT domain. Here are a <span class="ns-key" data-key="L4">Λ4</span> block and its eight neighbours, 64 coefficients each, laid out as the blocks lie. The neighbours are drawn already, each coefficient coloured by its value over its own $\sigma$. The centre is not drawn yet, but it is no longer unknown either. Given the neighbours' coefficients $x_n$, its own have a Gaussian law whose mean is a weighted sum of theirs, $\mu = \Sigma_{cn}\,\Sigma_{nn}^{-1}\,x_n$, and the centre fills in with it. A new draw of the neighbours gives it another.
+</div>
+<div class="ns-step" markdown="1">
+Its spread narrows too, to $\Sigma_{cc} - \Sigma_{cn}\,\Sigma_{nn}^{-1}\,\Sigma_{nc}$, the Schur complement. Here is each centre coefficient's $\sigma$ given the neighbours over its $\sigma$ alone. The low frequencies learn the most: at (1, 1), $\sigma$ falls to 0.66. The high ones keep about 0.9. In all, the neighbours account for a third of the block's variance, and what they already say, the block can no longer carry.
+</div>
+<div class="ns-step" markdown="1">
+Now each coefficient on its own, one panel each, its law against its quantisation bins. At QF 100 the low frequencies spread over several bins; the high ones, which demosaicking smooths away, fit in one.
 </div>
 <div class="ns-step" markdown="1">
 The block is drawn coefficient by coefficient, in this order, each given the neighbours and the coefficients already drawn: its PMF over the integers, an integer picked (red), then a value inside that bin found by rejection, the ticks along the bottom, misses faint.

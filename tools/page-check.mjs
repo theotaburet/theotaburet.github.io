@@ -807,6 +807,30 @@ if (ARTICLE_UP) {
   }
 }
 
+// What a DCT coefficient is: a pattern, multiplied by the block pixel by
+// pixel and summed. For the flat pattern (0, 0) that is the block's sum over
+// 8, so the burst gives 1,500 × 0.299 × 3/8 in C, whose two columns it
+// covers, and × 1/8 in E. The pattern (0, 1) is positive on the left of a
+// block, negative on the right: the burst falls on its negative side in C
+// and its positive side in E.
+if (ARTICLE_UP) {
+  await open(ARTICLE, []);
+  const D = `document.querySelector('.ns-inline[data-fig="dct"]')`;
+  const n = await ev(`(async () => { const f = ${D}; if (!f) return 0; f.scrollIntoView({ block: "center", behavior: "instant" }); await new Promise(r => setTimeout(r, 1500)); return f.querySelectorAll(".dct-pattern").length; })()`);
+  if (n !== 64) extra.push("article: the DCT figure shows " + n + " patterns, expected 64");
+  else {
+    const sums = t => ev(`(async () => { const f = ${D}; f.querySelector('.dct-pattern[data-t="${t}"]').dispatchEvent(new MouseEvent("click", { bubbles: true })); await new Promise(r => setTimeout(r, 600)); return [...f.querySelectorAll(".dct-sum")].map(s => +s.dataset.sum); })()`);
+    const [c0, e0] = await sums(0);
+    if (!(Math.abs(c0 - (1500 * 0.299 * 3) / 8) < 1e-6 && Math.abs(e0 - (1500 * 0.299) / 8) < 1e-6)) extra.push("article DCT: the flat pattern gives " + c0 + " in C and " + e0 + " in E, expected 168.19 and 56.06");
+    const [c1, e1] = await sums(1);
+    if (!(c1 < 0 && e1 > 0)) extra.push("article DCT: the pattern (0, 1) gives " + c1 + " in C and " + e1 + " in E, expected C < 0 < E");
+    const summed = await ev(`[...${D}.querySelectorAll(".dct-sum")].every(s => Math.abs([...${D}.querySelectorAll('.dct-prod[data-b="' + s.dataset.b + '"]')].reduce((a, r) => a + +r.dataset.v, 0) - +s.dataset.sum) < 1e-9)`);
+    if (!summed) extra.push("article DCT: a sum shown is not the sum of the products drawn");
+    const keyed = await ev(`(async () => { const svg = ${D}.querySelector("svg"); svg.focus(); svg.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true })); svg.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true })); await new Promise(r => setTimeout(r, 100)); return svg.querySelector(".dct-chosen").dataset.t; })()`);
+    if (keyed !== "10") extra.push("article DCT: from (0, 1), right then down chooses pattern " + keyed + ", expected 10, (1, 2)");
+  }
+}
+
 // The dependencies: a coefficient of the centre block correlates with the
 // blocks beside it, not (beyond 0.01) with the diagonal ones; the low-pass
 // development changes the numbers; a theme switch repaints the matrix, and
@@ -910,7 +934,20 @@ if (ARTICLE_UP) {
   const F = `document.querySelector('.ns-scrolly[data-fig="block"]')`;
   if (!(await ev(`!!${F}`))) extra.push("article: no block figure");
   else {
-    await ev(`(() => { const s = ${F}.querySelectorAll(".ns-step")[3]; scrollTo({ top: scrollY + s.getBoundingClientRect().top - innerHeight * 0.5, behavior: "instant" }); })()`);
+    const to = i => ev(`(() => { const s = [...${F}.querySelectorAll(".ns-step")].at(${i}); scrollTo({ top: scrollY + s.getBoundingClientRect().top - innerHeight * 0.5, behavior: "instant" }); })()`);
+    // The conditioning, in the DCT domain: the nine blocks' coefficients, the
+    // neighbours drawn and the centre at the mean they give it, not at 0;
+    // then each centre coefficient's σ given them over its σ alone, lowest at
+    // (1, 1), 0.66, as the text says.
+    await to(0);
+    await wait(2500);
+    const grid = await ev(`(() => { const c = [...${F}.querySelectorAll(".cond-cell")]; return [c.length, c.filter(d => d.dataset.block === "C" && Math.abs(+d.dataset.z) > 1e-6).length]; })()`);
+    if (grid[0] !== 576 || grid[1] < 32) extra.push("article block: the conditioning shows " + grid[0] + " coefficients, " + grid[1] + " of the centre's away from 0; expected 576, and most of 64");
+    await to(1);
+    await wait(2500);
+    const low = await ev(`(() => { const c = [...${F}.querySelectorAll('.cond-cell[data-block="C"]')].sort((a, b) => a.dataset.ratio - b.dataset.ratio)[0]; return c ? c.dataset.t + " " + (+c.dataset.ratio).toFixed(2) : ""; })()`);
+    if (low !== "9 0.66") extra.push("article block: σ given the neighbours falls most at coefficient " + low + ", expected 9 (1, 1) at 0.66");
+    await to(-1);
     await wait(2500);
     // The block is drawn off the page's thread: the total says which quality
     // it is for once the draw is back.

@@ -3,7 +3,9 @@
 // the Cholesky factor of the neighbours' part, once; then, for each
 // { id, seed, qf }, the eight neighbours drawn together from Σ, the centre
 // block's law given them (the Schur complement), and its draw, coefficient
-// by coefficient. Answers { id, qf, law: { mean, cov }, draw }.
+// by coefficient. Answers { id, qf, law: { mean, cov }, draw, obs, sd }:
+// obs the neighbours' coefficients, sd every coefficient's σ alone, both in
+// Σ's block order.
 import * as maths from "./maths.js";
 
 const K = 5;
@@ -11,6 +13,7 @@ const V = 16 * (1.15 * 6000 - 1150); // the stego variance of a 6000 DN photosit
 const N = 512; // the neighbours' coefficients
 let S = null;
 let Ln = null;
+let sd = null;
 
 function setup() {
   const M = maths.photositesToDct(3);
@@ -19,6 +22,7 @@ function setup() {
   const Sn = new Float64Array(N * N);
   for (let a = 0; a < N; a++) for (let b = 0; b < N; b++) Sn[a * N + b] = S[(64 + a) * 576 + 64 + b];
   Ln = maths.cholesky(Sn, N);
+  sd = Float64Array.from({ length: 576 }, (_, i) => Math.sqrt(S[i * 577]));
 }
 
 onmessage = ({ data: { id, seed, qf } }) => {
@@ -38,5 +42,5 @@ onmessage = ({ data: { id, seed, qf } }) => {
   // number of steps, so drawing around them changes nothing; the law is the
   // stego signal's.
   const draw = maths.sampleSequential(law.mean, law.cov, 64, maths.QTABLES[qf].map(q => 256 * q), K, maths.rng(seed + 1000));
-  postMessage({ id, qf, law, draw });
+  postMessage({ id, qf, law, draw, obs, sd });
 };

@@ -13,7 +13,7 @@
 const STEPS = 6;
 const N = 26; // photosites: 3×3 blocks of 8×8 and the one-photosite rim demosaicking reads
 const AT = [13, 16]; // the noisy photosite, red, on the edge between C and E
-const BURST = 1500; // its noise, in 14-bit DN: enough for something to survive rounding
+export const BURST = 1500; // its noise, in 14-bit DN: enough for something to survive rounding
 const CELL = 13;
 const X0 = 8;
 const Y0 = 8;
@@ -22,6 +22,19 @@ const H = 400;
 const NAMES = ["NW", "N", "NE", "W", "C", "E", "SW", "S", "SE"]; // blocks, row-major
 // The factors of M, and the step each one joins the picture at.
 const FACTORS = [["T", "DCT", 4], ["P", "order", 3], ["S", "select", 3], ["L", "luma", 2], ["D", "demosaic", 1]];
+
+// The photosite's column of M: the coefficients of each block, by block
+// (NAMES) and mode, per DN of noise. fig-dct.js takes them apart.
+export function burstColumn(maths) {
+  const M = maths.photositesToDct(3);
+  const col = AT[0] * N + AT[1];
+  const coef = Array.from({ length: 9 }, () => new Float64Array(64));
+  M.rows.forEach((r, n) => {
+    const k = r.idx.indexOf(col);
+    if (k >= 0) coef[maths.BLOCK_ORDER[3][Math.floor(n / 64)]][n % 64] = r.val[k];
+  });
+  return coef;
+}
 
 export function mount(el, ctx) {
   const { d3, gsap, maths } = ctx;
@@ -36,15 +49,8 @@ export function mount(el, ctx) {
     const dj = j - AT[1];
     return Math.abs(di) <= 1 && Math.abs(dj) <= 1 ? maths.KERNEL.R[di + 1][dj + 1] : 0;
   };
-  // Its column of M: the coefficients of each block, by block and mode, in
-  // the grid's own order.
-  const M = maths.photositesToDct(3);
-  const col = AT[0] * N + AT[1];
-  const coef = Array.from({ length: 9 }, () => new Float64Array(64));
-  M.rows.forEach((r, n) => {
-    const k = r.idx.indexOf(col);
-    if (k >= 0) coef[maths.BLOCK_ORDER[3][Math.floor(n / 64)]][n % 64] = r.val[k];
-  });
+  // Its column of M, block by block.
+  const coef = burstColumn(maths);
   const top = d3.max(coef, b => d3.max(b, Math.abs));
   // The integer a coefficient is stored as: luminance ×4 from 14 to 16 bits,
   // a step of 256·Q there.

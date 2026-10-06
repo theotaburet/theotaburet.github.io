@@ -2,14 +2,21 @@
 //
 // A Λ4 block of a flat grey patch (6000 DN), its eight neighbours already
 // drawn. They are drawn here together from Σ, the law embed's lattices give
-// them, and the block's law given them is the Schur complement: 64
-// Gaussians, one panel each, at the scale of each coefficient's
+// them, and the block's law given them is the Schur complement. First in
+// the DCT domain, the nine blocks as they lie: the neighbours' coefficients,
+// the mean they give the centre's, and how much they narrow each one. Then
+// its 64 Gaussians, one panel each, at the scale of each coefficient's
 // quantisation step. Then the block is drawn as the scheme draws it,
 // coefficient by coefficient (maths.sampleSequential): PMF, integer,
 // rejection. Their σ narrow as the block fills in, and what each carries is
 // the entropy of its PMF; the block's capacity is their sum (Fig. 14).
 // The maths run in block-worker.js, off the page's thread.
-const STEPS = 4;
+const STEPS = 6;
+const GRIDS = 2; // the steps that show the nine blocks' coefficients, before the panels
+const NAMES = ["C", "N", "W", "E", "S", "NW", "NE", "SW", "SE"]; // Σ's block order
+const SLOT = { C: [1, 1], N: [0, 1], W: [1, 0], E: [1, 2], S: [2, 1], NW: [0, 0], NE: [0, 2], SW: [2, 0], SE: [2, 2] };
+const CC = 10; // a coefficient, in the nine blocks
+const SIDE = 8 * CC + 6; // a block and the gap after it
 const K = 5; // half the alphabet, as block-worker.js draws it
 const W = 480;
 const PW = 56;
@@ -27,6 +34,8 @@ export function mount(el, ctx) {
   let seed = 1;
   let law = null; // the block given its neighbours: { mean, cov }
   let draw = null; // sampleSequential's 64 steps
+  let obs = null; // the neighbours' coefficients, in Σ's block order after the centre
+  let alone = null; // every coefficient's σ alone, in Σ's block order
   let playing = [];
   let shown = qf; // the quality of the draw on screen
 
@@ -37,7 +46,7 @@ export function mount(el, ctx) {
   const sample = () => worker.postMessage({ id: ++asked, seed, qf });
   worker.onmessage = ({ data }) => {
     if (data.id !== asked) return;
-    ({ law, draw } = data);
+    ({ law, draw, obs, sd: alone } = data);
     shown = data.qf;
     show(step, false);
   };
@@ -48,7 +57,7 @@ export function mount(el, ctx) {
 
   el.textContent = "";
   const svg = d3.select(el).append("svg").attr("role", "img")
-    .attr("aria-label", "The 64 coefficients of one block, each with its Gaussian law given the eight neighbouring blocks, drawn one after the other; then how their spread narrows and how many bits each carries.");
+    .attr("aria-label", "One block and its eight neighbours, as DCT coefficients: the neighbours drawn, the mean they give the centre block's coefficients and how much they narrow them. Then the centre's 64 coefficients, each with its Gaussian law given the neighbours, drawn one after the other; how their spread narrows and how many bits each carries.");
   const panels = svg.append("g");
   const strip = svg.append("g");
 
@@ -86,6 +95,9 @@ export function mount(el, ctx) {
     const fs = ctx.textSize(svg.node());
     panels.selectAll("*").remove();
     strip.selectAll("*").remove();
+    quality.style("visibility", step < GRIDS ? "hidden" : null); // nothing to quantise yet
+    if (step < GRIDS) return grid(c, fs);
+    const p = step - GRIDS; // the panels' own steps
     const steps = maths.QTABLES[shown].map(q => 256 * q);
 
     draw.forEach((d, i) => {
@@ -93,7 +105,7 @@ export function mount(el, ctx) {
       const sd = Math.sqrt(law.cov[i * 65]);
       const g = panels.append("g").attr("transform", "translate(" + (X0 + (i % 8) * (PW + GAP)) + "," + (Y0 + Math.floor(i / 8) * (PH + GAP)) + ")");
       g.append("rect").attr("width", PW).attr("height", PH).attr("fill", "none").attr("stroke", c.rule);
-      if (step === 0) {
+      if (p === 0) {
         const ctr = Math.round(law.mean[i] / q);
         for (let k = -K; k <= K + 1; k++) g.append("line").attr("x1", PW / 2 + (k - 0.5) * BW).attr("x2", PW / 2 + (k - 0.5) * BW).attr("y1", PH - 3).attr("y2", PH).attr("stroke", c.muted);
         g.append("path").attr("d", curve(law.mean[i], sd, q, ctr)).attr("fill", "none").attr("stroke", c.ink).attr("stroke-width", 1.2);
@@ -106,9 +118,9 @@ export function mount(el, ctx) {
       d.p.forEach((p, k) => {
         const h = ((PH - 9) * p) / top;
         drawn.append("rect").attr("x", (k + 0.15) * BW).attr("width", BW * 0.7).attr("y", PH - 3 - h).attr("height", h)
-          .attr("fill", d.ks[k] === d.k ? c.D : c.A).attr("opacity", step === 1 || d.ks[k] === d.k ? 1 : 0.5);
+          .attr("fill", d.ks[k] === d.k ? c.D : c.A).attr("opacity", p === 1 || d.ks[k] === d.k ? 1 : 0.5);
       });
-      if (step === 1) {
+      if (p === 1) {
         // The rejection: tries along the bottom, the misses faint.
         d.tried.forEach((v, t) => {
           const x = PW / 2 + (v / q - ctr) * BW;
@@ -117,7 +129,7 @@ export function mount(el, ctx) {
             .attr("stroke", t === d.tried.length - 1 ? c.ink : c.D).attr("stroke-width", 1.5).attr("opacity", t === d.tried.length - 1 ? 1 : 0.4);
         });
       }
-      if (step === 2) g.append("path").attr("d", curve(law.mean[i], sd, q, ctr)).attr("fill", "none").attr("stroke", c.muted).attr("stroke-dasharray", "2 2");
+      if (p === 2) g.append("path").attr("d", curve(law.mean[i], sd, q, ctr)).attr("fill", "none").attr("stroke", c.muted).attr("stroke-dasharray", "2 2");
       g.append("path").attr("class", "law").attr("d", curve(d.m, d.s, q, ctr)).attr("fill", "none").attr("stroke", c.ink).attr("stroke-width", 1.2);
     });
 
@@ -127,14 +139,14 @@ export function mount(el, ctx) {
     const y0 = Y0 + GRID + fs * 1.6;
     const y1 = y0 + 70;
     const x = d3.scaleLinear([0, 63], [X0 + 4, W - X0 - 4]);
-    if (step === 2) {
+    if (p === 2) {
       text(X0, y0, "σ / q, coefficient by coefficient: dashed, given the neighbours only");
       const y = d3.scaleLinear([0, d3.max(draw, (d, i) => Math.sqrt(law.cov[i * 65]) / steps[i])], [y1, y0 + 10]);
       strip.append("path").attr("d", d3.line()(draw.map((d, i) => [x(i), y(Math.sqrt(law.cov[i * 65]) / steps[i])]))).attr("fill", "none").attr("stroke", c.muted).attr("stroke-dasharray", "3 3");
       strip.append("path").attr("d", d3.line()(draw.map((d, i) => [x(i), y(d.s / steps[i])]))).attr("fill", "none").attr("stroke", c.ink).attr("stroke-width", 1.5);
       strip.append("line").attr("x1", x(0)).attr("x2", x(63)).attr("y1", y1).attr("y2", y1).attr("stroke", c.muted);
     }
-    if (step === 3) {
+    if (p === 3) {
       const total = d3.sum(draw, d => d.h);
       text(X0, y0, "bits each coefficient carries, the entropy of its PMF");
       const y = d3.scaleLinear([0, Math.log2(2 * K + 1)], [y1, y0 + 10]);
@@ -146,6 +158,41 @@ export function mount(el, ctx) {
     svg.attr("viewBox", "0 0 " + W + " " + Math.ceil(y1 + fs * 2));
   }
 
+  // The nine blocks as they lie, each coefficient over its σ alone: the
+  // neighbours drawn, the centre at the mean they give it. Then the centre's
+  // σ given them over its σ alone, the neighbours set back.
+  function grid(c, fs) {
+    const z = k => (k < 64 ? law.mean[k] : obs[k - 64]) / alone[k];
+    const ratio = t => Math.sqrt(law.cov[t * 65]) / alone[t];
+    const lo = d3.min(d3.range(64), ratio);
+    const signed = v => d3.interpolateRgb(c.paper, v > 0 ? c.D : c.blue)(Math.min(1, Math.sqrt(Math.abs(v) / 2.5)));
+    const grey = r => d3.interpolateRgb(c.paper, c.ink)((1 - r) / (1 - lo));
+    const X = (W - (3 * SIDE - 6)) / 2;
+    const cells = d3.range(576).map(k => ({ k, b: NAMES[Math.floor(k / 64)], t: k % 64 }));
+    panels.selectAll("rect").data(cells).join("rect").attr("class", "cond-cell")
+      .attr("data-block", d => d.b).attr("data-t", d => d.t).attr("data-z", d => z(d.k))
+      .attr("data-ratio", d => (d.k < 64 ? ratio(d.t) : null))
+      .attr("data-mean", d => (d.k < 64 ? signed(z(d.k)) : null)) // its colour at the step before, to turn from
+      .attr("x", d => X + SLOT[d.b][1] * SIDE + (d.t % 8) * CC)
+      .attr("y", d => Y0 + SLOT[d.b][0] * SIDE + Math.floor(d.t / 8) * CC)
+      .attr("width", CC).attr("height", CC)
+      .attr("fill", d => (step === 1 && d.k < 64 ? grey(ratio(d.t)) : signed(z(d.k))))
+      .attr("opacity", d => (step === 1 && d.k >= 64 ? 0.3 : 1))
+      .attr("stroke", c.rule).attr("stroke-width", 0.5);
+    panels.append("rect").attr("x", X + SIDE - 1).attr("y", Y0 + SIDE - 1).attr("width", 8 * CC + 2).attr("height", 8 * CC + 2)
+      .attr("fill", "none").attr("stroke", c.hot).attr("stroke-width", 2);
+    const text = (y, words) => strip.append("text").attr("x", X0).attr("y", y).attr("fill", c.ink).attr("font-size", fs).text(words);
+    const y0 = Y0 + GRID + fs * 1.6;
+    if (step === 0) {
+      text(y0, "colour: a coefficient over its σ alone");
+      text(y0 + fs * 1.4, "centre: the mean the neighbours give it");
+    } else {
+      text(y0, "centre: σ given the neighbours / σ alone");
+      text(y0 + fs * 1.4, "strongest at " + lo.toFixed(2) + ", none at 1");
+    }
+    svg.attr("viewBox", "0 0 " + W + " " + Math.ceil(y0 + 70 + fs * 2));
+  }
+
   function show(i, animate) {
     playing.forEach(t => t.kill());
     playing = [];
@@ -153,11 +200,25 @@ export function mount(el, ctx) {
     step = i;
     paint();
     if (!animate || i === from) return;
+    const centre = panels.selectAll('rect.cond-cell[data-block="C"]').nodes();
+    if (i === 0) {
+      // The neighbours, then the centre filling in, coefficient by coefficient.
+      playing.push(gsap.from(panels.selectAll("rect.cond-cell:not([data-block='C'])").nodes(), { opacity: 0, duration: 0.4 }));
+      playing.push(gsap.from(centre, { opacity: 0, duration: 0.25, delay: 0.5, stagger: 0.015 }));
+    }
     if (i === 1) {
+      // The centre turns from its means to how much it learned.
+      const tw = { t: 0 };
+      const mix = centre.map(r => d3.interpolateRgb(r.dataset.mean, r.getAttribute("fill")));
+      const sync = () => centre.forEach((r, n) => r.setAttribute("fill", mix[n](tw.t)));
+      sync();
+      playing.push(gsap.to(tw, { t: 1, duration: 0.8, delay: 0.2, ease: "power1.inOut", onUpdate: sync }));
+    }
+    if (i === GRIDS + 1) {
       // Coefficient by coefficient, in the order they are drawn.
       playing.push(gsap.from(panels.selectAll("g.drawn").nodes(), { opacity: 0, duration: 0.25, stagger: 0.05 }));
     }
-    if (i === 2) {
+    if (i === GRIDS + 2) {
       const tw = { t: 0 };
       const steps = maths.QTABLES[shown].map(q => 256 * q);
       const laws = panels.selectAll("path.law").nodes();
@@ -169,7 +230,7 @@ export function mount(el, ctx) {
       sync();
       playing.push(gsap.to(tw, { t: 1, duration: 1.4, delay: 0.3, ease: "power2.inOut", onUpdate: sync }));
     }
-    if (i === 3) playing.push(gsap.from(strip.selectAll("rect.h-bar").nodes(), { scaleY: 0, transformOrigin: "50% 100%", duration: 0.3, stagger: 0.012, clearProps: "transform" }));
+    if (i === GRIDS + 3) playing.push(gsap.from(strip.selectAll("rect.h-bar").nodes(), { scaleY: 0, transformOrigin: "50% 100%", duration: 0.3, stagger: 0.012, clearProps: "transform" }));
   }
 
   sample();
