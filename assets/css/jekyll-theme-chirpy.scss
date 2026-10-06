@@ -199,6 +199,26 @@ $amber: #f8b862;
   }
 }
 
+/* One left edge down the whole sidebar. The theme sets the portrait at 2.5rem,
+   the menu icons at 2.5rem and the icon row at 2rem, and from 1650px at 3.5,
+   3.75 and 2.75rem. The menu's 1rem is the link's own padding. */
+#sidebar {
+  --sb-inset: 2.5rem;
+
+  @media all and (min-width: 1650px) {
+    --sb-inset: 3.5rem;
+  }
+
+  .profile-wrapper,
+  .sidebar-bottom {
+    padding-left: var(--sb-inset);
+  }
+
+  ul li.nav-item {
+    padding-inline: calc(var(--sb-inset) - 1rem);
+  }
+}
+
 /* ---------------------------------------------------------------------------
    Colophon, moved out of the page foot and into the sidebar by site.js.
    Aligned on the icon row below it, which is what it now reads as a caption
@@ -207,14 +227,16 @@ $amber: #f8b862;
 
 .sidebar-credit {
   width: 100%;
-  padding: 0 1rem 0.9rem 2rem;
+  height: auto;
+  padding: 0 1rem 0.9rem var(--sb-inset);
+  /* Still a <footer>, so it still had the theme's page-foot band: an opaque
+     slab with a rule over it and a fixed 5rem height, across the frosted
+     sidebar. */
+  border: 0;
+  background: none;
   color: var(--sidebar-muted-color);
   font-size: 0.68rem;
   line-height: 1.5;
-
-  @media all and (min-width: 1650px) {
-    padding-left: 2.75rem;
-  }
 
   /* The theme centres every paragraph in a footer, which was right when this
      was a band across the page. Here it is a caption for the icon row under
@@ -291,10 +313,44 @@ $amber: #f8b862;
    No layout is copied out of the gem, which keeps the theme upgradeable.
    --------------------------------------------------------------------------- */
 
+/* One gutter on every page at every width. The theme has four (none on a
+   phone, 12px, 3rem from 1400px, 1.75rem from 1650px), two of them
+   !important, so a page's text started somewhere different on each. */
+#main-wrapper > .container {
+  padding-inline: clamp(1.15rem, 4vw, 4.5rem) !important;
+  /* Pages that keep the theme's max-width hang from the same left edge as
+     the wide ones instead of centring, so the text does not jump sideways
+     from one page to the next on a wide screen. */
+  margin-left: 0;
+
+  /* And a fifth below 1200px, where the theme narrows <main> to 11/12 or 96%
+     and centres it, wide pages included. */
+  @media (max-width: 1199px) {
+    .col-lg-11 {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+  }
+
+  /* And a sixth from 1650px, where it triples <main>'s right padding. */
+  @media (min-width: 1650px) {
+    main.col-12 {
+      padding-right: 1.5rem !important;
+    }
+  }
+}
+
+/* Lets the top bar and the masthead band reach both edges of the column with
+   a -100vw bleed, whatever the gutter: the sidebar on one side, the window on
+   the other. Clip and not hidden, so nothing inside becomes a scroller and
+   sticky figures still stick. */
+#main-wrapper {
+  overflow-x: clip;
+}
+
 #main-wrapper:has(.wide-page) {
   > .container {
     max-width: none;
-    padding-inline: clamp(1.15rem, 4vw, 4.5rem);
   }
 
   main {
@@ -381,13 +437,14 @@ $amber: #f8b862;
   border-bottom: 1px solid var(--main-border-color);
 
   /* A band, not a block: it carries the page background out to the edges of
-     the content area and up past whatever padding the theme leaves above it,
-     so the graph paper starts under the rule instead of running behind the
-     title. 100vh is simply more than enough to reach the top. */
+     the column, where #main-wrapper clips it, and up past whatever padding the
+     theme leaves above it, so the graph paper starts under the rule instead of
+     running behind the title. 100vh is simply more than enough to reach the
+     top. */
   &::before {
     content: '';
     position: absolute;
-    inset: -100vh calc(-1 * clamp(1.15rem, 4vw, 4.5rem)) 0;
+    inset: -100vh -100vw 0;
     z-index: -1;
     background-color: var(--main-bg);
   }
@@ -465,10 +522,18 @@ body {
 
 /* Both panels are opaque slabs by default, which would hide the field under
    the two widest parts of the page. */
-#sidebar,
-#topbar-wrapper {
+#sidebar {
   background-color: transparent;
   backdrop-filter: blur(9px) saturate(115%);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-color: var(--sidebar-bg);
+    opacity: 0.82;
+  }
 }
 
 /* The theme leaves the top bar unpositioned, so anything positioned after it
@@ -478,16 +543,43 @@ body {
 #topbar-wrapper {
   position: relative;
   z-index: 1;
+  background-color: transparent;
+
+  /* The same frosted panel as the sidebar, run out to both edges of the
+     column so the two meet. The bar itself stops at the gutter, which left
+     the panel floating with the paper showing either side of it. The blur
+     goes on the panel because the bar is narrower than it, and the tint is
+     mixed rather than faded so it does not fade the blur with it. */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 -100vw;
+    z-index: -1;
+    background-color: color-mix(in srgb, var(--sidebar-bg) 82%, transparent);
+    backdrop-filter: blur(9px) saturate(115%);
+  }
 }
 
-#sidebar::before,
-#topbar-wrapper::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background-color: var(--sidebar-bg);
-  opacity: 0.82;
+/* Its contents on the text's edges: the theme sets the breadcrumb 4px left
+   of the text under it, and at 1200px pulls the search 4rem in from the
+   right, onto nothing. 1.75rem is <main>'s padding plus the article's. */
+@media (min-width: 850px) {
+  #topbar {
+    padding-inline: 1.75rem !important; /* over .px-lg-3 */
+
+    #breadcrumb {
+      padding-left: 0;
+    }
+  }
+
+  #search {
+    margin-right: 0;
+  }
+}
+
+/* The side panel's text ends where the search above it does. */
+#panel-wrapper {
+  padding-right: 1.75rem;
 }
 
 /* ---------------------------------------------------------------------------
