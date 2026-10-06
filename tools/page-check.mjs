@@ -900,6 +900,12 @@ if (ARTICLE_UP) {
     await ev(`${C}.querySelector('.cov-cell[data-block="C"][data-t="1"]').dispatchEvent(new MouseEvent("click", { bubbles: true }))`);
     await wait(300);
     const m = await ev(reach);
+    // Σ is read by blocks: their names along its top and side, in its order,
+    // and the chosen coefficient's row outlined, following it.
+    const axes = await ev(`[".cov-top", ".cov-side"].map(c => [...${C}.querySelectorAll(c)].map(t => t.textContent).join(" "))`);
+    if (axes.some(a => a !== "C N W E S NW NE SW SE")) extra.push("article covariance: Σ's blocks are named " + JSON.stringify(axes) + ", expected C N W E S NW NE SW SE along both sides");
+    const row = await ev(`(() => { const p = ${C}.querySelector(".cov-pick svg"); p.focus(); p.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true })); const r = ${C}.querySelector(".cov-row")?.dataset.k; p.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true })); return r; })()`);
+    if (row !== "9") extra.push("article covariance: from (0, 1), down outlines Σ's row " + row + ", expected 9");
     const sides = ["N", "W", "E", "S"].filter(b => !(m[b] > 0.01));
     const corners = ["NW", "NE", "SW", "SE"].filter(b => !(m[b] <= 0.01));
     if (sides.length || corners.length) extra.push("article covariance: mode (0, 1) reaches " + JSON.stringify(m) + ", expected N W E S above 0.01 and the corners under");

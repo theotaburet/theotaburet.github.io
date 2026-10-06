@@ -101,10 +101,12 @@ where $v$ is the variance of the stego signal at each photosite. The photosites 
 
 <figure class="ns-inline l-page" data-fig="covariance" data-quiet>
 <div class="ns-canvas"></div>
-<figcaption>Correlations between the DCT coefficients of 3×3 neighbouring blocks, computed in your browser from $\Sigma = M\,\mathrm{diag}(v)\,M^\top$ with a uniform $v$. Left: with the coefficient chosen in the centre block. Middle: all of $\Sigma$, entry by entry under the loupe. Right: that coefficient's column of $\Sigma$, turned back into pixels. Red positive, blue negative, the colour growing as $\sqrt{|\rho|}$.</figcaption>
+<figcaption>Correlations between the DCT coefficients of 3×3 neighbouring blocks, computed in your browser from $\Sigma = M\,\mathrm{diag}(v)\,M^\top$ with a uniform $v$. Left: with the coefficient chosen in the centre block. Middle: all of $\Sigma$, a row and a column per coefficient, grouped by block, with the chosen one's row outlined; the loupe reads it entry by entry. Right: that coefficient's column of $\Sigma$, turned back into pixels. Red positive, blue negative, the colour growing as $\sqrt{|\rho|}$.</figcaption>
 </figure>
 
 Pick a coefficient of the centre block. It moves most with the other coefficients of its own block, less but clearly with the four blocks that share a side with it, and hardly at all with the four diagonal ones, which only meet it at a corner. The three developments take this apart, as Fig. 8 of the paper does. With the red channel alone, the Bayer pattern shows through: the red photosites sit on one side of each 2×2 cell, so the dependencies lean towards north and east. With a plain low-pass filter and no mosaic, the four sides are alike again.
+
+The middle picture is all of $\Sigma$ at once: a row and a column per coefficient, 64 for each block, in the order C, N, W, E, S, then the corners. Each of its 9×9 squares is a pair of blocks. On the diagonal, each block with itself, the brightest, up to 0.84. Fainter, two blocks that share a side, up to 0.11. Near black, two that meet only at a corner, under 0.01, or not at all, like N and S. The outlined row is the chosen coefficient's: the picture on the left is that row, laid back out as blocks.
 
 The picture on the right says why. It is the chosen coefficient's column of $\Sigma$ put back through the inverse DCT: what knowing that one coefficient tells about each pixel around. Inside its block, its own DCT pattern. Past each side, a trace one or two pixels deep, where the neighbouring block was demosaicked from the same photosites as the edge of this one. Nothing reaches the diagonal blocks but a corner.
 

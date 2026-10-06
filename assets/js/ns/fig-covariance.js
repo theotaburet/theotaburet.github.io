@@ -4,10 +4,12 @@
 // correlation between any two of their 576 DCT coefficients. Left, the
 // blocks as they lie, coloured by the correlation with the coefficient
 // chosen in the centre block. Middle, all of Σ, read entry by entry with
-// the loupe. Right, the chosen coefficient's column of Σ turned back into
-// pixels: what knowing it says about every pixel around, its own waveform
-// and the trace it leaves past the borders. Three developments take the
-// dependencies apart, as Fig. 8 of the paper does.
+// the loupe, its blocks named along its sides and the chosen coefficient's
+// row outlined: the left picture, unrolled. Right, the chosen coefficient's
+// column of Σ turned back into pixels: what knowing it says about every
+// pixel around, its own waveform and the trace it leaves past the borders.
+// Three developments take the dependencies apart, as Fig. 8 of the paper
+// does.
 import { loupe } from "./loupe.js";
 
 const N = 576;
@@ -59,10 +61,12 @@ export function mount(el, ctx) {
   const picker = pick.append("svg").attr("viewBox", "0 0 " + 3 * SIDE + " " + 3 * SIDE).attr("tabindex", 0)
     .attr("role", "group").attr("aria-label", "Coefficients of 3 by 3 blocks, coloured by their correlation with the chosen one. Choose a coefficient of the centre block with the arrow keys, or click it.");
   pick.append("span").attr("class", "ns-view-label").text("Correlation with the chosen coefficient: click one in the centre block");
-  const mat = views.append("div").attr("class", "ns-view");
+  const mat = views.append("div").attr("class", "ns-view cov-mat");
   const canvas = mat.append("canvas").attr("width", N).attr("height", N).style("image-rendering", "auto").node();
-  mat.attr("aria-label", "All of Σ, 576 by 576 coefficients. Magnifier: move it with the arrow keys.");
-  mat.append("span").attr("class", "ns-view-label").text("All of Σ, 576 × 576: the loupe reads one entry");
+  // Over Σ, its 9 × 9 squares, a pair of blocks each, and their names.
+  const tiles = mat.append("svg").attr("viewBox", "0 0 " + N + " " + N).attr("aria-hidden", "true");
+  mat.attr("aria-label", "All of Σ, 576 by 576 coefficients, 64 per block in the order C, N, W, E, S, NW, NE, SW, SE. The chosen coefficient's row is outlined. Magnifier: move it with the arrow keys.");
+  mat.append("span").attr("class", "ns-view-label").text("All of Σ, 576 × 576, block by block; outlined, the chosen coefficient's row: the left picture, unrolled");
   const wave = views.append("div").attr("class", "cov-wave");
   const waves = wave.append("svg").attr("viewBox", "0 0 " + 3 * SIDE + " " + 3 * SIDE).attr("role", "img");
   wave.append("span").attr("class", "ns-view-label").text("Back in pixels: what the chosen coefficient says about its surroundings");
@@ -120,6 +124,22 @@ export function mount(el, ctx) {
     picker.selectAll("rect.cov-chosen").data([chosen]).join("rect").attr("class", "cov-chosen")
       .attr("x", k => at(k)[0]).attr("y", k => at(k)[1]).attr("width", CELL).attr("height", CELL)
       .attr("fill", "none").attr("stroke", c.ink).attr("stroke-width", 2).attr("pointer-events", "none");
+
+    // Σ's squares, the blocks' names along its top and side, and the row
+    // the left picture is.
+    const fs = ctx.textSize(tiles.node());
+    tiles.selectAll("path.cov-tiles").data([0]).join("path").attr("class", "cov-tiles")
+      .attr("d", d3.range(1, 9).map(b => "M" + b * 64 + " 0V" + N + "M0 " + b * 64 + "H" + N).join(""))
+      .attr("fill", "none").attr("stroke", c.muted).attr("stroke-width", 0.75).attr("vector-effect", "non-scaling-stroke");
+    tiles.selectAll("text.cov-top").data(NAMES).join("text").attr("class", "cov-top")
+      .attr("x", (b, n) => n * 64 + 32).attr("y", -fs * 0.4).attr("text-anchor", "middle")
+      .attr("font-size", fs).attr("fill", c.muted).text(b => b);
+    tiles.selectAll("text.cov-side").data(NAMES).join("text").attr("class", "cov-side")
+      .attr("x", -fs * 0.3).attr("y", (b, n) => n * 64 + 32 + fs / 3).attr("text-anchor", "end")
+      .attr("font-size", fs).attr("fill", c.muted).text(b => b);
+    tiles.selectAll("rect.cov-row").data([chosen]).join("rect").attr("class", "cov-row").attr("data-k", k => k)
+      .attr("x", 0).attr("y", k => k - 2).attr("width", N).attr("height", 5)
+      .attr("fill", "none").attr("stroke", c.ink).attr("stroke-width", 1.5).attr("vector-effect", "non-scaling-stroke");
 
     // All of Σ, one pixel per entry.
     const g = canvas.getContext("2d");
