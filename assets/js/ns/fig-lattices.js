@@ -9,9 +9,9 @@
 // with the bits a block of each lattice carries.
 
 // Bits a block, by lattice, on a flat grey patch (6000 DN, QF 100, K = 5):
-// maths.embed over 10×10 blocks, seed 3. Half a second to work out, so
+// maths.embed over 16×16 blocks, seed 3. Two seconds to work out, so
 // written here; tools/ns-check.mjs works them out again and holds them to it.
-export const BITS = { 1: 65.8, 2: 64.5, 3: 47.4, 4: 40.8 };
+export const BITS = { 1: 65.8, 2: 64.5, 3: 47.4, 4: 42.9 };
 
 const STEPS = 5;
 const ROWS = 8;

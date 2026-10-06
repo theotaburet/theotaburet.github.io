@@ -259,7 +259,7 @@ const rel = (a, b) => Math.abs(a - b) / Math.abs(b);
   }
   report("each lattice is drawn knowing only lattices before it", causal);
 
-  const B = 10; // small enough to be quick, big enough for Λ4 blocks with all eight neighbours drawn
+  const B = 16; // big enough for twenty Λ4 blocks with all eight neighbours drawn, so their mean holds
   const flat = new Float64Array((8 * B + 2) ** 2).fill(6000);
   const vOf = x => 16 * (1.15 * x - 1150);
   const t0 = performance.now();

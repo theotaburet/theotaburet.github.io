@@ -348,9 +348,10 @@ export const GIVEN = { 1: [0], 2: [0, 5, 6, 7, 8], 3: [0, 1, 2, 3, 4], 4: [0, 1,
 // neighbours already drawn. vOf(x) is the stego variance of a photosite of
 // value x (set to 0 when negative, as the paper says); steps are the 64
 // quantisation steps; K half the alphabet; all in the 16-bit domain, where a
-// coefficient is the DCT of the luminance ×4. As eq. (29), each coefficient
-// is drawn around the cover's own, c + m, so the PMF is over the integer the
-// file stores. A block is drawn only if every neighbour it needs was; the
+// coefficient is the DCT of the luminance ×4. Each coefficient is drawn
+// around the cover's own, c + m, so the PMF is over the integer the file
+// stores, as the paper's code gets by rounding cover + signal; eq. (29), as
+// printed, centres it on the signal's mean alone. A block is drawn only if every neighbour it needs was; the
 // others stay null. Returns, per block, the stego signal s (the draw less
 // the cover) and the integers stored, round((c + s) / q); the bits they
 // carry; and the bits per block of each lattice.

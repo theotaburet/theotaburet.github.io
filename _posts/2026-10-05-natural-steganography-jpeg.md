@@ -127,9 +127,9 @@ Knowing $\Sigma$, the tempting shortcut is to keep only its diagonal: draw each 
 <figcaption>Two draws of the stego signal over 8×8 blocks, back in pixels, on the same grey scale. (a) Each DCT coefficient drawn on its own, with its own variance. (b) All drawn together, as the sensor makes it: independent noise on the photosites, developed. That is the law $s = L\,n$ draws from, $L$ being the Cholesky factor of $\Sigma$. Below: their histograms, and how much pixels side by side move together, inside a block and across a block border.</figcaption>
 </figure>
 
-Back in pixels, the eye can hardly tell them apart. The numbers can. Inside a block, neighbouring pixels move together about as much in both draws: the DCT of a single block does not see the problem. Across a block border, the independent draw has nothing tying the two sides together, and the correlation drops to zero. The joint draw runs on across the border, like the noise of a real sensor.
+Back in pixels, the eye can hardly tell them apart. The numbers can. Inside a block, neighbouring pixels move together about as much in both draws. That hides a loss there too: the coefficients of one block are tied to each other, (0, 7) and (7, 0) at a correlation of 0.84, through the Bayer pattern, and the independent draw cuts those ties as well. Across a block border, the independent draw has nothing tying the two sides together, and the correlation drops to zero. The joint draw runs on across the border, like the noise of a real sensor.
 
-A detector that looks at the picture relative to the 8×8 grid, as phase-aware features such as DCTR{% include ns-cite.html key="holub2015" %} do, sees this at once. The paper measures it with $P_E$, the error of the best detector, from 0 % (always caught) to 50 % (a coin toss). Drawn coefficient by coefficient, the signal is caught every time at QF 100, $P_E = 0.0\,\%$. Drawing each block's 64 coefficients jointly but the blocks independently of each other does no better. J-Cov-NS, which ties the blocks together, stays at 42.9 %.
+A detector that looks at the picture relative to the 8×8 grid, as phase-aware features such as DCTR{% include ns-cite.html key="holub2015" %} do, sees this at once. The paper measures it with $P_E$, the detector's error at its best threshold, from 0 % (always caught) to 50 % (a coin toss). Drawn independently, coefficient by coefficient, the signal is caught every time at QF 100, $P_E = 0.0\,\%$. Drawing each block's 64 coefficients jointly but the blocks independently of each other does no better. J-Cov-NS, which ties the blocks together, stays at 42.9 %.
 
 ## Four lattices of blocks
 
@@ -153,7 +153,7 @@ Here are 12 by 8 blocks, nothing drawn yet. Each block will be drawn given the b
 <span class="ns-key" data-key="L2">Λ2</span> next, the blocks diagonally between them. Each meets four Λ1 blocks at its corners, already drawn, and is drawn given those. Corners share few photosites, so it loses little.
 </div>
 <div class="ns-step" markdown="1">
-<span class="ns-key" data-key="L3">Λ3</span> fills the gaps along the rows. Its four sides, two Λ1 blocks and two Λ2 blocks, are all drawn, and sides share a whole row of photosites: its law narrows, and it carries a quarter less.
+<span class="ns-key" data-key="L3">Λ3</span> fills the gaps along the rows. Its four sides, two Λ1 blocks and two Λ2 blocks, are all drawn, and a side is a strip of photosites two wide that both blocks read, twenty of them, where a corner shares four: its law narrows, and it carries a quarter less.
 </div>
 <div class="ns-step" markdown="1">
 <span class="ns-key" data-key="L4">Λ4</span>, the last quarter, is surrounded. All eight of its neighbours are known, and it is drawn given them all, with the narrowest law and the fewest bits. Turn on the reach to see how far back a single Λ4 block depends.
@@ -161,7 +161,7 @@ Here are 12 by 8 blocks, nothing drawn yet. Each block will be drawn given the b
 </div>
 </section>
 
-The figure's bits per block come from a flat, bright patch (6000 DN), where the noise is strong. The paper's Fig. 14, on a synthetic flat image, gives about 0.8 bit per pixel for Λ1 down to 0.4 for Λ4 at QF 100: the same fall from one lattice to the next, in the same order.
+The figure's bits per block come from a flat, bright patch (6000 DN), where the noise is strong. The paper's Fig. 14, on a synthetic flat image, gives about 0.8 bit per pixel for Λ1 down to 0.4 for Λ4 at QF 100: the same order, with a steeper fall: half from Λ1 to Λ4 there, about a third here.
 
 <aside class="l-gutter" markdown="1">
 Conditioning has a cost in time too. The paper draws about 4000 Λ1 blocks a second, 30 for Λ2 and Λ3, 10 for Λ4: 171 s for a 512×512 picture.
@@ -174,13 +174,13 @@ Before a real block of 64 coefficients, two. They show the whole routine at a si
 <aside class="l-gutter" markdown="1">
 The paper calls this *conditional sampling*, a variation of Gibbs sampling: each variable is drawn once, from its law given the ones drawn before it.
 
-The reference code also ships a rejection sampler, the class `RJ`, which this page does not follow: it accepts a value in any bin, not the one drawn, and leaves out the mean the neighbouring blocks give. The paper's notebooks draw as section V-C says, and so does this page.
+The reference code also ships a rejection sampler, the class `RJ`, which this page does not follow: it accepts a value in any bin, not the one drawn, and leaves out the mean the neighbouring blocks give. The paper's notebooks, for its Table I, draw each block's continuous signal at once, $s = m + L\,n$, then round the cover plus that signal: with an alphabet cut at $\pm K$, the same law up to the tails. This page draws the integer first, as section V-C describes.
 </aside>
 
 <section class="ns-scrolly l-page" data-fig="toy" markdown="1">
 <figure class="ns-fig" data-quiet>
 <div class="ns-canvas"></div>
-<figcaption>Two coefficients with correlation ρ, quantised with step q (the grid), drawn one after the other. Red: the integer drawn and the values rejected on the way. Purple: the draw that is kept.</figcaption>
+<figcaption>Two coefficients with correlation ρ, quantised with step q (the grid), drawn one after the other. Red: the integer drawn and the values rejected on the way; in ink, the value accepted. Purple: the point drawn, both coefficients.</figcaption>
 </figure>
 <div class="ns-steps" markdown="1">
 <div class="ns-step" markdown="1">
@@ -227,7 +227,7 @@ Now the centre block alone, and one coefficient up close: its law against the in
 The block is drawn coefficient by coefficient, row by row, each given the neighbours and the coefficients already drawn, and it fills in with the integers drawn. Up close, the coefficient's PMF over the integers, the one picked in red, then a value inside that bin found by rejection: the ticks under the axis, misses faint.
 </div>
 <div class="ns-step" markdown="1">
-Each coefficient drawn tells something about the ones after it, so their laws narrow as the block fills in. The block shows by how much: the first rows hardly, the last ones, drawn after nearly all the others, the most. Up close, dashed, the law given the neighbours only; solid, given the coefficients before it too. Pick (4, 0): $\sigma$ falls from 0.65 of a step to 0.21.
+Each coefficient drawn tells something about the ones after it, so their laws narrow as the block fills in. The block shows by how much: the first four rows by about a fifth, the last four, drawn after nearly all the others, by 60 to 80 %. Up close, dashed, the law given the neighbours only; solid, given the coefficients before it too. Pick (4, 0): $\sigma$ falls from 0.65 of a step to 0.21.
 </div>
 <div class="ns-step" markdown="1">
 What a coefficient carries is the entropy of its PMF, and the block's capacity is their sum, as in the paper's Fig. 14. Switch to QF 95: the high frequencies get steps up to 12 times wider, their laws fit in a single integer, and their bits are gone.
@@ -237,18 +237,18 @@ What a coefficient carries is the entropy of its PMF, and the block's capacity i
 
 ## How much it carries
 
-The paper measures security as the field does. It trains the best detector it can to tell apart 5,400 pairs of equivalent scenes, one shot at ISO 200, the other shot at ISO 100 and given the stego signal. Then it reports the detector's error, $P_E$, on 5,400 more pairs. At 50 %, the detector is guessing.
+The paper measures security as the field does. It trains a detector to tell apart 5,400 pairs of equivalent scenes, one shot at ISO 200, the other shot at ISO 100 and given the stego signal. Then it reports the detector's error, $P_E$, on 5,400 more pairs. At 50 %, the detector is guessing.
 
 <figure class="ns-inline l-page" data-fig="results" data-quiet>
 <div class="ns-canvas"></div>
-<figcaption>The detector's error $P_E$ on E1Base for each way of drawing the stego signal, by JPEG quality, with the payload under each quality (Table I of the paper, DCTR features and a linear classifier). Hollow points: J-Cov-NS against SRNet, a deep detector (Table III), and with an alphabet of $2K+1$ integers (Table IV), $K$ on the slider. Hover a point for its value.</figcaption>
+<figcaption>The detector's error $P_E$ on E1Base for each way of drawing the stego signal, by JPEG quality, with J-Cov-NS's payload under each quality (SI-UNIWARD's is 1 bpnzAC; Table I of the paper, DCTR features and a linear classifier). Hollow points: J-Cov-NS against SRNet, a deep detector (Table III), and with an alphabet of $2K+1$ integers (Table IV), $K$ on the slider. Hover a point for its value.</figcaption>
 </figure>
 
 At QF 100, J-Cov-NS has room for 2 bits per non-zero AC coefficient on average, and the detector is wrong 42.9 % of the time: barely better than a coin toss. In the same test, SI-UNIWARD{% include ns-cite.html key="holub2014" %}, a classic adaptive scheme that hides by changing as little as it can, is caught every time with half that payload.
 
 The other points are other ways of drawing the stego signal, all from the paper's Table I. *Pseudo-embedding* adds the noise on the photosites and develops the result, as a camera would. It carries no message, but it is the reference for what the noise should look like, and J-Cov-NS matches it. *Covariance scaling*, our earlier scheme{% include ns-cite.html key="taburet2019ei" %}, estimated $\Sigma$ once on a flat picture and scaled it by each block's average colour: good enough at QF 85 and 75, caught far more often at 100 and 95. Coefficients drawn independently, from histograms learnt mode by mode{% include ns-cite.html key="denemark2018" %}, and blocks drawn independently with their inner correlations kept, are both caught every time at QF 100. Against SRNet{% include ns-cite.html key="boroumand2019" %}, a deep detector, J-Cov-NS still keeps 31 to 37 %.
 
-In bits per pixel, J-Cov-NS carries about 0.45 at QF 100 and 0.2 at QF 95 on E1Base (the paper's Fig. 13a, read off the plot): some 15 KB in a 512×512 picture at QF 100, and 6.5 KB at QF 95. The crop at the top of this page could carry about 5 KB in 256×256 pixels, more per pixel than E1Base's average. At the same rate, a 16-megapixel photograph would carry close to a megabyte; that is an extrapolation, not a measurement.
+In bits per pixel, J-Cov-NS carries about 0.45 at QF 100 and 0.2 at QF 95 on E1Base (the paper's Fig. 13a, read off the plot): some 15 KB in a 512×512 picture at QF 100, and 6.5 KB at QF 95. The crop at the top of this page could carry about 5 KB in 256×256 pixels, more per pixel than E1Base's average. At the crop's rate, 0.6 bit per pixel, a 16-megapixel photograph would carry over a megabyte; that is an extrapolation, not a measurement.
 
 The alphabet has to be wide enough as well. Each coefficient is drawn among the $2K+1$ integers around the centre of its law; with $K = 1$, too few to follow the tails of the Gaussian, the detector catches J-Cov-NS at QF 100 99 times out of 100. With $K = 5$ it is back to 40 %.
 
