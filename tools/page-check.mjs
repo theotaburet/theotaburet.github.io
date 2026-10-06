@@ -795,6 +795,15 @@ if (ARTICLE_UP) {
       if (!same) extra.push("article pipeline, " + theme + " theme: the cells away from the noise are not the page's colour");
     }
     await ev(`document.documentElement.removeAttribute("data-bs-theme")`);
+    // Scrolled through quickly, each step cuts the last one's entrance short:
+    // the picture must still end up whole, not faded to a blank.
+    for (let i = 0; i < 6; i++) {
+      await go(i);
+      await wait(150);
+    }
+    await wait(1500);
+    const faded = await ev(`[...${P}.querySelectorAll(".ns-canvas svg > g")].filter(g => g.childElementCount).map(g => getComputedStyle(g).opacity).filter(o => o !== "1").join(" ")`);
+    if (faded) extra.push("article pipeline: scrolled through quickly, the picture is left at opacity " + faded);
   }
 }
 

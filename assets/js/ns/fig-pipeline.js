@@ -203,6 +203,9 @@ export function mount(el, ctx) {
     paint(now, i);
     ghost.selectAll("*").remove();
     gsap.set(ghost.node(), { opacity: 0 });
+    // An entrance cut short leaves its opacity behind, and the next one would
+    // fade in only up to it: scrolled through quickly, the picture went blank.
+    gsap.set(now.node(), { opacity: 1 });
     if (!animate || from === i) return;
     // The picture before dissolves into this one.
     paint(ghost, from);
