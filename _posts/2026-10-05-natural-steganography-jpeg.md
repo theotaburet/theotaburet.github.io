@@ -50,11 +50,11 @@ The stego signal is added where the noise lives, on the photosites, before the c
 <section class="ns-scrolly l-page" data-fig="pipeline" markdown="1">
 <figure class="ns-fig" data-quiet>
 <div class="ns-canvas"></div>
-<figcaption>The noise of one red photosite, from the Bayer mosaic to quantised DCT coefficients: demosaicked, mixed into luminance, cut into 8×8 blocks, transformed and rounded. Red: positive values; blue: negative.</figcaption>
+<figcaption>The noise of one photosite, from the Bayer mosaic to quantised DCT coefficients: demosaicked, mixed into luminance, cut into 8×8 blocks, transformed and rounded. It starts red; click or tap another in the first four steps, or move it with the arrow keys, and this figure and the next follow it. Red: positive values; blue: negative.</figcaption>
 </figure>
 <div class="ns-steps" markdown="1">
 <div class="ns-step" markdown="1">
-A sensor does not see colour. Each photosite sits under a red, a green or a blue filter, laid out in the Bayer pattern. Here is a patch of 26×26 of them, and one red photosite carrying a burst of noise. Every other photosite is left alone, so what follows is the trace of that one value.
+A sensor does not see colour. Each photosite sits under a red, a green or a blue filter, laid out in the Bayer pattern. Here is a patch of 26×26 of them, and one red photosite carrying a burst of noise. Every other photosite is left alone, so what follows is the trace of that one value. Any other photosite can take its place, but the text follows the red one.
 </div>
 <div class="ns-step" markdown="1">
 Demosaicking fills in, at every pixel, the two colours its photosite did not measure. With bilinear interpolation, the red of a pixel is a weighted average of the red photosites around it: 1 for its own, ½ for a side neighbour, ¼ for a diagonal one. The burst now shows in nine pixels. This is $D$.
@@ -78,10 +78,12 @@ The DCT step is worth a closer look, because a DCT coefficient is not a pixel: i
 
 <figure class="ns-inline l-page" data-fig="dct" data-quiet>
 <div class="ns-canvas"></div>
-<figcaption>The 64 patterns of the 8×8 DCT, each where its coefficient sits in a block. Hover one, tap it or walk them with the arrow keys: it is laid over blocks C and E of the previous figure, multiplied pixel by pixel by the luminance the burst left there, and summed. The two sums are that pattern's coefficients in C and E, in DN, for the burst of 1,500 DN. Red positive, blue negative, each pattern at its own scale.</figcaption>
+<figcaption>The 64 patterns of the 8×8 DCT, each where its coefficient sits in a block. Hover one, tap it or walk them with the arrow keys: it is laid over the blocks the previous figure's photosite reaches, C and E for the red one, multiplied pixel by pixel by the luminance the burst left there, and summed. The sums are that pattern's coefficients in those blocks, in DN, for the burst of 1,500 DN. Red positive, blue negative, each pattern at its own scale.</figcaption>
 </figure>
 
 The burst sits on the right edge of C and the left edge of E, and every pattern has something there, so every pattern picks it up. That is why one photosite moves dozens of coefficients in two blocks, with signs and proportions that the patterns alone decide, whatever the photosite's value. Pattern (0, 1), half a cosine across the block, is positive on the left and negative on the right: it meets the burst on its negative side in C and on its positive side in E, and the two coefficients come out with opposite signs. The quantisation table of the last step is laid out the same way, one step per pattern, coarse for the fast ones.
+
+Other photosites tell the same story with other numbers. A green one counts for 0.587 of the luminance, but its kernel is a cross of five pixels, so at a block's corner it reaches three blocks and never the diagonal one. A blue one counts for 0.114, and at QF 85 one of its coefficients survives rounding at most. A photosite in the middle of a block stays in that block.
 
 That was one photosite. A real stego signal puts its own noise on every photosite at once, each independent of the others, and each leaves its own column of $M$ in the DCT domain. Their sum is a field of noise whose coefficients are tied together: within a block, because a block is made of the same photosites, and across blocks, because demosaicking reads one photosite past each block's edge.
 

@@ -804,6 +804,33 @@ if (ARTICLE_UP) {
     await wait(1500);
     const faded = await ev(`[...${P}.querySelectorAll(".ns-canvas svg > g")].filter(g => g.childElementCount).map(g => getComputedStyle(g).opacity).filter(o => o !== "1").join(" ")`);
     if (faded) extra.push("article pipeline: scrolled through quickly, the picture is left at opacity " + faded);
+    // Another photosite, picked by the reader: a green one, the cross of its
+    // kernel on five pixels, and at a block's corner in three blocks, the
+    // diagonal one out of its reach; a blue one, of which nothing is left at
+    // QF 85; the arrow keys move it.
+    const pick = (i, j) => ev(`${P}.querySelector('rect.photosite[data-i="${i}"][data-j="${j}"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }))`);
+    const spans = () => ev(`[...new Set([...${P}.querySelectorAll(".dct-cell")].filter(c => Math.abs(+c.dataset.v) > 1e-9).map(c => c.dataset.block))].sort().join(" ")`);
+    await go(0);
+    await wait(1500);
+    await pick(12, 16);
+    await go(1);
+    await wait(1500);
+    const spot = await ev(`${P}.querySelectorAll(".ns-canvas svg > g:last-child rect.spot").length`);
+    if (spot !== 5) extra.push("article pipeline: a green photosite demosaicks onto " + spot + " pixels, expected 5");
+    await pick(16, 16);
+    await go(4);
+    await wait(1500);
+    const corner = await spans();
+    if (corner !== "C E S") extra.push("article pipeline: a green photosite at C's corner lands in [" + corner + "], expected C E S");
+    await go(0);
+    await wait(1500);
+    await pick(12, 17);
+    await go(5);
+    await wait(1500);
+    const blue = await kept(85);
+    if (blue !== 0) extra.push("article pipeline: of a blue photosite, " + blue + " coefficients are left at QF 85, expected none");
+    const keyed = await ev(`(() => { const svg = ${P}.querySelector(".ns-canvas svg"); svg.focus(); svg.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true })); return svg.dataset.at; })()`);
+    if (keyed !== "12,16") extra.push("article pipeline: from (12, 17), the left arrow moves the photosite to " + keyed + ", expected 12,16");
   }
 }
 
@@ -828,6 +855,24 @@ if (ARTICLE_UP) {
     if (!summed) extra.push("article DCT: a sum shown is not the sum of the products drawn");
     const keyed = await ev(`(async () => { const svg = ${D}.querySelector("svg"); svg.focus(); svg.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true })); svg.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true })); await new Promise(r => setTimeout(r, 100)); return svg.querySelector(".dct-chosen").dataset.t; })()`);
     if (keyed !== "10") extra.push("article DCT: from (0, 1), right then down chooses pattern " + keyed + ", expected 10, (1, 2)");
+    // It follows the photosite picked in the figure before. The red one at
+    // C's bottom right corner, (16, 15) in pixels, lands in four blocks; under
+    // the flat pattern each gets 1,500 × 0.299 × w / 8, w the kernel's weights
+    // there: 0.75 in C, 0.25 in E, 2.25 in S, 0.75 in SE.
+    const at = await ev(`(async () => {
+      const s = document.querySelector('.ns-scrolly[data-fig="pipeline"]');
+      s.querySelector(".ns-step").scrollIntoView({ block: "center", behavior: "instant" });
+      await new Promise(r => setTimeout(r, 1500));
+      s.querySelector('rect.photosite[data-i="17"][data-j="16"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      ${D}.scrollIntoView({ block: "center", behavior: "instant" });
+      await new Promise(r => setTimeout(r, 1000));
+      ${D}.querySelector('.dct-pattern[data-t="0"]').dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await new Promise(r => setTimeout(r, 600));
+      return Object.fromEntries([...${D}.querySelectorAll(".dct-sum")].map(s => [s.dataset.b, +s.dataset.sum]));
+    })()`);
+    const want = { C: 0.75, E: 0.25, S: 2.25, SE: 0.75 };
+    const off = Object.keys(want).filter(b => !(Math.abs(at[b] - (1500 * 0.299 * want[b]) / 8) < 1e-6));
+    if (off.length || Object.keys(at).length !== 4) extra.push("article DCT: for the red photosite at C's corner, the flat pattern gives " + JSON.stringify(at) + ", expected C 42.05, E 14.02, S 126.14, SE 42.05");
   }
 }
 

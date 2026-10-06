@@ -47,6 +47,17 @@ const rel = (a, b) => Math.abs(a - b) / Math.abs(b);
     }
   }
   report("the 8×8 DCT is orthonormal", wa < 1e-14, "worst " + wa.toExponential(1));
+  // The article: of the pipeline figure's 1,500 DN burst on a blue photosite,
+  // wherever in the nine blocks, at most one coefficient survives QF 85.
+  let most = 0;
+  for (let i = 1; i < 25; i++) {
+    for (let j = 1; j < 25; j++) {
+      if (N.cfa(i, j) !== "B") continue;
+      const kept = M3.rows.filter((r, n) => Math.round((4 * 1500 * (dense(M3, n)[i * 26 + j])) / (256 * N.QTABLES[85][n % 64])) !== 0).length;
+      most = Math.max(most, kept);
+    }
+  }
+  report("a blue photosite's burst keeps at most one coefficient at QF 85", most <= 1, "at most " + most);
 }
 
 // --- Covariance and conditioning (sections III-H, IV and V-B).
