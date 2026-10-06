@@ -9,11 +9,13 @@
 // of a JPEG quality.
 //
 // The photosite is red, at the edge between the centre block and its east
-// neighbour, until the reader picks another: a click on the grid while it is
-// still photosites, or the arrow keys. fig-dct.js follows it. Every state is
+// neighbour, until the reader picks another of the centre block: a click on
+// the grid while it is still photosites, or the arrow keys. fig-dct.js
+// follows it. Every state is
 // painted whole; a step change dissolves the previous picture into the next.
 const STEPS = 6;
 const N = 26; // photosites: 3×3 blocks of 8×8 and the one-photosite rim demosaicking reads
+const C0 = 9; // the centre block's photosites, C0 to C0 + 7 both ways: the ones the reader can pick
 // The noisy photosite, as the reader leaves it; "change" when it moves.
 export const burst = Object.assign(new EventTarget(), { at: [13, 16] });
 export const BURST = 1500; // its noise, in 14-bit DN: enough for something to survive rounding
@@ -99,8 +101,9 @@ export function mount(el, ctx) {
     const tint = (to, t) => d3.interpolateRgb(c.paper, to)(t);
     const signed = (v, max) => (v ? tint(v > 0 ? c.D : c.blue, Math.sqrt(Math.abs(v) / max)) : c.paper);
     const hue = ch => ({ R: c.D, G: c.C, B: c.blue })[ch];
-    // While the grid is still photosites, those of the nine blocks can be picked.
-    const pick = inner ? "photosite" + (s && spread(i, j) ? " spot" : "") : null;
+    // While the grid is still photosites, those of the centre block can be picked.
+    const centre = i >= C0 && j >= C0 && i < C0 + 8 && j < C0 + 8;
+    const pick = [centre && "photosite", inner && s && spread(i, j) && "spot"].filter(Boolean).join(" ") || null;
     if (s === 0) return { fill: i === burst.at[0] && j === burst.at[1] ? hue(maths.cfa(i, j)) : tint(hue(maths.cfa(i, j)), 0.3), cls: pick };
     if (s === 1) return { fill: tint(hue(ch), spread(i, j)), cls: pick };
     if (s <= 3) return { fill: tint(c.ink, spread(i, j)), opacity: s === 3 && !inner ? 0.25 : 1, cls: pick };
@@ -147,6 +150,8 @@ export function mount(el, ctx) {
       g.append("rect").attr("x", X0 + j * CELL).attr("y", Y0 + i * CELL).attr("width", n * CELL).attr("height", n * CELL)
         .attr("fill", "none").attr("stroke", stroke).attr("stroke-width", width);
     if (s === 0) box(burst.at[0], burst.at[1], 1, c.ink, 2);
+    // Where another can be picked, until the blocks are drawn.
+    if (s <= 2) box(C0, C0, 8, c.muted, 1.2).attr("stroke-dasharray", "4 3").attr("pointer-events", "none");
     if (s === 1) box(burst.at[0] - 1, burst.at[1] - 1, 3, c.ink, 2);
     if (s >= 3) {
       NAMES.forEach((name, b) => {
@@ -173,7 +178,8 @@ export function mount(el, ctx) {
       line(4, "one " + COLOUR[ch] + " photosite,");
       line(5, "+" + BURST.toLocaleString("en") + " DN of noise");
       line(7, "click or tap", c.muted);
-      line(8, "another one", c.muted);
+      line(8, "another inside", c.muted);
+      line(9, "the dashed square", c.muted);
     } else if (s === 1) {
       line(0, COLOUR[ch] + " kernel");
       // A column per weight: SVG text collapses the spaces that would align them.
@@ -225,7 +231,7 @@ export function mount(el, ctx) {
     controls.style("visibility", i === STEPS - 1 ? null : "hidden");
     paint(now, i);
     svg.attr("data-at", burst.at.join(","))
-      .attr("aria-label", "A 26 by 26 patch of Bayer photosites with one noisy " + COLOUR[ch] + " photosite, row " + burst.at[0] + ", column " + burst.at[1] + ", followed through demosaicking, luminance, 8 by 8 blocks, the DCT and quantisation: it ends up as coefficients in " + list(reached) + ". The arrow keys move it to another photosite.");
+      .attr("aria-label", "A 26 by 26 patch of Bayer photosites with one noisy " + COLOUR[ch] + " photosite, row " + burst.at[0] + ", column " + burst.at[1] + ", followed through demosaicking, luminance, 8 by 8 blocks, the DCT and quantisation: it ends up as coefficients in " + list(reached) + ". The arrow keys move it to another photosite of the centre block.");
     ghost.selectAll("*").remove();
     gsap.set(ghost.node(), { opacity: 0 });
     // An entrance cut short leaves its opacity behind, and the next one would
@@ -256,7 +262,7 @@ export function mount(el, ctx) {
     const by = { ArrowLeft: [0, -1], ArrowRight: [0, 1], ArrowUp: [-1, 0], ArrowDown: [1, 0] }[e.key];
     if (!by) return;
     e.preventDefault();
-    const inside = v => Math.min(N - 2, Math.max(1, v));
+    const inside = v => Math.min(C0 + 7, Math.max(C0, v));
     choose([inside(burst.at[0] + by[0]), inside(burst.at[1] + by[1])]);
   });
 

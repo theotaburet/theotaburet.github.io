@@ -50,11 +50,11 @@ The stego signal is added where the noise lives, on the photosites, before the c
 <section class="ns-scrolly l-page" data-fig="pipeline" markdown="1">
 <figure class="ns-fig" data-quiet>
 <div class="ns-canvas"></div>
-<figcaption>The noise of one photosite, from the Bayer mosaic to quantised DCT coefficients: demosaicked, mixed into luminance, cut into 8×8 blocks, transformed and rounded. It starts red; click or tap another in the first four steps, or move it with the arrow keys, and this figure and the next follow it. Red: positive values; blue: negative.</figcaption>
+<figcaption>The noise of one photosite, from the Bayer mosaic to quantised DCT coefficients: demosaicked, mixed into luminance, cut into 8×8 blocks, transformed and rounded. It starts red; click or tap another of the centre block in the first four steps, or move it with the arrow keys, and this figure and the next follow it. Red: positive values; blue: negative.</figcaption>
 </figure>
 <div class="ns-steps" markdown="1">
 <div class="ns-step" markdown="1">
-A sensor does not see colour. Each photosite sits under a red, a green or a blue filter, laid out in the Bayer pattern. Here is a patch of 26×26 of them, and one red photosite carrying a burst of noise. Every other photosite is left alone, so what follows is the trace of that one value. Any other photosite can take its place, but the text follows the red one.
+A sensor does not see colour. Each photosite sits under a red, a green or a blue filter, laid out in the Bayer pattern. Here is a patch of 26×26 of them, and one red photosite carrying a burst of noise. Every other photosite is left alone, so what follows is the trace of that one value. Any other photosite of the dashed square, the centre block, can take its place, but the text follows the red one.
 </div>
 <div class="ns-step" markdown="1">
 Demosaicking fills in, at every pixel, the two colours its photosite did not measure. With bilinear interpolation, the red of a pixel is a weighted average of the red photosites around it: 1 for its own, ½ for a side neighbour, ¼ for a diagonal one. The burst now shows in nine pixels. This is $D$.
