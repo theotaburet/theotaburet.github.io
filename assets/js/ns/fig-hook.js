@@ -11,7 +11,7 @@ import { loupe } from "./loupe.js";
 const DATA = new URL("../../data/ns/", import.meta.url);
 const NAMES = {
   iso100: "ISO 100, the original",
-  iso200: "ISO 200, straight from the camera",
+  iso200: "ISO 200, a real shot",
   stego: "ISO 100 + J-Cov-NS embedding",
   diff: "The difference, amplified: embedding − original"
 };

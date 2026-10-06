@@ -9,7 +9,7 @@
 // column of Σ turned back into pixels: what knowing it says about every
 // pixel around, its own waveform and the trace it leaves past the borders.
 // Three developments take the dependencies apart, as Fig. 8 of the paper
-// does.
+// does inside one block, with its low-pass filter L.
 import { loupe } from "./loupe.js";
 
 const N = 576;
@@ -20,7 +20,7 @@ const SIDE = 8 * CELL + 4; // a block and the gap after it
 const DEV = {
   full: ["demosaicking + luminance", {}],
   red: ["red channel only", { luma: { R: 1 } }],
-  lowpass: ["low-pass only", { mosaic: false, kernel: [[1, 2, 1], [2, 4, 2], [1, 2, 1]].map(r => r.map(v => v / 16)) }]
+  lowpass: ["low-pass only", { mosaic: false, kernel: [[1, 1, 1], [1, 4, 1], [1, 1, 1]].map(r => r.map(v => v / 12)) }]
 };
 
 const block = k => NAMES[Math.floor(k / 64)];
@@ -65,8 +65,8 @@ export function mount(el, ctx) {
   const canvas = mat.append("canvas").attr("width", N).attr("height", N).style("image-rendering", "auto").node();
   // Over Σ, its 9 × 9 squares, a pair of blocks each, and their names.
   const tiles = mat.append("svg").attr("viewBox", "0 0 " + N + " " + N).attr("aria-hidden", "true");
-  mat.attr("aria-label", "All of Σ, 576 by 576 coefficients, 64 per block in the order C, N, W, E, S, NW, NE, SW, SE. The chosen coefficient's row is outlined. Magnifier: move it with the arrow keys.");
-  mat.append("span").attr("class", "ns-view-label").text("All of Σ, 576 × 576, block by block; outlined, the chosen coefficient's row: the left picture, unrolled");
+  mat.attr("aria-label", "All of Σ as correlations, 576 by 576 coefficients, 64 per block in the order C, N, W, E, S, NW, NE, SW, SE. The chosen coefficient's row is outlined. Magnifier: move it with the arrow keys.");
+  mat.append("span").attr("class", "ns-view-label").text("All of Σ as correlations, 576 × 576, block by block; outlined, the chosen coefficient's row: the left picture, unrolled");
   const wave = views.append("div").attr("class", "cov-wave");
   const waves = wave.append("svg").attr("viewBox", "0 0 " + 3 * SIDE + " " + 3 * SIDE).attr("role", "img");
   wave.append("span").attr("class", "ns-view-label").text("Back in pixels: what the chosen coefficient says about its surroundings");

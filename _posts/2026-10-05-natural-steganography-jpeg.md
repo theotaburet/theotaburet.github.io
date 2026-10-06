@@ -9,7 +9,7 @@ Two photographs of the same piece of cloth. One was taken at ISO 200. The other 
 
 <figure class="ns-inline l-page" data-fig="hook" data-quiet>
 <div class="ns-canvas"></div>
-<figcaption>A 256×256 crop of the Z CAM E1 RAW files that come with the paper's code, developed (bilinear demosaicking, then luminance) and put through a JPEG round trip at quality 100: DCT, rounding to the quantisation steps, inverse DCT. The loupe shows the same spot in every view. Blocks along the edges, whose neighbours fall outside the crop, are left as they were.</figcaption>
+<figcaption>A 256×256 crop of the Z CAM E1 RAW files that come with the paper's code, developed (bilinear demosaicking, then luminance) and put through a JPEG round trip at quality 100: DCT, rounding to the quantisation steps, inverse DCT, then shown through the same tone curve. The loupe shows the same spot in every view. A block is drawn only once the neighbours it depends on are, so near the edges, where some fall outside the crop, a frame up to four blocks deep is left as it was: 759 of the 1,024 blocks are drawn.</figcaption>
 </figure>
 
 <div class="ns-byline wide-page l-page">
@@ -18,7 +18,7 @@ Two photographs of the same piece of cloth. One was taken at ISO 200. The other 
 <div><p class="ns-label">Affiliations</p><p>CRIStAL, CNRS, Centrale Lille · IMT Lille-Douai · Binghamton University</p></div>
 </div>
 
-The second crop is the work of *natural steganography*: a message is hidden not in changes too small to see, but in a whole layer of noise that the camera could have made itself. This article explains the scheme my co-authors and I published in IEEE TIFS{% include ns-cite.html key="taburet2020" %}, J-Cov-NS, from the sensor to the JPEG file.
+The crop that could carry a payload is the work of *natural steganography*: a message is hidden not in changes too small to see, but in a whole layer of noise that the camera could have made itself. This article explains the scheme my co-authors and I published in IEEE TIFS{% include ns-cite.html key="taburet2020" %}, J-Cov-NS, from the sensor to the JPEG file.
 
 One number runs through it: how much a picture can carry. In the paper's tests, SI-UNIWARD, a classic JPEG scheme, is caught every time at QF 100 with one bit per non-zero AC coefficient. J-Cov-NS carries two on average, and the same detector errs 43 % of the time, where a coin toss would err 50 %. Getting there means following the noise through demosaicking and the DCT, finding the dependencies that creates, and drawing a signal that respects them.
 
@@ -66,7 +66,7 @@ The paper works on greyscale JPEGs, which keep one plane, the luminance $Y = 0.2
 JPEG cuts the picture into 8×8 blocks. The photosite sat at the edge of one: its nine pixels straddle two blocks, the centre one, C, and its east neighbour, E. The rim of photosites around the blocks is there because demosaicking reads one photosite past them. $S$ selects the pixels of the blocks, $P$ puts them in block order.
 </div>
 <div class="ns-step" markdown="1">
-Each block goes through an 8×8 DCT, $T$: 64 coefficients, one per frequency, the low ones top left. One photosite now moves dozens of coefficients in two blocks at once, with fixed signs and proportions. That is one column of $M = T\,P\,S\,L\,D$, the linear map from photosites to DCT coefficients. Noise that was independent from one photosite to the next comes out correlated: within a block, and across the border between blocks.
+Each block goes through an 8×8 DCT, $T$: 64 coefficients, one per frequency, the low ones top left. One photosite now moves all 64 coefficients of both blocks at once, with fixed signs and proportions. That is one column of $M = T\,P\,S\,L\,D$, the linear map from photosites to DCT coefficients. Noise that was independent from one photosite to the next comes out correlated: within a block, and across the border between blocks.
 </div>
 <div class="ns-step" markdown="1">
 Last, each coefficient is divided by its step in the quantisation table of the chosen quality, and rounded to the integer the file stores. For anything to survive here, the burst is 1,500 DN, about ten times the noise of a bright photosite at ISO 200. Lower the quality and the steps grow: fewer coefficients survive. Natural steganography draws these integers, which is why it carries the most at high qualities.
@@ -81,7 +81,7 @@ The DCT step is worth a closer look, because a DCT coefficient is not a pixel: i
 <figcaption>The 64 patterns of the 8×8 DCT, each where its coefficient sits in a block. Hover one, tap it or walk them with the arrow keys: it is laid over the blocks the previous figure's photosite reaches, C and E for the red one, multiplied pixel by pixel by the luminance the burst left there, and summed. The sums are that pattern's coefficients in those blocks, in DN, for the burst of 1,500 DN. Red positive, blue negative, each pattern at its own scale.</figcaption>
 </figure>
 
-The burst sits on the right edge of C and the left edge of E, and every pattern has something there, so every pattern picks it up. That is why one photosite moves dozens of coefficients in two blocks, with signs and proportions that the patterns alone decide, whatever the photosite's value. Pattern (0, 1), half a cosine across the block, is positive on the left and negative on the right: it meets the burst on its negative side in C and on its positive side in E, and the two coefficients come out with opposite signs. The quantisation table of the last step is laid out the same way, one step per pattern, coarse for the fast ones.
+The burst sits on the right edge of C and the left edge of E, and every pattern has something there, so every pattern picks it up. That is why the red photosite moves all 128 coefficients of its two blocks, with signs and proportions that the patterns alone decide, whatever the photosite's value. Pattern (0, 1), half a cosine across the block, is positive on the left and negative on the right: it meets the burst on its negative side in C and on its positive side in E, and the two coefficients come out with opposite signs. The quantisation table of the last step is laid out the same way, one step per pattern, coarse for the fast ones.
 
 Other photosites tell the same story with other numbers. A green one counts for 0.587 of the luminance, but its kernel is a cross of five pixels, so at a block's corner it reaches three blocks and never the diagonal one. A blue one counts for 0.114, and at QF 85 one of its coefficients survives rounding at most. A photosite in the middle of a block stays in that block.
 
@@ -89,6 +89,8 @@ That was one photosite. A real stego signal puts its own noise on every photosit
 
 <aside class="l-gutter" markdown="1">
 The paper's eq. (15) prints the BT.709 weights, 0.2126, 0.7152 and 0.0722, under the name BT.601. Its code uses BT.601's 0.299, 0.587 and 0.114, and so does this page.
+
+Its eq. (23) writes $M = T\,P\,S\,L$, with demosaicking inside $L$. This page gives demosaicking a letter of its own, $D$.
 </aside>
 
 ## Why neighbouring blocks move together
@@ -101,12 +103,12 @@ where $v$ is the variance of the stego signal at each photosite. The photosites 
 
 <figure class="ns-inline l-page" data-fig="covariance" data-quiet>
 <div class="ns-canvas"></div>
-<figcaption>Correlations between the DCT coefficients of 3×3 neighbouring blocks, computed in your browser from $\Sigma = M\,\mathrm{diag}(v)\,M^\top$ with a uniform $v$. Left: with the coefficient chosen in the centre block. Middle: all of $\Sigma$, a row and a column per coefficient, grouped by block, with the chosen one's row outlined; the loupe reads it entry by entry. Right: that coefficient's column of $\Sigma$, turned back into pixels. Red positive, blue negative, the colour growing as $\sqrt{|\rho|}$.</figcaption>
+<figcaption>Correlations between the DCT coefficients of 3×3 neighbouring blocks, computed in your browser from $\Sigma = M\,\mathrm{diag}(v)\,M^\top$ with a uniform $v$. Left: with the coefficient chosen in the centre block. Middle: all of $\Sigma$ as correlations, a row and a column per coefficient, grouped by block, with the chosen one's row outlined; the loupe reads it entry by entry. Right: that coefficient's column of $\Sigma$, turned back into pixels. Red positive, blue negative, the colour growing as the square root of the value, $\sqrt{|\rho|}$ on the left and in the middle.</figcaption>
 </figure>
 
-Pick a coefficient of the centre block. It moves most with the other coefficients of its own block, less but clearly with the four blocks that share a side with it, and hardly at all with the four diagonal ones, which only meet it at a corner. The three developments take this apart, as Fig. 8 of the paper does. With the red channel alone, the Bayer pattern shows through: the red photosites sit on one side of each 2×2 cell, so the dependencies lean towards north and east. With a plain low-pass filter and no mosaic, the four sides are alike again.
+Pick a coefficient of the centre block. It moves most with the other coefficients of its own block, less but clearly with the four blocks that share a side with it, and hardly at all with the four diagonal ones, which only meet it at a corner. The three developments take this apart, as Fig. 8 of the paper does inside one block. With the red channel alone, the Bayer pattern shows through: the red photosites sit in the north-east corner of each 2×2 cell, so a block no longer depends on its four sides alike. For the low frequencies, (0, 1) among them, the dependencies lean towards north and east; for the highest, towards south and west. With the paper's plain low-pass filter and no mosaic, opposite sides mirror each other again.
 
-The middle picture is all of $\Sigma$ at once: a row and a column per coefficient, 64 for each block, in the order C, N, W, E, S, then the corners. Each of its 9×9 squares is a pair of blocks. On the diagonal, each block with itself, the brightest, up to 0.84. Fainter, two blocks that share a side, up to 0.11. Near black, two that meet only at a corner, under 0.01, or not at all, like N and S. The outlined row is the chosen coefficient's: the picture on the left is that row, laid back out as blocks.
+The middle picture is all of $\Sigma$ at once, as correlations: a row and a column per coefficient, 64 for each block, in the order C, N, W, E, S, then the corners. Each of its 9×9 squares is a pair of blocks. On the diagonal, each block with itself, the brightest, up to 0.84. Fainter, two blocks that share a side, up to 0.11. Near black, two that meet only at a corner, under 0.01, or not at all, like N and S. The outlined row is the chosen coefficient's: the picture on the left is that row, laid back out as blocks.
 
 The picture on the right says why. It is the chosen coefficient's column of $\Sigma$ put back through the inverse DCT: what knowing that one coefficient tells about each pixel around. Inside its block, its own DCT pattern. Past each side, a trace one or two pixels deep, where the neighbouring block was demosaicked from the same photosites as the edge of this one. Nothing reaches the diagonal blocks but a corner.
 

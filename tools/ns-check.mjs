@@ -98,6 +98,30 @@ const rel = (a, b) => Math.abs(a - b) / Math.abs(b);
   report("NE and SW, which share three photosites, more than NW and SE, which share two",
     Math.min(peak(0, 6), peak(0, 7)) > Math.max(peak(0, 5), peak(0, 8)));
 
+  // The article, on the covariance figure's developments: on the red channel
+  // alone, (0, 1) leans north and east and (7, 7) south and west; with the
+  // paper's low-pass filter L and no mosaic, opposite sides mirror each other.
+  // The lean: Σρ² between a coefficient of C and each side block.
+  const lean = (opts, t) => {
+    const V = N.covariance(N.photositesToDct(3, opts), new Float64Array(676).fill(1));
+    return [1, 2, 3, 4].map(b => {
+      let s = 0;
+      for (let q = b * 64; q < b * 64 + 64; q++) s += V[t * n + q] ** 2 / (V[t * (n + 1)] * V[q * (n + 1)]);
+      return s;
+    }); // N, W, E, S
+  };
+  const [n1, w1, e1, s1] = lean({ luma: { R: 1 } }, 1);
+  const [n7, w7, e7, s7] = lean({ luma: { R: 1 } }, 63);
+  report("red channel alone: (0, 1) leans north and east, (7, 7) south and west", n1 + e1 > 2 * (s1 + w1) && s7 + w7 > 1.5 * (n7 + e7),
+    "N+E/S+W " + ((n1 + e1) / (s1 + w1)).toFixed(1) + " and " + ((n7 + e7) / (s7 + w7)).toFixed(2));
+  const LP = [[1, 1, 1], [1, 4, 1], [1, 1, 1]].map(r => r.map(v => v / 12)); // the paper's L, §IV-A2
+  let mirror = 0;
+  for (const t of [0, 1, 9, 63]) {
+    const [nn, ww, ee, ss] = lean({ mosaic: false, kernel: LP }, t);
+    mirror = Math.max(mirror, Math.abs(nn - ss), Math.abs(ww - ee));
+  }
+  report("low-pass L: opposite sides mirror each other", mirror < 1e-12, "worst " + mirror.toExponential(1));
+
   const L = N.cholesky(S, n);
   let wl = 0;
   for (let i = 0; i < n; i++) {
