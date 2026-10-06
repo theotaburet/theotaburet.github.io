@@ -199,7 +199,8 @@ export function mount(el, ctx) {
     const from = step;
     step = i;
     paint();
-    if (!animate || i === from) return;
+    // Before the first draw is back there is nothing to animate; its answer paints the step.
+    if (!animate || i === from || !draw) return;
     const centre = panels.selectAll('rect.cond-cell[data-block="C"]').nodes();
     if (i === 0) {
       // The neighbours, then the centre filling in, coefficient by coefficient.

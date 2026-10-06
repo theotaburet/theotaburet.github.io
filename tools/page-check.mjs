@@ -935,6 +935,14 @@ if (ARTICLE_UP) {
   if (!(await ev(`!!${F}`))) extra.push("article: no block figure");
   else {
     const to = i => ev(`(() => { const s = [...${F}.querySelectorAll(".ns-step")].at(${i}); scrollTo({ top: scrollY + s.getBoundingClientRect().top - innerHeight * 0.5, behavior: "instant" }); })()`);
+    // Landed on straight from a link, a late step plays before the worker has
+    // drawn anything, on a phone's CPU too: nothing to animate, nothing thrown.
+    thrown.length = 0;
+    await send("Emulation.setCPUThrottlingRate", { rate: 4 });
+    await to(4);
+    await wait(3000);
+    await send("Emulation.setCPUThrottlingRate", { rate: 1 });
+    if (thrown.length) extra.push("article block: landing on step 5 before the draw is back throws: " + thrown[0]);
     // The conditioning, in the DCT domain: the nine blocks' coefficients, the
     // neighbours drawn and the centre at the mean they give it, not at 0;
     // then each centre coefficient's σ given them over its σ alone, lowest at
