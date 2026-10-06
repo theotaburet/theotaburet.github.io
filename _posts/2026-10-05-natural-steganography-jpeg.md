@@ -14,11 +14,11 @@ Two photographs of the same piece of cloth. One was taken at ISO 200. The other 
 
 <div class="ns-byline wide-page l-page">
 <div><p class="ns-label">Written by</p><p><a href="/">Théo Taburet</a></p></div>
-<div><p class="ns-label">Based on</p><p>T. Taburet, P. Bas, W. Sawaya, J. Fridrich, <em>Natural Steganography in JPEG Domain With a Linear Development Pipeline</em>, IEEE Transactions on Information Forensics and Security, vol. 16, 2021. <a href="https://doi.org/10.1109/TIFS.2020.3007354">doi:10.1109/TIFS.2020.3007354</a></p></div>
+<div><p class="ns-label">Based on</p><p>T. Taburet, P. Bas, W. Sawaya, J. Fridrich, <em>Natural Steganography in JPEG Domain With a Linear Development Pipeline</em>, IEEE Transactions on Information Forensics and Security, vol. 16, 2020. <a href="https://doi.org/10.1109/TIFS.2020.3007354">doi:10.1109/TIFS.2020.3007354</a></p></div>
 <div><p class="ns-label">Affiliations</p><p>CRIStAL, CNRS, Centrale Lille · IMT Lille-Douai · Binghamton University</p></div>
 </div>
 
-The second crop is the work of *natural steganography*: a message is hidden not in changes too small to see, but in a whole layer of noise that the camera could have made itself. This article explains the scheme my co-authors and I published in IEEE TIFS{% include ns-cite.html key="taburet2021" %}, J-Cov-NS, from the sensor to the JPEG file.
+The second crop is the work of *natural steganography*: a message is hidden not in changes too small to see, but in a whole layer of noise that the camera could have made itself. This article explains the scheme my co-authors and I published in IEEE TIFS{% include ns-cite.html key="taburet2020" %}, J-Cov-NS, from the sensor to the JPEG file.
 
 One number runs through it: how much a picture can carry. In the paper's tests, SI-UNIWARD, a classic JPEG scheme, is caught every time at QF 100 with one bit per non-zero AC coefficient. J-Cov-NS carries two on average, and the same detector errs 43 % of the time, where a coin toss would err 50 %. Getting there means following the noise through demosaicking and the DCT, finding the dependencies that creates, and drawing a signal that respects them.
 
@@ -247,7 +247,7 @@ None of this comes free.
 
 ## Going further
 
-The paper{% include ns-cite.html key="taburet2021" %} has what this article leaves out: the full construction of $M$, the derivation of the conditional laws, and more experiments. Around it, other pieces of the same work: an empirical study of colour JPEG steganography and steganalysis{% include ns-cite.html key="taburet2018iwdw" %}; the computation of dependencies between DCT coefficients{% include ns-cite.html key="taburet2019ihmmsec" %}, which this scheme builds on; the synchronisation of DCT coefficients for a given development pipeline{% include ns-cite.html key="taburet2020ihmmsec" %}, the same idea for adaptive schemes; and the thesis that gathers them{% include ns-cite.html key="taburet2020thesis" %}, in French. The reference code and notebooks{% include ns-cite.html key="taburet2024notebooks" %} accompany the paper, and E1Base holds the 10,800 crops of its experiments, cut from 200 RAW photographs; the links are in the appendix.
+The paper{% include ns-cite.html key="taburet2020" %} has what this article leaves out: the full construction of $M$, the derivation of the conditional laws, and more experiments. Around it, other pieces of the same work: an empirical study of colour JPEG steganography and steganalysis{% include ns-cite.html key="taburet2018iwdw" %}; the computation of dependencies between DCT coefficients{% include ns-cite.html key="taburet2019ihmmsec" %}, which this scheme builds on; the synchronisation of DCT coefficients for a given development pipeline{% include ns-cite.html key="taburet2020ihmmsec" %}, the same idea for adaptive schemes; and the thesis that gathers them{% include ns-cite.html key="taburet2020thesis" %}, in French. The reference code and notebooks{% include ns-cite.html key="taburet2024notebooks" %} accompany the paper, and E1Base holds the 10,800 crops of its experiments, cut from 200 RAW photographs; the links are in the appendix.
 
 {% include ns-appendix.html %}
 

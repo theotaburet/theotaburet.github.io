@@ -3,11 +3,11 @@
 # rank here, and _includes/ns-appendix.html lists them in this order.
 # Checked against Crossref, HAL and the publishers' pages, 2026-10-05.
 
-- key: taburet2021
+- key: taburet2020
   authors: T. Taburet, P. Bas, W. Sawaya, J. Fridrich
   title: Natural Steganography in JPEG Domain With a Linear Development Pipeline
   venue: IEEE Transactions on Information Forensics and Security, vol. 16, pp. 173–186
-  year: 2021
+  year: 2020
   url: https://doi.org/10.1109/TIFS.2020.3007354
 
 - key: bas2016
