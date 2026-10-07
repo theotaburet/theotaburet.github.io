@@ -42,11 +42,12 @@ started as something I wanted for myself.
 <p>A photograph printed in four dithered inks, out of register and trembling, live in WebGL.</p>
 </div>
 <div class="project-card">
-<a class="project-card__media" href="#boomerang" tabindex="-1" aria-hidden="true"><img src="/assets/img/projects/boomerang.jpg" alt="" loading="lazy"></a>
+<a class="project-card__media" href="#boomerang" tabindex="-1" aria-hidden="true"><video src="/assets/img/projects/boomerang.mp4" poster="/assets/img/projects/boomerang.jpg" autoplay muted loop playsinline></video></a>
 <h3><a href="#boomerang"><span class="emo">🪃</span> Boomerang</a></h3>
 <p>A burst of photos played forwards and back as a looping video, encoded in the browser.</p>
 </div>
 </div>
+<script>matchMedia("(prefers-reduced-motion: reduce)").matches && document.querySelector(".project-card video").removeAttribute("autoplay");</script>
 
 
 ## <span class="emo">📻</span> diapason {#diapason}
@@ -84,6 +85,8 @@ I built it for bike rides.
 
 ## <span class="emo">🚲</span> Ravitools {#ravitools}
 
+*What's along the road, even out of signal.*
+
 <div class="deploys" data-cursor="wheel">
 <span><a href="https://theotaburet.github.io/Ravitools/">Try it</a> <em class="env">demo</em></span>
 <span><a href="https://github.com/theotaburet/Ravitools">Source</a> <em class="env">GitHub</em></span>
@@ -92,6 +95,16 @@ I built it for bike rides.
 Ravitools enriches GPX files with offline points of interest (water, food,
 campsites) for long-distance cyclists who lose signal exactly where they most need
 to know when the next tap is.
+
+Load a route and Ravitools asks OpenStreetMap what lies along it: drinking water,
+food shops, restaurants, campsites and shelters, toilets, bike shops. It searches a
+corridor that follows the track rather than a box around it, then keeps each place by
+its real distance to the line, within a radius you set: narrow in town, wide where
+there is little. Duplicates are merged only where that still makes sense on the road.
+
+The elevation profile colours every gradient and flags every stretch, longer than a
+distance you choose, with no water or no shop. What you keep goes out as GPX, KML,
+KMZ, GeoJSON or an OsmAnd GPX, to load onto a GPS or a phone before you leave.
 
 The demo runs entirely in your browser: the route never leaves it, and the browser
 asks OpenStreetMap itself what lies along the way. Looking each place up on the web
@@ -189,8 +202,16 @@ on their optical densities.
 
 Drop in a few photos taken in a burst and Boomerang plays them forwards, then back,
 as a looping video for Instagram, Reels or TikTok: square, portrait or landscape, with
-a margin in the colour you choose. It started as a Python script. It now runs entirely
-in the browser, with ffmpeg compiled to WebAssembly encoding the video in a worker, so
-your photos never leave your phone.
+a margin in the colour you choose.
+
+The loop plays live on a canvas while you set it up, and the video is only encoded
+when you export it. The photos are decoded, turned upright from their EXIF and fitted
+to the frame in parallel workers, then ffmpeg, compiled to WebAssembly, encodes them in
+another worker as H.264 the apps take without complaint. It started as a Python script;
+now nothing is uploaded, and your photos never leave your phone.
+
+The horse at the top of this page is *Sallie Gardner at a Gallop*: eleven photographs
+Eadweard Muybridge took in 1878 with a row of cameras the mare set off as she ran
+past, one of the first bursts ever shot, run through Boomerang.
 
 <p class="stack"><span>Astro</span><span>React</span><span>TypeScript</span><span>ffmpeg.wasm</span><span>Web Workers</span></p>

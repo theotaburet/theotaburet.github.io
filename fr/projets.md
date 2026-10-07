@@ -46,11 +46,12 @@ paraît, sauf que chacune est partie d'une envie que j'avais.
 <p>Une photo imprimée en quatre encres tramées, mal repérées et tremblantes, en direct en WebGL.</p>
 </div>
 <div class="project-card">
-<a class="project-card__media" href="#boomerang" tabindex="-1" aria-hidden="true"><img src="/assets/img/projects/boomerang.jpg" alt="" loading="lazy"></a>
+<a class="project-card__media" href="#boomerang" tabindex="-1" aria-hidden="true"><video src="/assets/img/projects/boomerang.mp4" poster="/assets/img/projects/boomerang.jpg" autoplay muted loop playsinline></video></a>
 <h3><a href="#boomerang"><span class="emo">🪃</span> Boomerang</a></h3>
 <p>Une rafale de photos jouée à l'endroit puis à l'envers en vidéo qui boucle, encodée dans le navigateur.</p>
 </div>
 </div>
+<script>matchMedia("(prefers-reduced-motion: reduce)").matches && document.querySelector(".project-card video").removeAttribute("autoplay");</script>
 
 
 ## <span class="emo">📻</span> diapason {#diapason}
@@ -89,6 +90,8 @@ Je l'ai construit pour les sorties vélo.
 
 ## <span class="emo">🚲</span> Ravitools {#ravitools}
 
+*Ce qu'il y a le long de la route, même sans réseau.*
+
 <div class="deploys" data-cursor="wheel">
 <span><a href="https://theotaburet.github.io/Ravitools/">Essayer</a> <em class="env">démo</em></span>
 <span><a href="https://github.com/theotaburet/Ravitools">Source</a> <em class="env">GitHub</em></span>
@@ -97,6 +100,18 @@ Je l'ai construit pour les sorties vélo.
 Ravitools enrichit les fichiers GPX avec des points d'intérêt hors ligne (eau,
 ravitaillement, campings) pour les cyclistes au long cours, qui perdent le réseau
 exactement là où ils ont le plus besoin de savoir où est le prochain robinet.
+
+Chargez une trace et Ravitools demande à OpenStreetMap ce qu'il y a le long : points
+d'eau, commerces, restaurants, campings et abris, toilettes, magasins de vélo. Il
+cherche dans un couloir qui suit la trace plutôt que dans un rectangle autour, puis
+garde chaque lieu selon sa vraie distance à la ligne, dans un rayon que vous réglez :
+étroit en ville, large là où il y a peu. Les doublons ne sont fusionnés que quand ça
+garde du sens sur la route.
+
+Le profil d'altitude colore chaque pente et signale chaque tronçon, plus long qu'une
+distance que vous choisissez, sans eau ou sans commerce. Ce que vous gardez repart en
+GPX, KML, KMZ, GeoJSON ou GPX OsmAnd, à charger sur un GPS ou un téléphone avant de
+partir.
 
 La démo tourne entièrement dans votre navigateur : la trace n'en sort jamais, et c'est
 le navigateur qui demande lui-même à OpenStreetMap ce qu'il y a le long du chemin.
@@ -200,9 +215,18 @@ reconstruit le mieux la couleur, par moindres carrés sur leurs densités optiqu
 
 Déposez quelques photos prises en rafale et Boomerang les joue à l'endroit, puis à
 l'envers, en vidéo qui boucle pour Instagram, les Reels ou TikTok : carrée, verticale ou
-horizontale, avec une marge de la couleur de votre choix. C'était au départ un script
-Python. Il tourne maintenant entièrement dans le navigateur, avec ffmpeg compilé en
-WebAssembly qui encode la vidéo dans un worker, donc vos photos ne quittent jamais votre
-téléphone.
+horizontale, avec une marge de la couleur de votre choix.
+
+La boucle se joue en direct sur un canvas pendant que vous la réglez, et la vidéo n'est
+encodée qu'à l'export. Les photos sont décodées, redressées d'après leur EXIF et cadrées
+en parallèle dans des workers, puis ffmpeg, compilé en WebAssembly, les encode dans un
+autre worker en H.264 que les applis acceptent sans broncher. C'était au départ un
+script Python ; aujourd'hui rien n'est envoyé nulle part, et vos photos ne quittent
+jamais votre téléphone.
+
+Le cheval en haut de cette page, c'est *Sallie Gardner au galop* : onze photos
+qu'Eadweard Muybridge a prises en 1878 avec une rangée d'appareils que la jument
+déclenchait en passant, l'une des premières rafales jamais prises, passées dans
+Boomerang.
 
 <p class="stack"><span>Astro</span><span>React</span><span>TypeScript</span><span>ffmpeg.wasm</span><span>Web Workers</span></p>
