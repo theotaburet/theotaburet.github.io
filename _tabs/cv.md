@@ -98,7 +98,7 @@ server, WebAssembly client, in production.
 
 ### Ravitools
 
-*Since 2024* · [Source](https://github.com/theotaburet/Ravitools)
+*Since 2024* · [Demo](https://theotaburet.github.io/Ravitools/) · [Source](https://github.com/theotaburet/Ravitools)
 
 GPX enrichment with offline points of interest for long-distance cyclists.
 

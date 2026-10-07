@@ -4,18 +4,18 @@ order: 4
 description: >-
   Projects by Théo Taburet: diapason, a group radio played in sync from phones
   in the browser; Ravitools, offline points of interest for cycling GPX files;
-  research on natural steganography; and a photograph printed in four
-  trembling inks, in WebGL.
+  research on natural steganography; a photograph printed in four trembling
+  inks, in WebGL; and Boomerang, a looping video made from a burst of photos.
 ---
 
 <div class="lede wide-page">
-<h1>Four things I've built.</h1>
+<h1>Five things I've built.</h1>
 <div class="lede-body" markdown="1">
 <p class="eyebrow"><span class="emo">🧰</span> Selected&nbsp;work &middot; Théo&nbsp;Taburet &middot; signal,&nbsp;images&nbsp;and&nbsp;bicycles</p>
 
 A radio you carry, a map that knows where the water is, a way of hiding a
-message in the grain of a photograph, and a photograph printed in four inks that
-won't keep still. They have less in common than they look, except that each one
+message in the grain of a photograph, a photograph printed in four inks that
+won't keep still, and a burst of photos that plays forwards and back. They have less in common than they look, except that each one
 started as something I wanted for myself.
 </div>
 </div>
@@ -40,6 +40,11 @@ started as something I wanted for myself.
 <a class="project-card__media" href="#halftone" tabindex="-1" aria-hidden="true"><canvas data-halftone="/assets/img/projects/halftone.jpg" data-depth="/assets/img/projects/halftone-depth.png"></canvas></a>
 <h3><a href="#halftone"><span class="emo">🖨️</span> CMYK halftone</a></h3>
 <p>A photograph printed in four dithered inks, out of register and trembling, live in WebGL.</p>
+</div>
+<div class="project-card">
+<a class="project-card__media" href="#boomerang" tabindex="-1" aria-hidden="true"><img src="/assets/img/projects/boomerang.jpg" alt="" loading="lazy"></a>
+<h3><a href="#boomerang"><span class="emo">🪃</span> Boomerang</a></h3>
+<p>A burst of photos played forwards and back as a looping video, encoded in the browser.</p>
 </div>
 </div>
 
@@ -80,6 +85,7 @@ I built it for bike rides.
 ## <span class="emo">🚲</span> Ravitools {#ravitools}
 
 <div class="deploys" data-cursor="wheel">
+<span><a href="https://theotaburet.github.io/Ravitools/">Try it</a> <em class="env">demo</em></span>
 <span><a href="https://github.com/theotaburet/Ravitools">Source</a> <em class="env">GitHub</em></span>
 </div>
 
@@ -87,7 +93,11 @@ Ravitools enriches GPX files with offline points of interest (water, food,
 campsites) for long-distance cyclists who lose signal exactly where they most need
 to know when the next tap is.
 
-<p class="stack"><span>Python</span><span>GPX</span><span>OpenStreetMap</span></p>
+The demo runs entirely in your browser: the route never leaves it, and the browser
+asks OpenStreetMap itself what lies along the way. Looking each place up on the web
+takes a server, so the demo leaves that step out.
+
+<p class="stack"><span>TypeScript</span><span>React</span><span>Leaflet</span><span>GPX</span><span>OpenStreetMap</span></p>
 
 ## <span class="emo">🌾</span> Natural steganography in the JPEG domain {#stego}
 
@@ -119,10 +129,12 @@ See the [publications]({{ '/publications/' | relative_url }}) page for the paper
 <canvas class="halftone" data-halftone="/assets/img/projects/halftone.jpg" data-depth="/assets/img/projects/halftone-depth.png" role="img" aria-label="Fans waving yellow flags round the Stade Rochelais bus under red flare smoke, printed in cyan, magenta, yellow and black dots"></canvas>
 
 <div class="halftone-tools" hidden>
-<p><span class="halftone-label">Photo</span><input type="file" accept="image/*" hidden><button type="button" data-pick>Choose one</button><small aria-live="polite" data-busy="Working out what is near and what is far…">or drop or paste one on the print. It never leaves your browser.</small></p>
-<p role="radiogroup" aria-label="Inks"><span class="halftone-label">Inks</span><label><input type="radio" name="inks" value="cmyk" checked><span></span>CMYK</label><label><input type="radio" name="inks" value="pink-blue"><span></span>Fluo pink, blue</label><label><input type="radio" name="inks" value="pink-blue-yellow"><span></span>Fluo pink, blue, yellow</label><label><input type="radio" name="inks" value="sunflower-black"><span></span>Sunflower, black</label><label><input type="radio" name="inks" value="teal-orange"><span></span>Teal, orange</label><label><input type="radio" name="inks" value="aqua-red"><span></span>Aqua, red</label></p>
-<p><span class="halftone-label">Press</span><label>Dots <input type="range" name="dots" min="1" max="4" step="0.5" value="1.5" data-unit=" px"><output></output></label><label>Disorder <input type="range" name="disorder" min="0" max="1" step="0.1" value="0.5"><output></output></label><label>Shake <input type="range" name="shake" min="0" max="2" step="0.25" value="1" data-unit="×"><output></output></label><label>Depth <input type="range" name="depth" min="0" max="2" step="0.25" value="1" data-unit="×"><output></output></label><label>Off register <input type="range" name="register" min="0" max="2" step="0.25" value="1" data-unit="×"><output></output></label><label>Wear <input type="range" name="wear" min="0" max="1" step="0.1" value="0.5"><output></output></label></p>
-<p><span class="halftone-label">Save</span><button type="button" data-gif>GIF</button><button type="button" data-video>MP4</button></p>
+<p><input type="file" accept="image/*" hidden><button type="button" data-pick>Photo</button><button type="button" aria-expanded="false" aria-controls="halftone-inks">Inks</button><button type="button" aria-expanded="false" aria-controls="halftone-press">Press</button><button type="button" aria-expanded="false" aria-controls="halftone-analog">Analog</button><button type="button" aria-expanded="false" aria-controls="halftone-export">Export</button></p>
+<p id="halftone-inks" role="radiogroup" aria-label="Inks" hidden><label><input type="radio" name="inks" value="cmyk" checked><span></span>CMYK</label><label><input type="radio" name="inks" value="pink-blue"><span></span>Fluo pink, blue</label><label><input type="radio" name="inks" value="pink-blue-yellow"><span></span>Fluo pink, blue, yellow</label><label><input type="radio" name="inks" value="sunflower-black"><span></span>Sunflower, black</label><label><input type="radio" name="inks" value="teal-orange"><span></span>Teal, orange</label><label><input type="radio" name="inks" value="aqua-red"><span></span>Aqua, red</label></p>
+<p id="halftone-press" hidden><label>Dots <input type="range" name="dots" min="1" max="4" step="0.5" value="1.5" data-unit=" px"><output></output></label><label>Disorder <input type="range" name="disorder" min="0" max="1" step="0.1" value="0.5"><output></output></label><label>Shake <input type="range" name="shake" min="0" max="2" step="0.25" value="1" data-unit="×"><output></output></label><label>Depth <input type="range" name="depth" min="0" max="2" step="0.25" value="1" data-unit="×"><output></output></label><label>Off register <input type="range" name="register" min="0" max="2" step="0.25" value="1" data-unit="×"><output></output></label></p>
+<p id="halftone-analog" hidden><label>Scratches <input type="range" name="scratches" min="0" max="2" step="0.25" value="1" data-unit="×"><output></output></label><label>Scratch strength <input type="range" name="scratchStrength" min="0" max="1" step="0.1" value="0.7"><output></output></label><label>Starved ink <input type="range" name="starve" min="0" max="1" step="0.1" value="0"><output></output></label><label>Paper <input type="range" name="grain" min="0" max="2" step="0.25" value="1" data-unit="×"><output></output></label><label>Blur <input type="range" name="soft" min="0" max="2" step="0.25" value="1" data-unit="×"><output></output></label></p>
+<p id="halftone-export" hidden><span role="group" aria-label="GIF" data-format="gif"><span aria-hidden="true">GIF</span><button type="button" value="1080">1080p</button><button type="button" value="1440">2K</button><button type="button" value="2160">4K</button></span><span role="group" aria-label="MP4" data-format="mp4"><span aria-hidden="true">MP4</span><button type="button" value="1080">1080p</button><button type="button" value="1440">2K</button><button type="button" value="2160">4K</button></span></p>
+<p><small aria-live="polite" data-busy="Working out what is near and what is far…">Or drop or paste a photo on the print. It stays in your browser.</small></p>
 </div>
 
 In 2021 Matt DesLauriers posted [a photograph rebuilt from dithered CMYK plates](https://x.com/mattdesl/status/1402284658671378432).
@@ -165,3 +177,20 @@ on their optical densities.
 <p class="stack"><span>WebGL2</span><span>GLSL</span><span>JavaScript</span></p>
 
 <script src="{{ '/assets/js/cmyk-halftone.js' | relative_url }}"></script>
+
+## <span class="emo">🪃</span> Boomerang {#boomerang}
+
+*A burst of photos, played forwards and back.*
+
+<div class="deploys">
+<span><a href="https://theotaburet.github.io/boomerang/">Try it</a> <em class="env">demo</em></span>
+<span><a href="https://github.com/theotaburet/boomerang">Source</a> <em class="env">GitHub</em></span>
+</div>
+
+Drop in a few photos taken in a burst and Boomerang plays them forwards, then back,
+as a looping video for Instagram, Reels or TikTok: square, portrait or landscape, with
+a margin in the colour you choose. It started as a Python script. It now runs entirely
+in the browser, with ffmpeg compiled to WebAssembly encoding the video in a worker, so
+your photos never leave your phone.
+
+<p class="stack"><span>Astro</span><span>React</span><span>TypeScript</span><span>ffmpeg.wasm</span><span>Web Workers</span></p>

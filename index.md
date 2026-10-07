@@ -45,7 +45,7 @@ WebAssembly client, and a lot of care about clocks.
 I ride bikes, usually for longer than is reasonable. I co-founded
 [Pignon des Charentes](https://www.instagram.com/pignon_des_charentes/), which runs
 riddle-based bike treasure hunts around La Rochelle. I also built
-[Ravitools](https://github.com/theotaburet/Ravitools) to solve a problem I kept
+[Ravitools](https://theotaburet.github.io/Ravitools/) to solve a problem I kept
 having on long routes: knowing where the next water source is when you have no signal.
 
 Both of those and diapason are the same itch, really: making a group of people

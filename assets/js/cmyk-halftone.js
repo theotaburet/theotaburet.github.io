@@ -38,6 +38,7 @@ uniform vec3  uInks[4];         // ink colours
 uniform vec3  uPaper;           // paper colour
 uniform float uJitter;          // how far a dot may sit from its cell's centre, in cells
 uniform float uRough;           // how much of the ink fails to take, in patches the size of a dot
+uniform float uGrain;           // how much the sheet's fibres and clouds show
 uniform float uBorder;          // px of bare paper around the print
 
 // vertical scratches: A = (x px, y0 px, y1 px, width px); B = (plate bitmask, strength, seed, 0)
@@ -60,7 +61,7 @@ float vnoise(vec2 p) {
 // the sheet, in cells: short fibres lying mostly across, and a faint cloudiness,
 // lighter and darker by a few percent around the paper's colour
 float sheet(vec2 c) {
-  return 1.0 + 0.07 * (vnoise(c * vec2(0.6, 2.0)) - 0.5) + 0.05 * (vnoise(c / 12.0) - 0.5);
+  return 1.0 + uGrain * (0.07 * (vnoise(c * vec2(0.6, 2.0)) - 0.5) + 0.05 * (vnoise(c / 12.0) - 0.5));
 }
 
 float inked(ivec2 c, int plate) {
@@ -340,14 +341,19 @@ void main() {
     ampDiff: 0.4,          // cells; each plate's own drift on top of it
     ampDepth: 2.25,        // cells per unit of nearness: the viewpoint all the plates share
     ampDepthDiff: 2.4,     // and how far each plate's own wanders from it
+    motion: 1,             // all four moves at once: 0 holds the print still
     depthCurve: 0.3,       // fitted on the reference: its parallax separates the middle
     pivot: 0.46,           // distance from the far, not just the near from the rest
     fps: 12,
     lumaBlur: 0.45,        // px; the reference's dots are a little soft
     chromaBlur: 0.65,      // px; more turns the dots' colours to mud
     misregister: 0.5,      // cells each plate may sit off register, either way
-    wear: 0.5,             // 0 to 1: how scratched the press is and, past halfway, how badly its ink takes
-    scratchStrength: [0.5, 0.85],
+    // the analogue flaws, each absent at 0
+    scratches: 1,          // how many scratches: about four a frame at 1
+    scratchStrength: 0.7,  // how much ink a scratch takes off, each one give or take a quarter
+    starve: 0,             // 0 to 1: how badly the ink takes, in patches
+    grain: 1,              // how much the sheet's fibres and clouds show
+    soft: 1,               // how soft the dots and their colours are: the blurs above, scaled
     border: 0,             // px of bare paper around the print
     loop: Infinity,        // frames after which the moves come round again
     seed: 0,
@@ -377,7 +383,7 @@ void main() {
 
       this.progA = this.link(VERT, HALFTONE_FRAG);
       this.progB = this.link(VERT, CHROMA_FRAG);
-      for (const n of ["uPlates", "uPlateSize", "uMargin", "uCell", "uRadius", "uOffsets", "uDepth", "uCam", "uDepthCurve", "uPivot", "uInks", "uPaper", "uBorder", "uJitter", "uRough", "uScratchCount", "uScratchA", "uScratchB"])
+      for (const n of ["uPlates", "uPlateSize", "uMargin", "uCell", "uRadius", "uOffsets", "uDepth", "uCam", "uDepthCurve", "uPivot", "uInks", "uPaper", "uBorder", "uJitter", "uRough", "uGrain", "uScratchCount", "uScratchA", "uScratchB"])
         this.uA[n] = gl.getUniformLocation(this.progA, n);
       for (const n of ["uTex", "uTexel", "uLumaBlur", "uChromaBlur"]) this.uB[n] = gl.getUniformLocation(this.progB, n);
 
@@ -515,7 +521,7 @@ void main() {
         this.scratches.push({
           x: Math.floor(Math.random() * W), y0: y0, y1: y0 + L,
           w: (Math.random() < 0.5 ? 1 : 2) * P.cell / 2, bits: bits,
-          strength: P.scratchStrength[0] + Math.random() * (P.scratchStrength[1] - P.scratchStrength[0]),
+          strength: Math.min(1, P.scratchStrength * (0.75 + 0.5 * Math.random())),
           seed: Math.random() * 1000, life: 1 + Math.floor(Math.random() * 3)
         });
       }
@@ -551,6 +557,7 @@ void main() {
       gl.uniform1f(this.uA.uBorder, P.border);
       gl.uniform1f(this.uA.uJitter, P.jitter);
       gl.uniform1f(this.uA.uRough, P.rough);
+      gl.uniform1f(this.uA.uGrain, P.grain);
       var A = new Float32Array(32), B = new Float32Array(32);
       this.scratches.forEach(function (s, i) {
         A.set([s.x, s.y0, s.y1, s.w], i * 4);
@@ -604,14 +611,15 @@ void main() {
   function pressed(P, d) {
     return {
       seed: d.seed,
-      ampGlobal: P.ampGlobal * d.shake,
-      ampDiff: P.ampDiff * d.drift,
-      ampDepth: P.ampDepth * d.depth,
-      ampDepthDiff: P.ampDepthDiff * d.depthDiff,
+      ampGlobal: P.ampGlobal * d.shake * P.motion,
+      ampDiff: P.ampDiff * d.drift * P.motion,
+      ampDepth: P.ampDepth * d.depth * P.motion,
+      ampDepthDiff: P.ampDepthDiff * d.depthDiff * P.motion,
       register: d.register.map(function (v) { return v * P.misregister; }),
-      chromaBlur: P.chromaBlur * d.chroma,
-      scratchesMean: 8 * P.wear * d.scratches,
-      rough: Math.max(0, P.wear - 0.5) * 1.2
+      lumaBlur: P.lumaBlur * P.soft,
+      chromaBlur: P.chromaBlur * d.chroma * P.soft,
+      scratchesMean: 4 * P.scratches * d.scratches,
+      rough: 0.6 * P.starve
     };
   }
 
@@ -785,72 +793,80 @@ onmessage = async ({ data: { id, blob } }) => {
     fx.image = img;
     fx.width = width;
     if (fx.canvas.classList.contains("halftone")) fx.canvas.style.width = (n * cell) / dpr + "px";
-    plates(fx, img, n);
+    fx.setPlates(plates(fx, img, n));
   }
 
   // `n` cells across, and the margin dithered past both edges
   function plates(fx, img, n) {
     var P = fx.base;
-    fx.setPlates(buildPlates(img, { planeWidth: n + 2 * P.margin, gain: Math.PI * P.radius * P.radius, inks: P.inks, paper: P.paper }));
+    return buildPlates(img, { planeWidth: n + 2 * P.margin, gain: Math.PI * P.radius * P.radius, inks: P.inks, paper: P.paper });
   }
 
-  // The print again at the reference's 2 px a cell (more for bigger dots), 640
-  // px on its long side, with its press, inks, settings and depth, on a sheet
-  // with the reference's margin: its 24 frames. Its moves come round again
-  // after the last one, so they loop without a jump; it is dithered anew, so
-  // its grain isn't the screen's.
-  function frames(fx) {
+  // The print as it is on screen, as many dots across, with its press, inks,
+  // settings and depth, `R` px on its short side with the reference's margin
+  // of paper round it (167 px round 688 of print) and a whole number of px a
+  // dot. `draw(i)` puts its frame `i` on `ctx`, an even number of px each way
+  // as video wants (the odd one is paper). Its moves come round again every 24
+  // frames, so they loop without a jump; it is dithered anew, so its grain
+  // isn't the screen's.
+  function copy(fx, R) {
     var img = fx.image, g = new CMYKHalftone(document.createElement("canvas"), fx.base);
-    Object.assign(g.base, sizes(fx.base.dots, 1), { loop: 24 });
-    var n = Math.round((640 / g.base.cell) * Math.min(1, img.width / img.height));
-    g.base.border = Math.round(0.243 * g.base.cell * Math.min(n, (n * img.height) / img.width)); // 167 px of paper round 688 of print
+    var across = fx.plates.width - 2 * fx.base.margin, k = Math.min(1, img.height / img.width);
+    var print = R / (1 + 2 * 0.243), cell = Math.max(2, Math.round(print / (across * k)));
+    Object.assign(g.base, { cell: cell, lumaBlur: 0.22 * cell, chromaBlur: 0.33 * cell, loop: 24 });
     g.dice = fx.dice;
     g.update();
-    plates(g, img, n);
+    var pl = plates(g, img, Math.round(print / (cell * k)));
+    g.base.border = Math.ceil((R - (Math.min(pl.width, pl.height) - 2 * g.base.margin) * cell) / 2);
+    g.update();
+    g.setPlates(pl);
     g.setDepth(fx.depth);
-    var W = g.canvas.width, H = g.canvas.height, out = [];
-    var ctx = Object.assign(document.createElement("canvas"), { width: W, height: H }).getContext("2d", { willReadFrequently: true });
-    for (g.frame = 0; g.frame < 24; g.frame++) {
-      g.updateScratches();
-      g.render();
-      ctx.drawImage(g.canvas, 0, 0);
-      out.push(ctx.getImageData(0, 0, W, H));
-    }
-    g.gl.getExtension("WEBGL_lose_context").loseContext();
-    return out;
+    var ctx = Object.assign(document.createElement("canvas"), { width: g.canvas.width & ~1, height: g.canvas.height & ~1 }).getContext("2d", { willReadFrequently: true });
+    return {
+      ctx: ctx,
+      draw: function (i) {
+        g.frame = i;
+        g.updateScratches();
+        g.render();
+        ctx.drawImage(g.canvas, 0, 0);
+      },
+      done: function () { g.gl.getExtension("WEBGL_lose_context").loseContext(); }
+    };
   }
-  // For a web page: the loop as a GIF, on one palette.
-  function gif(fx) {
-    return import("https://cdn.jsdelivr.net/npm/gifenc@1.0.3/+esm").then(function (G) {
-      var enc = G.GIFEncoder(), palette;
-      frames(fx).forEach(function (f, i) {
-        palette = palette || G.quantize(f.data, 256);
-        enc.writeFrame(G.applyPalette(f.data, palette), f.width, f.height, { palette: i ? null : palette, delay: 1000 / fx.params.fps });
-      });
-      enc.finish();
-      return new Blob([enc.bytes()], { type: "image/gif" });
-    });
+  var breathe = function () { return new Promise(function (go) { setTimeout(go); }); };
+
+  // The loop as a GIF, on the first frame's palette, a frame at a time so the
+  // page breathes in between.
+  async function gif(fx, R) {
+    var G = await import("https://cdn.jsdelivr.net/npm/gifenc@1.0.3/+esm");
+    var c = copy(fx, R), W = c.ctx.canvas.width, H = c.ctx.canvas.height, enc = G.GIFEncoder(), palette;
+    for (var i = 0; i < 24; i++) {
+      c.draw(i);
+      var px = c.ctx.getImageData(0, 0, W, H).data;
+      palette = palette || G.quantize(px, 256);
+      enc.writeFrame(G.applyPalette(px, palette), W, H, { palette: i ? null : palette, delay: 1000 / fx.params.fps });
+      await breathe();
+    }
+    c.done();
+    enc.finish();
+    return new Blob([enc.bytes()], { type: "image/gif" });
   }
 
-  // For social networks: the loop three times over as an H.264 MP4, every dot
-  // doubled so it lives through their own compression. Encoded frame by frame
+  // The loop three times over as an H.264 MP4, encoded frame by frame
   // (WebCodecs), not recorded as it plays, so no frame is lost at either end.
-  async function video(fx) {
+  // About 16 bits a dot a frame, whatever the size: what costs is the dots.
+  async function video(fx, R) {
     var M = await import("https://cdn.jsdelivr.net/npm/mediabunny@1.61.3/dist/bundles/mediabunny.min.mjs");
-    var fr = frames(fx), fps = fx.params.fps, src = document.createElement("canvas"), c = document.createElement("canvas");
-    src.width = fr[0].width; src.height = fr[0].height;
-    c.width = 2 * src.width; c.height = 2 * src.height;
-    var ctx = c.getContext("2d");
-    ctx.imageSmoothingEnabled = false;
+    var c = copy(fx, R), fps = fx.params.fps, dots = fx.plates.width * fx.plates.height;
     var out = new M.Output({ format: new M.Mp4OutputFormat(), target: new M.BufferTarget() });
-    var track = new M.CanvasSource(c, { codec: "avc", bitrate: 1.5e7, keyFrameInterval: 2 });
+    var track = new M.CanvasSource(c.ctx.canvas, { codec: "avc", bitrate: 16 * dots * fps, keyFrameInterval: 2 });
     out.addVideoTrack(track, { frameRate: fps });
     await out.start();
-    for (var i = 0; i < 3 * fr.length; i++) {
-      src.getContext("2d").putImageData(fr[i % fr.length], 0, 0);
-      ctx.drawImage(src, 0, 0, c.width, c.height);
+    for (var i = 0; i < 72; i++) {
+      c.draw(i);
       await track.add(i / fps, 1 / fps);
     }
+    c.done();
     await out.finalize();
     return new Blob([out.target.buffer], { type: "video/mp4" });
   }
@@ -881,23 +897,27 @@ onmessage = async ({ data: { id, blob } }) => {
   var KNOBS = {
     dots: function (v) { return sizes(v, dpr); },
     disorder: function (v) { return { jitter: v }; },
-    // each moves the plates one way only: all together, apart from each other,
-    // or apart by depth; at 0 all three, the print holds still
-    shake: function (v) { return { ampGlobal: DEFAULTS.ampGlobal * v }; },
+    // shake is how much the press moves at all, and at 0 the print holds still;
+    // off register is how far the plates sit and wander apart, depth how far
+    // they part by depth as it moves
+    shake: function (v) { return { motion: v }; },
     register: function (v) { return { misregister: DEFAULTS.misregister * v, ampDiff: DEFAULTS.ampDiff * v }; },
-    depth: function (v) { return { ampDepth: DEFAULTS.ampDepth * v, ampDepthDiff: DEFAULTS.ampDepthDiff * v }; },
-    wear: function (v) { return { wear: v }; }
+    depth: function (v) { return { ampDepth: DEFAULTS.ampDepth * v, ampDepthDiff: DEFAULTS.ampDepthDiff * v }; }
   };
+  // the others set the setting they are named after
+  var knob = function (name, v) { var o = {}; o[name] = v; return (KNOBS[name] || function () { return o; })(v); };
 
   /* Under the print: the visitor's own photo, picked, dropped on the print or
-     pasted, read locally (nothing is sent anywhere); the ink sets; the
-     sliders; and the print as a GIF or a video. The
-     settings are read off the controls first, so a form the browser restored
-     still says what is printed. */
+     pasted, read locally (nothing is sent anywhere); then four drawers, the
+     ink sets, the press, its analogue flaws, and the print as a GIF or a video at three sizes,
+     named after the photo. The settings are read off the controls first, so a
+     form the browser restored still says what is printed. */
   function tools(bar, canvas, fx) {
     var file = bar.querySelector("input[type=file]");
     var note = bar.querySelector("small[data-busy]"), said = note.textContent, photos = 0;
     var busy = function (on) { [canvas, bar, note].forEach(function (e) { e.setAttribute("aria-busy", on); }); };
+    var named = function (path) { fx.name = path.split("/").pop().replace(/\.[^.]*$/, "") || "halftone"; };
+    named(canvas.getAttribute("data-halftone"));
     var load = function (f) {
       if (!f || !/^image\//.test(f.type)) return;
       var img = new Image(), mine = ++photos;
@@ -907,6 +927,7 @@ onmessage = async ({ data: { id, blob } }) => {
         // as wide as the column, at most 80% of the screen tall
         canvas.style.width = "";
         canvas.setAttribute("aria-label", f.name || "");
+        named(f.name || "");
         fx.reroll();
         print(fx, img, Math.min(canvas.clientWidth, (innerHeight * 0.8 * img.width) / img.height));
         fx.setDepth(fx.flat()); // until its depth is known
@@ -945,35 +966,46 @@ onmessage = async ({ data: { id, blob } }) => {
         print(fx, fx.image, fx.width);
       };
     });
-    bar.querySelectorAll("input[type=range]").forEach(function (knob) {
-      var out = knob.nextElementSibling, show = function () { out.textContent = knob.value + (knob.dataset.unit || ""); };
+    bar.querySelectorAll("input[type=range]").forEach(function (input) {
+      var out = input.nextElementSibling, show = function () { out.textContent = input.value + (input.dataset.unit || ""); };
       show();
-      Object.assign(fx.base, KNOBS[knob.name](+knob.value));
-      knob.oninput = function () {
+      Object.assign(fx.base, knob(input.name, +input.value));
+      input.oninput = function () {
         show();
-        Object.assign(fx.base, KNOBS[knob.name](+knob.value));
+        Object.assign(fx.base, knob(input.name, +input.value));
         fx.update();
-        if (knob.name === "dots") print(fx, fx.image, fx.width); // a new size of cell is a new dither
+        if (input.name === "dots") print(fx, fx.image, fx.width); // a new size of cell is a new dither
         else fx.render();
       };
     });
     fx.update();
 
-    // one button per format, each idle until its file is ready
-    var exporter = function (btn, make, name) {
+    // one drawer open at a time
+    var drawers = bar.querySelectorAll("[aria-controls]");
+    drawers.forEach(function (btn) {
       btn.onclick = function () {
+        var open = btn.getAttribute("aria-expanded") !== "true";
+        drawers.forEach(function (d) {
+          d.setAttribute("aria-expanded", d === btn && open);
+          document.getElementById(d.getAttribute("aria-controls")).hidden = !(d === btn && open);
+        });
+      };
+    });
+
+    // a button per format and size, each idle until its file is ready
+    bar.querySelectorAll("[data-format] button").forEach(function (btn) {
+      var format = btn.parentNode.dataset.format, make = format === "gif" ? gif : video;
+      if (format === "mp4" && !window.VideoEncoder) btn.parentNode.hidden = true;
+      btn.onclick = function () {
+        var name = fx.name + "-" + btn.textContent + "." + format;
         btn.disabled = true;
         btn.setAttribute("aria-busy", true);
-        make().then(function (blob) { save(blob, name); }, function (e) { console.warn("No " + name + ":", e); }).finally(function () {
+        make(fx, +btn.value).then(function (blob) { save(blob, name); }, function (e) { console.warn("No " + name + ":", e); }).finally(function () {
           btn.disabled = false;
           btn.setAttribute("aria-busy", false);
         });
       };
-    };
-    exporter(bar.querySelector("[data-gif]"), function () { return gif(fx); }, "halftone.gif");
-    var vid = bar.querySelector("[data-video]");
-    if (window.VideoEncoder) exporter(vid, function () { return video(fx); }, "halftone.mp4");
-    else vid.hidden = true;
+    });
     bar.hidden = false;
   }
 })();

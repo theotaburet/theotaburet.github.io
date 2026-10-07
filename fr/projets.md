@@ -7,17 +7,19 @@ description: >-
   Projets de Théo Taburet : diapason, une radio de groupe jouée en synchro
   depuis les téléphones, dans le navigateur ; Ravitools, des points d'intérêt
   hors ligne pour les traces GPX à vélo ; la recherche en stéganographie
-  naturelle ; et une photo imprimée en quatre encres tremblantes, en WebGL.
+  naturelle ; une photo imprimée en quatre encres tremblantes, en WebGL ; et
+  Boomerang, une vidéo en boucle tirée d'une rafale de photos.
 ---
 
 <div class="lede wide-page">
-<h1>Quatre choses que j'ai construites.</h1>
+<h1>Cinq choses que j'ai construites.</h1>
 <div class="lede-body" markdown="1">
 <p class="eyebrow"><span class="emo">🧰</span> Travaux&nbsp;choisis &middot; Théo&nbsp;Taburet &middot; signal,&nbsp;images&nbsp;et&nbsp;vélo</p>
 
 Une radio qu'on emporte, une carte qui sait où trouver de l'eau, une façon de
-cacher un message dans le grain d'une photographie, et une photo imprimée en
-quatre encres qui ne tiennent pas en place. Elles ont moins en commun qu'il n'y
+cacher un message dans le grain d'une photographie, une photo imprimée en
+quatre encres qui ne tiennent pas en place, et une rafale de photos qui se joue
+à l'endroit puis à l'envers. Elles ont moins en commun qu'il n'y
 paraît, sauf que chacune est partie d'une envie que j'avais.
 </div>
 </div>
@@ -42,6 +44,11 @@ paraît, sauf que chacune est partie d'une envie que j'avais.
 <a class="project-card__media" href="#halftone" tabindex="-1" aria-hidden="true"><canvas data-halftone="/assets/img/projects/halftone.jpg" data-depth="/assets/img/projects/halftone-depth.png"></canvas></a>
 <h3><a href="#halftone"><span class="emo">🖨️</span> Trame CMJN</a></h3>
 <p>Une photo imprimée en quatre encres tramées, mal repérées et tremblantes, en direct en WebGL.</p>
+</div>
+<div class="project-card">
+<a class="project-card__media" href="#boomerang" tabindex="-1" aria-hidden="true"><img src="/assets/img/projects/boomerang.jpg" alt="" loading="lazy"></a>
+<h3><a href="#boomerang"><span class="emo">🪃</span> Boomerang</a></h3>
+<p>Une rafale de photos jouée à l'endroit puis à l'envers en vidéo qui boucle, encodée dans le navigateur.</p>
 </div>
 </div>
 
@@ -83,6 +90,7 @@ Je l'ai construit pour les sorties vélo.
 ## <span class="emo">🚲</span> Ravitools {#ravitools}
 
 <div class="deploys" data-cursor="wheel">
+<span><a href="https://theotaburet.github.io/Ravitools/">Essayer</a> <em class="env">démo</em></span>
 <span><a href="https://github.com/theotaburet/Ravitools">Source</a> <em class="env">GitHub</em></span>
 </div>
 
@@ -90,7 +98,12 @@ Ravitools enrichit les fichiers GPX avec des points d'intérêt hors ligne (eau,
 ravitaillement, campings) pour les cyclistes au long cours, qui perdent le réseau
 exactement là où ils ont le plus besoin de savoir où est le prochain robinet.
 
-<p class="stack"><span>Python</span><span>GPX</span><span>OpenStreetMap</span></p>
+La démo tourne entièrement dans votre navigateur : la trace n'en sort jamais, et c'est
+le navigateur qui demande lui-même à OpenStreetMap ce qu'il y a le long du chemin.
+Chercher chaque lieu sur le web demande un serveur, alors la démo laisse cette étape de
+côté.
+
+<p class="stack"><span>TypeScript</span><span>React</span><span>Leaflet</span><span>GPX</span><span>OpenStreetMap</span></p>
 
 ## <span class="emo">🌾</span> Stéganographie naturelle dans le domaine JPEG {#stego}
 
@@ -123,10 +136,12 @@ Les articles sont sur la page [publications]({{ '/fr/publications/' | relative_u
 <canvas class="halftone" data-halftone="/assets/img/projects/halftone.jpg" data-depth="/assets/img/projects/halftone-depth.png" role="img" aria-label="Des supporters agitent des drapeaux jaunes autour du bus du Stade Rochelais, sous la fumée rouge des fumigènes, imprimés en points cyan, magenta, jaune et noir"></canvas>
 
 <div class="halftone-tools" hidden>
-<p><span class="halftone-label">Photo</span><input type="file" accept="image/*" hidden><button type="button" data-pick>En choisir une</button><small aria-live="polite" data-busy="Calcul de ce qui est près et de ce qui est loin…">ou glissez-la ou collez-la sur l'impression. Elle ne quitte pas votre navigateur.</small></p>
-<p role="radiogroup" aria-label="Encres"><span class="halftone-label">Encres</span><label><input type="radio" name="inks" value="cmyk" checked><span></span>CMJN</label><label><input type="radio" name="inks" value="pink-blue"><span></span>Rose fluo, bleu</label><label><input type="radio" name="inks" value="pink-blue-yellow"><span></span>Rose fluo, bleu, jaune</label><label><input type="radio" name="inks" value="sunflower-black"><span></span>Tournesol, noir</label><label><input type="radio" name="inks" value="teal-orange"><span></span>Sarcelle, orange</label><label><input type="radio" name="inks" value="aqua-red"><span></span>Aqua, rouge</label></p>
-<p><span class="halftone-label">Presse</span><label>Points <input type="range" name="dots" min="1" max="4" step="0.5" value="1.5" data-unit=" px"><output></output></label><label>Désordre <input type="range" name="disorder" min="0" max="1" step="0.1" value="0.5"><output></output></label><label>Tremblement <input type="range" name="shake" min="0" max="2" step="0.25" value="1" data-unit="×"><output></output></label><label>Profondeur <input type="range" name="depth" min="0" max="2" step="0.25" value="1" data-unit="×"><output></output></label><label>Hors repère <input type="range" name="register" min="0" max="2" step="0.25" value="1" data-unit="×"><output></output></label><label>Usure <input type="range" name="wear" min="0" max="1" step="0.1" value="0.5"><output></output></label></p>
-<p><span class="halftone-label">Enregistrer</span><button type="button" data-gif>GIF</button><button type="button" data-video>MP4</button></p>
+<p><input type="file" accept="image/*" hidden><button type="button" data-pick>Photo</button><button type="button" aria-expanded="false" aria-controls="halftone-inks">Encres</button><button type="button" aria-expanded="false" aria-controls="halftone-press">Presse</button><button type="button" aria-expanded="false" aria-controls="halftone-analog">Analogique</button><button type="button" aria-expanded="false" aria-controls="halftone-export">Exporter</button></p>
+<p id="halftone-inks" role="radiogroup" aria-label="Encres" hidden><label><input type="radio" name="inks" value="cmyk" checked><span></span>CMJN</label><label><input type="radio" name="inks" value="pink-blue"><span></span>Rose fluo, bleu</label><label><input type="radio" name="inks" value="pink-blue-yellow"><span></span>Rose fluo, bleu, jaune</label><label><input type="radio" name="inks" value="sunflower-black"><span></span>Tournesol, noir</label><label><input type="radio" name="inks" value="teal-orange"><span></span>Sarcelle, orange</label><label><input type="radio" name="inks" value="aqua-red"><span></span>Aqua, rouge</label></p>
+<p id="halftone-press" hidden><label>Points <input type="range" name="dots" min="1" max="4" step="0.5" value="1.5" data-unit=" px"><output></output></label><label>Désordre <input type="range" name="disorder" min="0" max="1" step="0.1" value="0.5"><output></output></label><label>Tremblement <input type="range" name="shake" min="0" max="2" step="0.25" value="1" data-unit="×"><output></output></label><label>Profondeur <input type="range" name="depth" min="0" max="2" step="0.25" value="1" data-unit="×"><output></output></label><label>Hors repère <input type="range" name="register" min="0" max="2" step="0.25" value="1" data-unit="×"><output></output></label></p>
+<p id="halftone-analog" hidden><label>Rayures <input type="range" name="scratches" min="0" max="2" step="0.25" value="1" data-unit="×"><output></output></label><label>Force des rayures <input type="range" name="scratchStrength" min="0" max="1" step="0.1" value="0.7"><output></output></label><label>Encre manquante <input type="range" name="starve" min="0" max="1" step="0.1" value="0"><output></output></label><label>Papier <input type="range" name="grain" min="0" max="2" step="0.25" value="1" data-unit="×"><output></output></label><label>Flou <input type="range" name="soft" min="0" max="2" step="0.25" value="1" data-unit="×"><output></output></label></p>
+<p id="halftone-export" hidden><span role="group" aria-label="GIF" data-format="gif"><span aria-hidden="true">GIF</span><button type="button" value="1080">1080p</button><button type="button" value="1440">2K</button><button type="button" value="2160">4K</button></span><span role="group" aria-label="MP4" data-format="mp4"><span aria-hidden="true">MP4</span><button type="button" value="1080">1080p</button><button type="button" value="1440">2K</button><button type="button" value="2160">4K</button></span></p>
+<p><small aria-live="polite" data-busy="Calcul de ce qui est près et de ce qui est loin…">Ou glissez ou collez une photo sur l'impression. Elle reste dans votre navigateur.</small></p>
 </div>
 
 En 2021, Matt DesLauriers a publié [une photo reconstruite en plaques CMJN tramées](https://x.com/mattdesl/status/1402284658671378432).
@@ -173,3 +188,21 @@ reconstruit le mieux la couleur, par moindres carrés sur leurs densités optiqu
 <p class="stack"><span>WebGL2</span><span>GLSL</span><span>JavaScript</span></p>
 
 <script src="{{ '/assets/js/cmyk-halftone.js' | relative_url }}"></script>
+
+## <span class="emo">🪃</span> Boomerang {#boomerang}
+
+*Une rafale de photos, à l'endroit puis à l'envers.*
+
+<div class="deploys">
+<span><a href="https://theotaburet.github.io/boomerang/">Essayer</a> <em class="env">démo</em></span>
+<span><a href="https://github.com/theotaburet/boomerang">Source</a> <em class="env">GitHub</em></span>
+</div>
+
+Déposez quelques photos prises en rafale et Boomerang les joue à l'endroit, puis à
+l'envers, en vidéo qui boucle pour Instagram, les Reels ou TikTok : carrée, verticale ou
+horizontale, avec une marge de la couleur de votre choix. C'était au départ un script
+Python. Il tourne maintenant entièrement dans le navigateur, avec ffmpeg compilé en
+WebAssembly qui encode la vidéo dans un worker, donc vos photos ne quittent jamais votre
+téléphone.
+
+<p class="stack"><span>Astro</span><span>React</span><span>TypeScript</span><span>ffmpeg.wasm</span><span>Web Workers</span></p>

@@ -47,7 +47,7 @@ Un serveur Rust, un client WebAssembly, et beaucoup de soin apporté aux horloge
 Je fais du vélo, en général plus longtemps que de raison. J'ai cofondé
 [Pignon des Charentes](https://www.instagram.com/pignon_des_charentes/), qui organise
 des chasses au trésor à vélo autour de La Rochelle, guidées par des énigmes. J'ai aussi
-écrit [Ravitools](https://github.com/theotaburet/Ravitools) pour un problème que je
+écrit [Ravitools](https://theotaburet.github.io/Ravitools/) pour un problème que je
 rencontrais sans arrêt sur les longs parcours : savoir où est le prochain point d'eau
 quand on n'a plus de réseau.
 

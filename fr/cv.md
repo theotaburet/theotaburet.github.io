@@ -100,7 +100,7 @@ rien à installer. Serveur Rust, client WebAssembly, en production.
 
 ### Ravitools
 
-*Depuis 2024* · [Source](https://github.com/theotaburet/Ravitools)
+*Depuis 2024* · [Démo](https://theotaburet.github.io/Ravitools/) · [Source](https://github.com/theotaburet/Ravitools)
 
 Enrichissement de traces GPX avec des points d'intérêt hors ligne, pour les cyclistes
 au long cours.
