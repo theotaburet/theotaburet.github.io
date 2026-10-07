@@ -380,7 +380,8 @@ $amber: #f8b862;
   .content > h2,
   .content > h3,
   .content > h4,
-  .content > .table-wrapper {
+  .content > .table-wrapper,
+  .content > .halftone {
     max-width: 46rem;
   }
 
@@ -669,7 +670,7 @@ body {
     text-decoration: none;
 
     /* Pulls into focus and settles back to its own size. */
-    .project-card__media img {
+    .project-card__media > * {
       transform: scale(1);
       filter: none;
     }
@@ -684,7 +685,7 @@ body {
     border-radius: 2px;
     aspect-ratio: 4 / 3;
 
-    img {
+    > * {
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -724,7 +725,7 @@ body {
 }
 
 @media (hover: none) {
-  .project-card__media img {
+  .project-card__media > * {
     filter: none;
     transform: none;
   }
@@ -732,14 +733,24 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .photo-wall img,
-  .project-card__media img,
+  .project-card__media > *,
   .project-card h3 {
     transition: none;
   }
 
-  .project-card__media img {
+  .project-card__media > * {
     transform: none;
   }
+}
+
+/* The live print under its project: 4:3 like the photograph, so the space is
+   held while the plates are being dithered. */
+.halftone {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  margin: 1.5rem 0;
+  border-radius: 2px;
 }
 
 /* ---------------------------------------------------------------------------

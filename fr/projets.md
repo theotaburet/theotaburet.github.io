@@ -6,18 +6,19 @@ permalink: /fr/projets/
 description: >-
   Projets de Théo Taburet : diapason, une radio de groupe jouée en synchro
   depuis les téléphones, dans le navigateur ; Ravitools, des points d'intérêt
-  hors ligne pour les traces GPX à vélo ; et la recherche en stéganographie
-  naturelle.
+  hors ligne pour les traces GPX à vélo ; la recherche en stéganographie
+  naturelle ; et une photo imprimée en quatre encres tremblantes, en WebGL.
 ---
 
 <div class="lede wide-page">
-<h1>Trois choses que j'ai construites.</h1>
+<h1>Quatre choses que j'ai construites.</h1>
 <div class="lede-body" markdown="1">
 <p class="eyebrow"><span class="emo">🧰</span> Travaux&nbsp;choisis &middot; Théo&nbsp;Taburet &middot; signal,&nbsp;images&nbsp;et&nbsp;vélo</p>
 
-Une radio qu'on emporte, une carte qui sait où trouver de l'eau, et une façon de
-cacher un message dans le grain d'une photographie. Elles ont moins en commun
-qu'il n'y paraît, sauf que chacune est partie d'un problème que j'avais.
+Une radio qu'on emporte, une carte qui sait où trouver de l'eau, une façon de
+cacher un message dans le grain d'une photographie, et une photo imprimée en
+quatre encres qui ne tiennent pas en place. Elles ont moins en commun qu'il n'y
+paraît, sauf que chacune est partie d'une envie que j'avais.
 </div>
 </div>
 
@@ -36,6 +37,11 @@ qu'il n'y paraît, sauf que chacune est partie d'un problème que j'avais.
 <a class="project-card__media" href="#stego" tabindex="-1" aria-hidden="true"><img src="/assets/img/projects/steganography.jpg" alt="" loading="lazy"></a>
 <h3><a href="#stego"><span class="emo">🌾</span> Stéganographie naturelle</a></h3>
 <p>Un schéma d'insertion qui imite le bruit du capteur, rendant la charge statistiquement invisible. Thèse.</p>
+</div>
+<div class="project-card">
+<a class="project-card__media" href="#halftone" tabindex="-1" aria-hidden="true"><canvas data-halftone="/assets/img/projects/halftone.jpg" data-depth="/assets/img/projects/halftone-depth.png"></canvas></a>
+<h3><a href="#halftone"><span class="emo">🖨️</span> Trame CMJN</a></h3>
+<p>Une photo imprimée en quatre encres tramées, mal repérées et tremblantes, en direct en WebGL.</p>
 </div>
 </div>
 
@@ -109,3 +115,68 @@ tout ce dont elle dépend de proche en proche :
 [Un article explicatif, en anglais]({{ '/posts/natural-steganography-jpeg/' | relative_url }}),
 présente tout le schéma avec des figures interactives, du capteur au fichier JPEG.
 Les articles sont sur la page [publications]({{ '/fr/publications/' | relative_url }}).
+
+## <span class="emo">🖨️</span> Trame CMJN {#halftone}
+
+*Une photo imprimée par une presse qui ne tient pas en place.*
+
+<canvas class="halftone" data-halftone="/assets/img/projects/halftone.jpg" data-depth="/assets/img/projects/halftone-depth.png" role="img" aria-label="Des cyclistes qui s'éloignent sur une route, imprimés en points cyan, magenta, jaune et noir"></canvas>
+
+<p class="halftone-tools" hidden><input type="file" accept="image/*" hidden><button type="button" class="btn btn-sm btn-outline-secondary" data-pick>Imprimer votre photo</button> <button type="button" class="btn btn-sm btn-outline-secondary" data-reprint>Nouveau tirage</button> <button type="button" class="btn btn-sm btn-outline-secondary" data-riso aria-pressed="false">Encres Riso</button> <button type="button" class="btn btn-sm btn-outline-secondary" data-gif>Télécharger le GIF</button> <button type="button" class="btn btn-sm btn-outline-secondary" data-video>Télécharger la vidéo</button> <small data-busy="Calcul de ce qui est près et de ce qui est loin…">Ou glissez ou collez une photo sur l'impression. Elle ne quitte pas votre navigateur.</small></p>
+
+Matt DesLauriers a publié en 2021 [une photo reconstruite en plaques CMJN tramées](https://x.com/mattdesl/status/1402284658671378432)
+sans dire comment elle était faite, alors je l'ai reconstruite dans le navigateur, en mesurant sa vidéo image par image jusqu'à ce que la mienne bouge pareil.
+
+### Comment c'est fait
+
+1. **Quatre plaques.** La photo est séparée naïvement en cyan, magenta et jaune,
+   chacun le négatif d'un canal (le cyan est là où le rouge manque), avec un peu
+   de noir sous les couleurs les plus sombres. Une vraie presse retire la couleur
+   que son noir remplace ; celle-ci non, et ça fait partie du rendu.
+2. **Tramage.** Chaque plaque devient une grille de cellules, encrées ou nues,
+   par diffusion d'erreur de Floyd-Steinberg : chaque cellule est arrondie à
+   « encre » ou « pas d'encre », et l'erreur d'arrondi est reportée sur les
+   voisines pas encore tracées, si bien que chaque petite zone garde son ton. Le
+   seuil est bruité pour que les points ne s'alignent jamais en rangées, et chaque
+   plaque est tramée depuis un coin différent pour que les quatre grains ne
+   coïncident pas, ce que font les angles de trame sur une vraie presse.
+3. **L'encre sur le papier.** Chaque cellule encrée reçoit un point rond un peu
+   plus large qu'elle, comme l'encre qui s'étale, et les plaques sont tramées un
+   peu plus claires pour compenser. Les quatre plaques se multiplient sur une
+   feuille blanc cassé à peine texturée, aux couleurs des encres d'imprimerie : là
+   où deux se chevauchent, chacune filtre la lumière que l'autre laisse passer,
+   c'est toute la synthèse soustractive.
+4. **Le tremblement.** Douze fois par seconde, la feuille saute de moins d'une
+   cellule dans une nouvelle direction, et chaque plaque dérive un peu de son
+   côté, hors repère. Les mouvements sont un bruit lisse plutôt que des cercles,
+   aux amplitudes et aux rythmes de la vidéo.
+5. **La profondeur.** La partie que le tweet ne montre pas. Une carte de
+   profondeur, calculée par Depth Anything, un réseau de neurones qui devine les
+   distances sur une seule image, dit à quelle distance est chaque point. Chaque
+   plaque est dessinée comme vue depuis son propre point de vue, un peu à l'écart
+   de celui des autres et qui se promène : le proche glisse d'un côté, le lointain
+   de l'autre, et le plan du milieu reste immobile. L'œil lit ce désaccord comme
+   du relief, un peu comme il lit les deux images de nos deux yeux. Ajusté sur la
+   vidéo, le glissement suit la proximité à la puissance 0,3, et les plaques
+   bougent par demi-cellules entières, si bien que les points sautent au lieu de
+   baver.
+6. **L'usure.** Des rayures verticales pointillées montrent où une plaque n'a
+   pas imprimé, et une dernière passe floute la couleur plus que la lumière, comme
+   l'a fait la compression vidéo du tweet.
+7. **Deux tirages ne se ressemblent jamais.** Chaque photo, et chaque *Nouveau
+   tirage*, a sa propre presse, tirée autour de ce que montre la vidéo : elle
+   tremble plus ou moins fort, repère plus ou moins mal ses plaques, bave et se
+   raye plus ou moins, et trame chaque plaque depuis un autre coin. *Encres Riso*
+   remplace les encres d'imprimerie par le rose fluo, le bleu et le jaune d'un
+   risographe, pour lesquels la séparation n'a jamais été faite.
+8. **Votre photo.** Elle est lue dans votre navigateur, et sa carte de
+   profondeur y est calculée aussi, par le même réseau (environ 27 Mo,
+   téléchargés une fois). Le GIF, pour une page web, fait 24 images dont les
+   mouvements reviennent à leur point de départ, si bien qu'il boucle sans saut,
+   avec autour la marge de papier du tweet. La vidéo, pour les réseaux sociaux,
+   est la même boucle jouée trois fois, chaque point doublé pour survivre à leur
+   compression.
+
+<p class="stack"><span>WebGL2</span><span>GLSL</span><span>JavaScript</span></p>
+
+<script src="{{ '/assets/js/cmyk-halftone.js' | relative_url }}"></script>

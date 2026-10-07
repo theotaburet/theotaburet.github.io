@@ -9,7 +9,7 @@ Research, 2017–2023: natural steganography in the JPEG domain (embedding that 
 - [About](https://theotaburet.github.io/): background, current work, contact
 - [CV](https://theotaburet.github.io/cv/): experience, education, skills, languages
 - [Publications](https://theotaburet.github.io/publications/): papers with authors, venues, DOIs and open-access PDFs
-- [Projects](https://theotaburet.github.io/projects/): diapason, Ravitools, natural steganography
+- [Projects](https://theotaburet.github.io/projects/): diapason, Ravitools, natural steganography, CMYK halftone
 
 ## Articles
 
