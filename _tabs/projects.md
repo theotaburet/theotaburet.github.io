@@ -116,56 +116,51 @@ See the [publications]({{ '/publications/' | relative_url }}) page for the paper
 
 *A photograph printed by a press that can't hold still.*
 
-<canvas class="halftone" data-halftone="/assets/img/projects/halftone.jpg" data-depth="/assets/img/projects/halftone-depth.png" role="img" aria-label="Cyclists riding away down a road, printed in cyan, magenta, yellow and black dots"></canvas>
+<canvas class="halftone" data-halftone="/assets/img/projects/halftone.jpg" data-depth="/assets/img/projects/halftone-depth.png" role="img" aria-label="Fans waving yellow flags round the Stade Rochelais bus under red flare smoke, printed in cyan, magenta, yellow and black dots"></canvas>
 
-<p class="halftone-tools" hidden><input type="file" accept="image/*" hidden><button type="button" class="btn btn-sm btn-outline-secondary" data-pick>Print your own photo</button> <button type="button" class="btn btn-sm btn-outline-secondary" data-reprint>New print</button> <button type="button" class="btn btn-sm btn-outline-secondary" data-riso aria-pressed="false">Riso inks</button> <button type="button" class="btn btn-sm btn-outline-secondary" data-gif>Download the GIF</button> <button type="button" class="btn btn-sm btn-outline-secondary" data-video>Download the video</button> <small data-busy="Working out what is near and what is far…">Or drop or paste a photo on the print. It never leaves your browser.</small></p>
+<div class="halftone-tools" hidden>
+<p><span class="halftone-label">Photo</span><input type="file" accept="image/*" hidden><button type="button" data-pick>Choose one</button><small aria-live="polite" data-busy="Working out what is near and what is far…">or drop or paste one on the print. It never leaves your browser.</small></p>
+<p role="radiogroup" aria-label="Inks"><span class="halftone-label">Inks</span><label><input type="radio" name="inks" value="cmyk" checked><span></span>CMYK</label><label><input type="radio" name="inks" value="pink-blue"><span></span>Fluo pink, blue</label><label><input type="radio" name="inks" value="pink-blue-yellow"><span></span>Fluo pink, blue, yellow</label><label><input type="radio" name="inks" value="sunflower-black"><span></span>Sunflower, black</label><label><input type="radio" name="inks" value="teal-orange"><span></span>Teal, orange</label><label><input type="radio" name="inks" value="aqua-red"><span></span>Aqua, red</label></p>
+<p><span class="halftone-label">Press</span><label>Dots <input type="range" name="dots" min="1" max="4" step="0.5" value="1.5" data-unit=" px"><output></output></label><label>Disorder <input type="range" name="disorder" min="0" max="1" step="0.1" value="0.5"><output></output></label><label>Shake <input type="range" name="shake" min="0" max="2" step="0.25" value="1" data-unit="×"><output></output></label><label>Depth <input type="range" name="depth" min="0" max="2" step="0.25" value="1" data-unit="×"><output></output></label><label>Off register <input type="range" name="register" min="0" max="2" step="0.25" value="1" data-unit="×"><output></output></label><label>Wear <input type="range" name="wear" min="0" max="1" step="0.1" value="0.5"><output></output></label></p>
+<p><span class="halftone-label">Save</span><button type="button" data-gif>GIF</button><button type="button" data-video>MP4</button></p>
+</div>
 
-Matt DesLauriers posted [a photograph rebuilt from dithered CMYK plates](https://x.com/mattdesl/status/1402284658671378432) in 2021
-without saying how it was made, so I rebuilt it in the browser, measuring his video frame by frame until mine moved like it.
+In 2021 Matt DesLauriers posted [a photograph rebuilt from dithered CMYK plates](https://x.com/mattdesl/status/1402284658671378432).
+[In a reply](https://x.com/mattdesl/status/1402318658941108224) he gave the recipe for the image: split it into
+cyan, magenta, yellow and black, dither each layer down to a bitmap, then draw a circle of that ink on every
+dot, multiplied over the others. He didn't say how it moves, and the movement is what gives it depth. I rebuilt
+it in the browser and measured his video frame by frame until mine moved the same way.
 
-### How it's made
+The still image follows his recipe, with Floyd-Steinberg for the dithering. The circles are slightly wider
+than their cells, as ink spreads, so each plate is dithered a little lighter to make up for it. The colours
+are those of printing inks rather than screen primaries, on an off-white sheet.
 
-1. **Four plates.** The photograph is split naively into cyan, magenta and yellow,
-   each the negative of one channel (cyan is wherever red is missing), with a little
-   black under the darkest colours. A real press takes out the colour its black
-   replaces; this one doesn't, and that is part of the look.
-2. **Dithering.** Each plate becomes a grid of cells, inked or bare, by
-   Floyd-Steinberg error diffusion: every cell is rounded to ink or no ink, and
-   what the rounding got wrong is handed on to the neighbours not yet drawn, so
-   every small patch keeps its tone. The threshold is jittered so the dots never
-   fall into rows, and each plate is dithered from a different corner so the four
-   grains don't line up, which is what screen angles do on a real press.
-3. **Ink on paper.** Every inked cell gets a round dot a little wider than the
-   cell, as ink spreads, and the plates are dithered a little lighter to make up
-   for it. The four plates are multiplied over a faintly textured off-white sheet
-   in the colours of process inks: where two overlap, each filters the light the
-   other lets through, which is all subtractive colour is.
-4. **Shake.** Twelve times a second the sheet jolts by less than a cell in a new
-   direction, and each plate drifts a little on its own, off register. The moves
-   are smooth noise rather than circles, with the sizes and rhythms of the video.
-5. **Depth.** The part the tweet doesn't show. A depth map, worked out by
-   Depth Anything, a neural network that guesses distances from a single picture,
-   says how far away each point is. Each plate is drawn as if seen from its own
-   viewpoint, a little apart from the others' and wandering: what is near slides
-   one way, what is far the other, and the middle distance holds still. The eye
-   reads that disagreement as depth, a little as it reads the two views of a pair
-   of eyes. Fitted on the video, the slide follows nearness to the power 0.3, and
-   the plates move by whole half cells, so the dots jump rather than smear.
-6. **Wear.** Dotted vertical scratches show where a plate failed to print, and a
-   last pass blurs the colour more than the light, as the tweet's video
-   compression did.
-7. **No two prints alike.** Every photograph, and every *New print*, gets its own
-   press, drawn around what the video shows: it shakes harder or softer, holds its
-   plates further off register, bleeds and scratches more or less, and dithers each
-   plate from another corner. *Riso inks* swaps the process inks for a
-   risograph's fluorescent pink, blue and yellow, which the separation was never
-   made for.
-8. **Your photo.** It is read in your browser, and its depth map is worked out
-   there too, by the same network (about 27 MB, downloaded once). The GIF, for a
-   web page, is 24 frames whose moves come back to where they started, so it
-   loops without a jump, with the tweet's margin of paper around it. The video,
-   for social networks, is the same loop three times over, every dot doubled so
-   it lives through their compression.
+Twelve times a second the whole sheet jolts by less than a dot, and each plate drifts a little on its own.
+Both are measured off the video. The depth comes from a depth map estimated by Depth Anything, a neural
+network that guesses distances from a single picture. Each plate is drawn as if seen from its own viewpoint,
+a little apart from the others and wandering, so near things slide one way, far things the other, and the
+middle distance stays put. On the video the shift follows nearness to the power 0.3. Every print gets its own
+press, its shake, register and scratches drawn at random around those values.
+
+Two things went wrong on the way. The first was moiré. Floyd-Steinberg isn't random: it settles into chains
+of dots and, around half the ink, into checkerboards, and every plate has its own. Laid over each other, two
+nearly regular patterns beat into slow waves, which travel as the plates move. Noise on the threshold broke
+the rows but not the chains. Now the threshold wanders with blue noise, a tile of thresholds ranked so that
+the cells under any of them are as evenly spread as possible (Ulichney's void-and-cluster), each plate
+reading it from a different place. Error diffusion still keeps the tone and the edges, the dots spread
+evenly, and the plates no longer share a pattern that could beat. The dots also sit a little off the centre
+of their cells: on a shared grid, how much two plates overlap depends on how far apart they are, and that
+changes with depth.
+
+The second was at the edges of near things. Moving each dot by the depth under it piled dots up on one side
+of a flag and tore a hole on the other, and the holes opened and closed as the viewpoints wandered. Now
+each pixel looks up its ink where the depth under it says, so nothing can pile up and nothing can tear. On its
+own that lets what is behind eat into the flag's edge, so the depth map is first grown a little past every near
+thing's outline and softened: the flag moves whole, and the plate stretches over what is just behind it.
+
+The Riso sets are two or three risograph inks on cream paper. Cyan, magenta and yellow mean nothing to them,
+so each set gets its own separation: the amount of each ink that best rebuilds the colour, by least squares
+on their optical densities.
 
 <p class="stack"><span>WebGL2</span><span>GLSL</span><span>JavaScript</span></p>
 

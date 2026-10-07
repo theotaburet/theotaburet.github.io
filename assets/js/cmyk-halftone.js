@@ -36,6 +36,8 @@ uniform float uPivot;           // and stands still at this value of it
 uniform vec2  uCam[4];          // each plate's viewpoint: cells of shift per unit of nearness
 uniform vec3  uInks[4];         // ink colours
 uniform vec3  uPaper;           // paper colour
+uniform float uJitter;          // how far a dot may sit from its cell's centre, in cells
+uniform float uRough;           // how much of the ink fails to take, in patches the size of a dot
 uniform float uBorder;          // px of bare paper around the print
 
 // vertical scratches: A = (x px, y0 px, y1 px, width px); B = (plate bitmask, strength, seed, 0)
@@ -67,20 +69,48 @@ float inked(ivec2 c, int plate) {
   return plate == 0 ? t.r : plate == 1 ? t.g : plate == 2 ? t.b : t.a;
 }
 
-// every inked cell holds a round dot, anti-aliased over a pixel; a dot a little
-// wider than its cell reaches into the next one, hence the neighbours
-float ink(vec2 pos, int plate) {
-  ivec2 c0 = ivec2(floor(pos));
+// where a plate sits at a point of the canvas (in cells): the sheet's shake and
+// the plate's drift, by whole half-cells so the grain holds still between steps,
+// and its viewpoint over the depth there, smoothly, so that two dots side by
+// side never jump apart along a line of the depth map
+vec2 shiftAt(vec2 at, int plate) {
+  float z = pow(texture(uDepth, (at + uMargin) / uPlateSize).r, uDepthCurve) - uPivot;
+  return floor(uOffsets[plate] * 2.0 + 0.5) / 2.0 + z * uCam[plate];
+}
+
+// two uniform numbers for a cell of a plate (pcg2d, Jarzynski and Olano 2020):
+// sin-based hashes lose their randomness to float precision at these sizes
+vec2 rand2(ivec2 c, int plate) {
+  uvec2 v = uvec2(c + 4096) * 1664525u + 1013904223u + uint(plate) * 2654435761u;
+  v.x += v.y * 1664525u; v.y += v.x * 1664525u;
+  v ^= v >> 16u;
+  v.x += v.y * 1664525u; v.y += v.x * 1664525u;
+  v ^= v >> 16u;
+  return vec2(v) / 4294967295.0;
+}
+
+// every inked cell holds a round dot, anti-aliased over a pixel, somewhere in
+// its cell rather than at its centre (dots on a grid read as a grid, and two
+// plates' grids beat against each other). Each pixel reads its plate where the
+// depth under it says, so a plate stretches over a change of depth: moving
+// the dots instead would pile them up on one side and tear a hole on the
+// other. A dot a little wider than its cell reaches into the next one, hence
+// the neighbours.
+float ink(vec2 at, int plate) {
+  vec2 s0 = shiftAt(at, plate);
+  ivec2 c0 = ivec2(floor(at + uMargin - s0));
   float cov = 0.0;
   for (int dy = -1; dy <= 1; dy++) {
     for (int dx = -1; dx <= 1; dx++) {
       ivec2 c = c0 + ivec2(dx, dy);
       if (inked(c, plate) < 0.5) continue;
-      float d = length(pos - vec2(c) - 0.5) * uCell;
+      vec2 centre = vec2(c) + 0.5 + uJitter * (rand2(c, plate) - 0.5) - uMargin;
+      float d = length(at - centre - s0) * uCell;
       cov = max(cov, clamp(uRadius * uCell - d + 0.5, 0.0, 1.0));
     }
   }
-  return cov;
+  // a worn press starves its plates in patches, which travel with the plate
+  return cov * (1.0 - uRough * smoothstep(0.4, 0.9, vnoise((at - s0) * 0.9 + float(plate) * 37.0)));
 }
 
 // scratch: a dotted vertical band where the plate lays no ink
@@ -109,14 +139,8 @@ void main() {
     fragColor = vec4(color, 1.0);
     return;
   }
-  float z = pow(texture(uDepth, (fragPx / uCell + uMargin) / uPlateSize).r, uDepthCurve) - uPivot;
-  for (int p = 0; p < 4; p++) {
-    // whole half-cells only: the grain holds still between steps and the
-    // planes part along seams instead of smearing
-    vec2 shift = floor((uOffsets[p] + z * uCam[p]) * 2.0 + 0.5) / 2.0;
-    vec2 pos = fragPx / uCell + uMargin - shift;
-    color *= mix(vec3(1.0), uInks[p], ink(pos, p) * scratchMask(fragPx, p));
-  }
+  for (int p = 0; p < 4; p++)
+    color *= mix(vec3(1.0), uInks[p], ink(fragPx / uCell, p) * scratchMask(fragPx, p));
   fragColor = vec4(color, 1.0);
 }`;
 
@@ -153,11 +177,40 @@ void main() {
      (R=C, G=M, B=Y, A=K), 0 or 255 per channel, row 0 at the top.
      ---------------------------------------------------------------------- */
 
+  // Ulichney's void-and-cluster: a rank for every cell of a 64 x 64 tile such
+  // that the cells under any threshold are spread as evenly as can be (blue
+  // noise), on a torus so the tile repeats seamlessly.
+  var blueNoise = (function () {
+    var N = 64, n = N * N, R = 4, K = [];
+    for (var dy = -R; dy <= R; dy++) for (var dx = -R; dx <= R; dx++) K.push([dx, dy, Math.exp(-(dx * dx + dy * dy) / (2 * 1.5 * 1.5))]);
+    var bits = new Uint8Array(n), E = new Float32Array(n), rank = new Float32Array(n);
+    var flip = function (i, v) {
+      bits[i] = v;
+      var x = i % N, y = (i / N) | 0;
+      for (var k = 0; k < K.length; k++) E[((y + K[k][1] + N) % N) * N + ((x + K[k][0] + N) % N)] += v ? K[k][2] : -K[k][2];
+    };
+    var extreme = function (want, sign) { // the 1 in the tightest cluster, or the 0 in the largest void
+      var best = -1, bv = -Infinity;
+      for (var i = 0; i < n; i++) if (bits[i] === want && sign * E[i] > bv) { bv = sign * E[i]; best = i; }
+      return best;
+    };
+    for (var i = 0; i < n / 10; i++) { var j = (Math.random() * n) | 0; if (!bits[j]) flip(j, 1); }
+    for (;;) { var c = extreme(1, 1); flip(c, 0); var v = extreme(0, -1); flip(v, 1); if (c === v) break; }
+    var start = bits.slice(), ones = 0;
+    for (i = 0; i < n; i++) ones += bits[i];
+    for (var r = ones - 1; r >= 0; r--) { c = extreme(1, 1); flip(c, 0); rank[c] = r; }
+    for (i = 0; i < n; i++) if (start[i] !== bits[i]) flip(i, start[i]);
+    for (r = ones; r < n; r++) { v = extreme(0, -1); flip(v, 1); rank[v] = r; }
+    for (i = 0; i < n; i++) rank[i] = (rank[i] + 0.5) / n;
+    return rank;
+  })();
+
   // Floyd-Steinberg on a density plane in [0,1], 1 = ink, serpentine so it
   // draws no diagonal lattice in the light tones. `f` mirrors the plane first
   // (1 in x, 2 in y): a different orientation per plate is what screen angles
   // are on a press, the plates' grain stops lining up.
   function floydSteinberg(src, w, h, f, noise) {
+    var ox = (Math.random() * 64) | 0, oy = (Math.random() * 64) | 0;
     var at = function (x, y) { return (f & 2 ? h - 1 - y : y) * w + (f & 1 ? w - 1 - x : x); };
     var buf = new Float32Array(w * h), out = new Uint8Array(w * h), x, y;
     for (y = 0; y < h; y++) for (x = 0; x < w; x++) buf[y * w + x] = src[at(x, y)];
@@ -165,7 +218,7 @@ void main() {
       var d = y & 1 ? -1 : 1;
       for (var k = 0; k < w; k++) {
         x = d > 0 ? k : w - 1 - k;
-        var i = y * w + x, v = buf[i] >= 0.5 + noise * (Math.random() - 0.5) ? 1 : 0, err = buf[i] - v;
+        var i = y * w + x, v = buf[i] >= 0.5 + noise * (blueNoise[((y + oy) & 63) * 64 + ((x + ox) & 63)] - 0.5) ? 1 : 0, err = buf[i] - v;
         out[at(x, y)] = v;
         if (x + d >= 0 && x + d < w) buf[i + d] += err * (7 / 16);
         if (y + 1 < h) {
@@ -191,6 +244,7 @@ void main() {
     // a dot covers `gain` cells, overlaps aside: dither less ink, so the dots
     // that spread past their cells still add up to the right tone
     var spread = 1 / (opts.gain || 1);
+    var riso = opts.inks && opts.inks.length < 4 && separate(opts.inks, opts.paper);
 
     var w = planeWidth;
     var h = Math.max(1, Math.round((planeWidth * image.height) / image.width));
@@ -205,7 +259,8 @@ void main() {
     var px = ctx.getImageData(0, 0, w, h).data;
 
     var n = w * h;
-    var c = new Float32Array(n), m = new Float32Array(n), y = new Float32Array(n), k = new Float32Array(n);
+    var planes = [0, 1, 2, 3].map(function () { return new Float32Array(n); });
+    var c = planes[0], m = planes[1], y = planes[2], k = planes[3];
 
     for (var i = 0; i < n; i++) {
       var r = (px[i * 4] / 255) * balance[0], g = (px[i * 4 + 1] / 255) * balance[1], b = (px[i * 4 + 2] / 255) * balance[2];
@@ -215,6 +270,7 @@ void main() {
       r = Math.pow(clamp01((r - 0.5) * contrast + 0.5), gamma);
       g = Math.pow(clamp01((g - 0.5) * contrast + 0.5), gamma);
       b = Math.pow(clamp01((b - 0.5) * contrast + 0.5), gamma);
+      if (riso) { riso(r, g, b, planes, i, spread); continue; }
       // naive separation: pure inks, no under-colour removal
       c[i] = 1 - Math.pow(r, spread);
       m[i] = 1 - Math.pow(g, spread);
@@ -223,20 +279,46 @@ void main() {
     }
 
     var f = shuffle([0, 1, 2, 3]); // which plate gets which orientation changes every print
-    var noise = opts.noise != null ? opts.noise : 0.8; // a jittered threshold: no rows or lattices
-    var bc = floydSteinberg(c, w, h, f[0], noise);
-    var bm = floydSteinberg(m, w, h, f[1], noise);
-    var by = floydSteinberg(y, w, h, f[2], noise);
-    var bk = floydSteinberg(k, w, h, f[3], noise);
-
+    // a threshold that wanders with blue noise: alone, Floyd-Steinberg draws
+    // worms and checkerboards, which four plates beat into waves; white noise
+    // breaks them up but clumps the dots
+    var noise = opts.noise != null ? opts.noise : 0.8;
     var data = new Uint8Array(n * 4);
-    for (var j = 0; j < n; j++) {
-      data[j * 4] = bc[j] * 255;
-      data[j * 4 + 1] = bm[j] * 255;
-      data[j * 4 + 2] = by[j] * 255;
-      data[j * 4 + 3] = bk[j] * 255;
+    for (var p = 0; p < (riso ? opts.inks.length : 4); p++) {
+      var bits = floydSteinberg(planes[p], w, h, f[p], noise);
+      for (var j = 0; j < n; j++) data[j * 4 + p] = bits[j] * 255;
     }
     return { width: w, height: h, data: data };
+  }
+
+  // A risograph's drums get their own separation: as much of each ink as best
+  // rebuilds the colour once the inks multiply on the paper, by least squares
+  // on optical densities (the log of the light each lets through), then the
+  // share of the cell to cover to lay that much down.
+  function separate(inks, paper) {
+    var A = inks.map(function (ink) { return ink.map(function (v, ch) { return Math.log(Math.max(v, 0.03) / paper[ch]); }); });
+    // (A Aᵀ)⁻¹ A by Gauss-Jordan; A Aᵀ is positive definite, so no pivoting
+    var M = A.map(function (a) { return A.map(function (b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }).concat(a); });
+    var N = inks.length;
+    for (var i = 0; i < N; i++) {
+      var d = M[i][i], j;
+      for (j = 0; j < N + 3; j++) M[i][j] /= d;
+      for (var k = 0; k < N; k++) {
+        if (k === i) continue;
+        var e = M[k][i];
+        for (j = 0; j < N + 3; j++) M[k][j] -= e * M[i][j];
+      }
+    }
+    var P = M.map(function (row) { return row.slice(N); });
+    var T = inks.map(function (ink) { return (ink[0] / paper[0] + ink[1] / paper[1] + ink[2] / paper[2]) / 3; }); // how much light an ink lets through
+    return function (r, g, b, planes, i, spread) {
+      var lr = Math.log(Math.max(r, 0.03) / paper[0]), lg = Math.log(Math.max(g, 0.03) / paper[1]), lb = Math.log(Math.max(b, 0.03) / paper[2]);
+      for (var p = 0; p < N; p++) {
+        var dens = clamp01(P[p][0] * lr + P[p][1] * lg + P[p][2] * lb);
+        var cover = (1 - Math.pow(T[p], dens)) / (1 - T[p]);
+        planes[p][i] = 1 - Math.pow(1 - clamp01(cover), spread);
+      }
+    };
   }
 
   function clamp01(v) {
@@ -250,8 +332,10 @@ void main() {
   var DEFAULTS = {
     cell: 2,               // output pixels per cell (2 ≈ the reference video)
     radius: 0.65,          // cells: a little past the cell, as ink spreads, so dark areas close up
+    jitter: 0.5,           // cells a dot may stray across its cell: enough that two plates' dots no longer beat
+                           // against each other whatever their offsets, not so much that they clump
     scale: 1,              // our cells to the reference's: the moves below are measured in its cells
-    margin: 8,             // cells dithered past every edge, more than any plate ever moves, so no edge shows
+    margin: 16,            // cells dithered past every edge, more than any plate moves at the sliders' ends, so no edge shows
     ampGlobal: 0.65,       // cells; the sheet's shake, measured on the reference
     ampDiff: 0.4,          // cells; each plate's own drift on top of it
     ampDepth: 2.25,        // cells per unit of nearness: the viewpoint all the plates share
@@ -261,11 +345,11 @@ void main() {
     fps: 12,
     lumaBlur: 0.45,        // px; the reference's dots are a little soft
     chromaBlur: 0.65,      // px; more turns the dots' colours to mud
-    scratchesMean: 5,
+    misregister: 0.5,      // cells each plate may sit off register, either way
+    wear: 0.5,             // 0 to 1: how scratched the press is and, past halfway, how badly its ink takes
     scratchStrength: [0.5, 0.85],
     border: 0,             // px of bare paper around the print
     loop: Infinity,        // frames after which the moves come round again
-    register: [0, 0, 0, 0, 0, 0, 0, 0], // cells; where each plate sits when still
     seed: 0,
     // Process inks on an off-white sheet, not screen primaries: pure ones lay
     // screen-green and screen-blue wherever two of them meet.
@@ -293,7 +377,7 @@ void main() {
 
       this.progA = this.link(VERT, HALFTONE_FRAG);
       this.progB = this.link(VERT, CHROMA_FRAG);
-      for (const n of ["uPlates", "uPlateSize", "uMargin", "uCell", "uRadius", "uOffsets", "uDepth", "uCam", "uDepthCurve", "uPivot", "uInks", "uPaper", "uBorder", "uScratchCount", "uScratchA", "uScratchB"])
+      for (const n of ["uPlates", "uPlateSize", "uMargin", "uCell", "uRadius", "uOffsets", "uDepth", "uCam", "uDepthCurve", "uPivot", "uInks", "uPaper", "uBorder", "uJitter", "uRough", "uScratchCount", "uScratchA", "uScratchB"])
         this.uA[n] = gl.getUniformLocation(this.progA, n);
       for (const n of ["uTex", "uTexel", "uLumaBlur", "uChromaBlur"]) this.uB[n] = gl.getUniformLocation(this.progB, n);
 
@@ -365,8 +449,15 @@ void main() {
       this.render();
     }
 
+    // A new press: new draws for it, kept apart from the settings they scale.
     reroll() {
-      this.params = Object.assign({}, this.base, press(this.base));
+      this.dice = press();
+      this.update();
+    }
+
+    // The settings in `base` as this press holds them.
+    update() {
+      this.params = Object.assign({}, this.base, pressed(this.base, this.dice));
     }
 
     // Discrete steps at `fps`: the boil has to change per frame, not continuously.
@@ -455,9 +546,11 @@ void main() {
       gl.bindTexture(gl.TEXTURE_2D, this.depthTex);
       gl.uniform1i(this.uA.uDepth, 1);
       gl.activeTexture(gl.TEXTURE0);
-      gl.uniform3fv(this.uA.uInks, new Float32Array(P.inks.flat()));
+      gl.uniform3fv(this.uA.uInks, new Float32Array(P.inks.concat([[1, 1, 1], [1, 1, 1], [1, 1, 1]]).slice(0, 4).flat())); // no ink on the drums a set lacks
       gl.uniform3f(this.uA.uPaper, P.paper[0], P.paper[1], P.paper[2]);
       gl.uniform1f(this.uA.uBorder, P.border);
+      gl.uniform1f(this.uA.uJitter, P.jitter);
+      gl.uniform1f(this.uA.uRough, P.rough);
       var A = new Float32Array(32), B = new Float32Array(32);
       this.scratches.forEach(function (s, i) {
         A.set([s.x, s.y0, s.y1, s.w], i * 4);
@@ -500,18 +593,25 @@ void main() {
 
   // Every print gets its own press, drawn around the reference's values: how
   // hard it shakes, how far each plate wanders and sits off register, how much
-  // the colour bleeds, the dots boil and spread, and how scratched it is.
-  function press(P) {
+  // the colour bleeds, and how scratched it is.
+  function press() {
     var r = function (a, b) { return a + Math.random() * (b - a); };
     return {
-      seed: r(0, 1000),
-      ampGlobal: P.ampGlobal * r(0.6, 1.5),
-      ampDiff: P.ampDiff * r(0.6, 1.6),
-      ampDepth: P.ampDepth * r(0.7, 1.4),
-      ampDepthDiff: P.ampDepthDiff * r(0.7, 1.4),
-      register: P.register.map(function (v) { return v + r(-0.5, 0.5); }),
-      chromaBlur: P.chromaBlur * r(0.6, 1.4),
-      scratchesMean: r(0, 8)
+      seed: r(0, 1000), shake: r(0.6, 1.5), drift: r(0.6, 1.6), depth: r(0.7, 1.4), depthDiff: r(0.7, 1.4),
+      register: [0, 0, 0, 0, 0, 0, 0, 0].map(function () { return r(-1, 1); }), chroma: r(0.6, 1.4), scratches: r(0, 2)
+    };
+  }
+  function pressed(P, d) {
+    return {
+      seed: d.seed,
+      ampGlobal: P.ampGlobal * d.shake,
+      ampDiff: P.ampDiff * d.drift,
+      ampDepth: P.ampDepth * d.depth,
+      ampDepthDiff: P.ampDepthDiff * d.depthDiff,
+      register: d.register.map(function (v) { return v * P.misregister; }),
+      chromaBlur: P.chromaBlur * d.chroma,
+      scratchesMean: 8 * P.wear * d.scratches,
+      rough: Math.max(0, P.wear - 0.5) * 1.2
     };
   }
 
@@ -543,21 +643,19 @@ void main() {
   }
 
   /* -------------------------------------------------------------------------
-     Page: one renderer per canvas, its dots 1.5 CSS px (finer than the
-     reference's 2) and a whole number of device pixels, its moves still the
-     reference's size on screen. Animated only while on screen, and never for
-     someone who asked for less motion.
+     Page: one renderer per canvas, its dots 1.5 CSS px unless the visitor says
+     otherwise (finer than the reference's 2) and a whole number of device
+     pixels, its moves still the reference's size on screen. Animated only
+     while on screen, and never for someone who asked for less motion.
      ---------------------------------------------------------------------- */
   var still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var dpr = Math.max(1, Math.round(window.devicePixelRatio || 1));
-  var cell = Math.max(2, Math.round(1.5 * dpr));
 
-  // As many whole cells as fit in `width` CSS px. The print under its project
-  // is sized to them exactly so no dot is resampled; a card's is blurred anyway.
-  function fit(canvas, width) {
-    var n = Math.floor((width * dpr) / cell);
-    if (canvas.classList.contains("halftone")) canvas.style.width = (n * cell) / dpr + "px";
-    return n;
+  // Dots `dots` CSS px wide on a screen of `dpr`: whole device pixels a cell,
+  // the moves and the blur kept to their size on screen.
+  function sizes(dots, dpr) {
+    var cell = Math.max(2, Math.round(dots * dpr));
+    return { dots: dots, cell: cell, scale: (2 * dpr) / cell, lumaBlur: 0.22 * cell, chromaBlur: 0.33 * cell };
   }
 
   document.querySelectorAll("canvas[data-halftone]").forEach(function (canvas) {
@@ -565,13 +663,13 @@ void main() {
     img.src = canvas.getAttribute("data-halftone");
     img.alt = canvas.getAttribute("aria-label") || "";
     img.decode().then(function () {
-      var fx = new CMYKHalftone(canvas, { cell: cell, scale: (2 * dpr) / cell, lumaBlur: 0.22 * cell, chromaBlur: 0.33 * cell });
-      print(fx, img, fit(canvas, canvas.clientWidth));
-      var depth = new Image();
-      depth.src = canvas.getAttribute("data-depth") || "";
-      depth.decode().then(function () { fx.setDepth(depth); }, function () {});
+      var fx = new CMYKHalftone(canvas, sizes(1.5, dpr));
       var next = canvas.nextElementSibling;
       if (next && next.classList.contains("halftone-tools")) tools(next, canvas, fx);
+      print(fx, img, canvas.clientWidth);
+      var depth = new Image();
+      depth.src = canvas.getAttribute("data-depth") || "";
+      depth.decode().then(function () { fx.setDepth(dilate(depth)); }, function () {});
       if (still) return;
       new IntersectionObserver(function (entries) {
         if (entries[0].isIntersecting) fx.start();
@@ -583,33 +681,132 @@ void main() {
     });
   });
 
+  // Near things grow a few pixels past their outline, then the map is softened:
+  // where a plate's view slides off a near thing, what stretches is the ground
+  // just behind it, gently, not the thing's own edge.
+  function dilate(src) {
+    var img = src;
+    if (!(src instanceof ImageData)) {
+      var k = Math.min(1, 512 / Math.max(src.width, src.height));
+      var ctx = Object.assign(document.createElement("canvas"), { width: Math.round(src.width * k), height: Math.round(src.height * k) }).getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(src, 0, 0, ctx.canvas.width, ctx.canvas.height);
+      img = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+    }
+    var w = img.width, h = img.height, v = new Float32Array(w * h), i;
+    for (i = 0; i < w * h; i++) v[i] = img.data[i * 4];
+    filter(v, w, h, Math.round(w / 100), true); // about 1% of the width each side
+    filter(v, w, h, Math.round(w / 160), false);
+    for (i = 0; i < w * h; i++) img.data[i * 4] = img.data[i * 4 + 1] = img.data[i * 4 + 2] = v[i];
+    return img;
+  }
+
+  // In place, `r` each side, along x then along y: the largest value, or the mean.
+  function filter(v, w, h, r, max) {
+    var tmp = new Float32Array(w * h);
+    for (var pass = 0; pass < 2; pass++) {
+      var from = pass ? tmp : v, to = pass ? v : tmp;
+      for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) {
+        var acc = 0;
+        for (var t = -r; t <= r; t++) {
+          var u = pass ? from[Math.min(h - 1, Math.max(0, y + t)) * w + x] : from[y * w + Math.min(w - 1, Math.max(0, x + t))];
+          acc = max ? Math.max(acc, u) : acc + u / (2 * r + 1);
+        }
+        to[y * w + x] = acc;
+      }
+    }
+  }
+
   // A visitor's photo has no depth map, so Depth Anything works one out in the
-  // browser: about 27 MB of model on the first photo, cached after that. The
-  // photo itself still goes nowhere.
-  var estimator;
-  function depthOf(blob) {
-    estimator = estimator || import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.1").then(function (t) {
-      return t.pipeline("depth-estimation", "onnx-community/depth-anything-v2-small", { dtype: "q8" });
-    }).catch(function (e) { estimator = null; throw e; });
-    return estimator.then(function (run) { return run(blob); }).then(function (r) { return r.depth.toCanvas(); });
+  // browser: about 27 MB of model on the first photo, cached after that. It
+  // runs in a worker of its own, as loading and running it take seconds the
+  // page would otherwise freeze for. It says how much of the model has come,
+  // then sends the depth back as RGBA, 512 px at most on its long side (it
+  // comes out the photo's size, and the plates are smaller than that). The
+  // photo itself goes nowhere.
+  //
+  // The model and ONNX Runtime's WASM are kept in IndexedDB, not the Cache API
+  // transformers.js uses by default: the site's service worker deletes every
+  // cache but its own whenever the site changes, and 27 MB should come down
+  // once, not once a release.
+  var DEPTH_WORKER = `
+import { pipeline, env } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.1";
+const db = new Promise((ok, ko) => {
+  const r = indexedDB.open("halftone-depth", 1);
+  r.onupgradeneeded = () => r.result.createObjectStore("files");
+  r.onsuccess = () => ok(r.result);
+  r.onerror = () => ko(r.error);
+});
+const files = async (mode, op) => {
+  const tx = (await db).transaction("files", mode), r = op(tx.objectStore("files"));
+  return new Promise((ok, ko) => { tx.oncomplete = () => ok(r.result); tx.onerror = () => ko(tx.error); });
+};
+env.useBrowserCache = false;
+env.useCustomCache = true;
+env.customCache = {
+  match: async (key) => { const f = await files("readonly", (s) => s.get(key)); return f && new Response(f.body, { headers: f.headers }); },
+  put: async (key, res) => { const body = await res.blob(); await files("readwrite", (s) => s.put({ body, headers: [...res.headers] }, key)); }
+};
+const run = pipeline("depth-estimation", "onnx-community/depth-anything-v2-small", {
+  dtype: "q8",
+  progress_callback: (p) => p.status === "progress" && /\.onnx$/.test(p.file) && postMessage({ progress: p.progress })
+});
+onmessage = async ({ data: { id, blob } }) => {
+  try {
+    let d = (await (await run)(blob)).depth;
+    const k = Math.min(1, 512 / Math.max(d.width, d.height));
+    d = (await d.resize(Math.round(d.width * k), Math.round(d.height * k))).rgba();
+    postMessage({ id, width: d.width, height: d.height, data: d.data }, [d.data.buffer]);
+  } catch (e) {
+    postMessage({ id, error: String(e) });
+  }
+};`;
+  var worker, asked = 0;
+  function depthOf(blob, progress) {
+    worker = worker || new Worker(URL.createObjectURL(new Blob([DEPTH_WORKER], { type: "text/javascript" })), { type: "module" });
+    var id = ++asked;
+    return new Promise(function (done, fail) {
+      worker.onerror = function (e) { worker = null; fail(e); };
+      worker.onmessage = function (e) {
+        var m = e.data;
+        if (m.progress != null) return progress(m.progress);
+        if (m.id !== id) return; // an earlier photo's, not wanted any more
+        if (m.error) return fail(new Error(m.error));
+        done(new ImageData(new Uint8ClampedArray(m.data.buffer), m.width, m.height));
+      };
+      worker.postMessage({ id: id, blob: blob });
+    });
   }
 
-  // `cells` across the canvas, and the margin past it on both sides
-  function print(fx, img, cells) {
+  // The print `width` CSS px wide, in as many whole cells as fit. The one
+  // under its project is sized to them exactly so no dot is resampled; a
+  // card's is blurred anyway.
+  function print(fx, img, width) {
+    var cell = fx.base.cell, n = Math.floor((width * dpr) / cell);
     fx.image = img;
-    fx.setPlates(buildPlates(img, { planeWidth: cells + 2 * fx.base.margin, gain: Math.PI * fx.base.radius * fx.base.radius }));
+    fx.width = width;
+    if (fx.canvas.classList.contains("halftone")) fx.canvas.style.width = (n * cell) / dpr + "px";
+    plates(fx, img, n);
   }
 
-  // The print again at the reference's 2 px a cell, 320 cells on its long
-  // side, with its press, inks and depth, on a sheet with the reference's
-  // margin: its 24 frames. Its moves come round again after the last one, so
-  // they loop without a jump; it is dithered anew, so its grain isn't the screen's.
+  // `n` cells across, and the margin dithered past both edges
+  function plates(fx, img, n) {
+    var P = fx.base;
+    fx.setPlates(buildPlates(img, { planeWidth: n + 2 * P.margin, gain: Math.PI * P.radius * P.radius, inks: P.inks, paper: P.paper }));
+  }
+
+  // The print again at the reference's 2 px a cell (more for bigger dots), 640
+  // px on its long side, with its press, inks, settings and depth, on a sheet
+  // with the reference's margin: its 24 frames. Its moves come round again
+  // after the last one, so they loop without a jump; it is dithered anew, so
+  // its grain isn't the screen's.
   function frames(fx) {
-    var img = fx.image, n = Math.round(320 * Math.min(1, img.width / img.height)), k = 2 / fx.params.cell;
-    var g = new CMYKHalftone(document.createElement("canvas"), fx.base);
-    g.params = Object.assign({}, fx.params, { cell: 2, scale: 1, lumaBlur: fx.params.lumaBlur * k, chromaBlur: fx.params.chromaBlur * k, loop: 24 });
-    g.params.border = Math.round(0.486 * Math.min(n, (n * img.height) / img.width)); // 167 px of paper round 688 of print
-    print(g, img, n);
+    var img = fx.image, g = new CMYKHalftone(document.createElement("canvas"), fx.base);
+    Object.assign(g.base, sizes(fx.base.dots, 1), { loop: 24 });
+    var n = Math.round((640 / g.base.cell) * Math.min(1, img.width / img.height));
+    g.base.border = Math.round(0.243 * g.base.cell * Math.min(n, (n * img.height) / img.width)); // 167 px of paper round 688 of print
+    g.dice = fx.dice;
+    g.update();
+    plates(g, img, n);
     g.setDepth(fx.depth);
     var W = g.canvas.width, H = g.canvas.height, out = [];
     var ctx = Object.assign(document.createElement("canvas"), { width: W, height: H }).getContext("2d", { willReadFrequently: true });
@@ -622,7 +819,6 @@ void main() {
     g.gl.getExtension("WEBGL_lose_context").loseContext();
     return out;
   }
-
   // For a web page: the loop as a GIF, on one palette.
   function gif(fx) {
     return import("https://cdn.jsdelivr.net/npm/gifenc@1.0.3/+esm").then(function (G) {
@@ -667,35 +863,68 @@ void main() {
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
   }
 
-  // Riso drums for the C, M and Y plates, and none for K
-  var RISO = [[0, 0.47, 0.75], [1, 0.28, 0.69], [1, 0.91, 0], [1, 1, 1]];
+  // The ink sets: process inks on an off-white sheet, or two or three of a
+  // risograph's drums on cream, which buildPlates separates for those inks.
+  var hex = function (h) { return [0, 2, 4].map(function (i) { return parseInt(h.substr(i, 2), 16) / 255; }); };
+  var CREAM = hex("f7f0e1");
+  var INKS = {
+    cmyk: { inks: DEFAULTS.inks, paper: DEFAULTS.paper },
+    "pink-blue": { inks: ["ff48b0", "0078bf"].map(hex), paper: CREAM },
+    "pink-blue-yellow": { inks: ["ff48b0", "0078bf", "ffe800"].map(hex), paper: CREAM },
+    "sunflower-black": { inks: ["ffb511", "1d1d1b"].map(hex), paper: CREAM },
+    "teal-orange": { inks: ["00838a", "ff6c2f"].map(hex), paper: CREAM },
+    "aqua-red": { inks: ["5ec8e5", "ff665e"].map(hex), paper: CREAM }
+  };
+  var css = function (c) { return "rgb(" + c.map(function (v) { return Math.round(v * 255); }) + ")"; };
 
-  /* The visitor's own photo, picked, dropped on the print or pasted, read
-     locally (nothing is sent anywhere); a new press for the same photo; Riso
-     inks; and the print as a GIF or a video. */
+  // What each slider sets in the renderer's settings, from its value.
+  var KNOBS = {
+    dots: function (v) { return sizes(v, dpr); },
+    disorder: function (v) { return { jitter: v }; },
+    // each moves the plates one way only: all together, apart from each other,
+    // or apart by depth; at 0 all three, the print holds still
+    shake: function (v) { return { ampGlobal: DEFAULTS.ampGlobal * v }; },
+    register: function (v) { return { misregister: DEFAULTS.misregister * v, ampDiff: DEFAULTS.ampDiff * v }; },
+    depth: function (v) { return { ampDepth: DEFAULTS.ampDepth * v, ampDepthDiff: DEFAULTS.ampDepthDiff * v }; },
+    wear: function (v) { return { wear: v }; }
+  };
+
+  /* Under the print: the visitor's own photo, picked, dropped on the print or
+     pasted, read locally (nothing is sent anywhere); the ink sets; the
+     sliders; and the print as a GIF or a video. The
+     settings are read off the controls first, so a form the browser restored
+     still says what is printed. */
   function tools(bar, canvas, fx) {
-    var file = bar.querySelector("input"), riso = bar.querySelector("[data-riso]");
-    var note = bar.querySelector("small"), said = note.textContent, photos = 0;
+    var file = bar.querySelector("input[type=file]");
+    var note = bar.querySelector("small[data-busy]"), said = note.textContent, photos = 0;
+    var busy = function (on) { [canvas, bar, note].forEach(function (e) { e.setAttribute("aria-busy", on); }); };
     var load = function (f) {
       if (!f || !/^image\//.test(f.type)) return;
-      var img = new Image();
+      var img = new Image(), mine = ++photos;
+      busy(true); // from now: decoding and dithering a big photo take a moment too
       img.src = URL.createObjectURL(f);
       img.decode().then(function () {
         // as wide as the column, at most 80% of the screen tall
         canvas.style.width = "";
-        var n = fit(canvas, Math.min(canvas.clientWidth, (innerHeight * 0.8 * img.width) / img.height));
         canvas.setAttribute("aria-label", f.name || "");
         fx.reroll();
-        print(fx, img, n);
+        print(fx, img, Math.min(canvas.clientWidth, (innerHeight * 0.8 * img.width) / img.height));
         fx.setDepth(fx.flat()); // until its depth is known
         URL.revokeObjectURL(img.src);
-        var mine = ++photos;
         note.textContent = note.dataset.busy;
-        depthOf(f).then(function (d) {
-          if (mine === photos) fx.setDepth(d);
-        }, function () {}).then(function () {
-          if (mine === photos) note.textContent = said;
+        depthOf(f, function (pc) {
+          if (mine === photos) note.textContent = note.dataset.busy + " " + Math.round(pc) + " %";
+        }).then(function (d) {
+          if (mine === photos) fx.setDepth(dilate(d));
+        }, function (e) {
+          console.warn("No depth for this photo, so it stays flat:", e);
+        }).then(function () {
+          if (mine !== photos) return;
+          note.textContent = said;
+          busy(false);
         });
+      }, function () {
+        if (mine === photos) busy(false); // not an image the browser can read
       });
     };
     bar.querySelector("[data-pick]").onclick = function () { file.click(); };
@@ -704,22 +933,41 @@ void main() {
     canvas.ondrop = function (e) { e.preventDefault(); load(e.dataTransfer.files[0]); };
     document.addEventListener("paste", function (e) { load(e.clipboardData.files[0]); });
 
-    bar.querySelector("[data-reprint]").onclick = function () {
-      fx.reroll();
-      print(fx, fx.image, fx.plates.width - 2 * fx.base.margin);
-    };
-    riso.onclick = function () {
-      var on = riso.getAttribute("aria-pressed") !== "true";
-      riso.setAttribute("aria-pressed", on);
-      riso.classList.toggle("active", on);
-      fx.base.inks = fx.params.inks = on ? RISO : DEFAULTS.inks;
-      fx.render();
-    };
+    // each ink set shows its inks overprinted on its paper
+    bar.querySelectorAll("input[name=inks]").forEach(function (radio) {
+      var set = INKS[radio.value], chips = radio.nextElementSibling;
+      chips.style.background = css(set.paper);
+      set.inks.forEach(function (ink) { chips.appendChild(document.createElement("i")).style.background = css(ink); });
+      if (radio.checked) Object.assign(fx.base, set);
+      radio.onchange = function () {
+        Object.assign(fx.base, set);
+        fx.update();
+        print(fx, fx.image, fx.width);
+      };
+    });
+    bar.querySelectorAll("input[type=range]").forEach(function (knob) {
+      var out = knob.nextElementSibling, show = function () { out.textContent = knob.value + (knob.dataset.unit || ""); };
+      show();
+      Object.assign(fx.base, KNOBS[knob.name](+knob.value));
+      knob.oninput = function () {
+        show();
+        Object.assign(fx.base, KNOBS[knob.name](+knob.value));
+        fx.update();
+        if (knob.name === "dots") print(fx, fx.image, fx.width); // a new size of cell is a new dither
+        else fx.render();
+      };
+    });
+    fx.update();
+
     // one button per format, each idle until its file is ready
     var exporter = function (btn, make, name) {
       btn.onclick = function () {
         btn.disabled = true;
-        make().then(function (blob) { save(blob, name); }).finally(function () { btn.disabled = false; });
+        btn.setAttribute("aria-busy", true);
+        make().then(function (blob) { save(blob, name); }, function (e) { console.warn("No " + name + ":", e); }).finally(function () {
+          btn.disabled = false;
+          btn.setAttribute("aria-busy", false);
+        });
       };
     };
     exporter(bar.querySelector("[data-gif]"), function () { return gif(fx); }, "halftone.gif");

@@ -381,7 +381,8 @@ $amber: #f8b862;
   .content > h3,
   .content > h4,
   .content > .table-wrapper,
-  .content > .halftone {
+  .content > .halftone,
+  .content > .halftone-tools {
     max-width: 46rem;
   }
 
@@ -743,14 +744,186 @@ body {
   }
 }
 
-/* The live print under its project: 4:3 like the photograph, so the space is
+/* The live print under its project: 3:2 like the photograph, so the space is
    held while the plates are being dithered. */
 .halftone {
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 3 / 2;
   margin: 1.5rem 0;
   border-radius: 2px;
+}
+
+/* Its controls, in the article figures' manner: small labelled rows, every
+   button and ink set an outlined pill, the chosen set ringed in the heading's
+   colour. An ink set shows its inks overprinted on its own paper. */
+.halftone-tools {
+  margin: -0.5rem 0 2rem;
+  font-size: 0.85rem;
+
+  &[hidden] {
+    display: none;
+  }
+
+  /* the label hangs in its own column, so a row that wraps stays clear of it */
+  p {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem 0.6rem;
+    margin: 0 0 0.6rem;
+    padding-left: 6rem;
+  }
+
+  /* every control a line of the same height, the label's line among them */
+  label,
+  button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 1.9rem;
+    margin: 0;
+  }
+
+  small,
+  output {
+    color: var(--text-muted-color);
+  }
+
+  output {
+    min-width: 2.6em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  [type='range'] {
+    width: 5.5rem;
+    accent-color: var(--heading-color);
+  }
+}
+
+.halftone-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  line-height: 1.9rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted-color);
+}
+
+.halftone-tools button,
+.halftone-tools label:has([type='radio']) {
+  padding: 0 0.75rem;
+  border: 1px solid var(--main-border-color);
+  border-radius: 999px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s;
+
+  &:hover {
+    border-color: var(--text-muted-color);
+  }
+}
+
+.halftone-tools button:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+
+.halftone-tools label:has([type='radio']) {
+  padding-left: 0.3rem;
+}
+
+.halftone-tools label:has(:checked) {
+  border-color: var(--heading-color);
+  box-shadow: inset 0 0 0 1px var(--heading-color);
+}
+
+.halftone-tools button:focus-visible,
+.halftone-tools label:has(:focus-visible) {
+  outline: 2px solid var(--link-color);
+  outline-offset: 2px;
+}
+
+/* the radio itself stays for the keyboard and screen readers, out of sight */
+.halftone-tools [type='radio'] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.halftone-tools [type='radio'] + span {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 999px;
+  isolation: isolate;
+
+  i {
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    mix-blend-mode: multiply;
+
+    & + i {
+      margin-left: -0.3rem;
+    }
+  }
+}
+
+/* a phone has no width to spare for the column: the label goes above its row */
+@media (max-width: 576px) {
+  .halftone-tools p {
+    padding-left: 0;
+  }
+
+  .halftone-label {
+    position: static;
+    flex-basis: 100%;
+    line-height: 1;
+  }
+}
+
+/* While a photo's depth is worked out, or a file made: the pointer says so
+   over the print and its controls, and a small ring turns by the note. */
+.halftone[aria-busy='true'],
+.halftone-tools[aria-busy='true'] {
+  cursor: progress;
+}
+
+.halftone-tools [aria-busy='true']::before {
+  content: '';
+  display: inline-block;
+  width: 0.75em;
+  height: 0.75em;
+  margin-right: 0.45em;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  vertical-align: -0.1em;
+  animation: halftone-turn 0.8s linear infinite;
+}
+
+@keyframes halftone-turn {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .halftone-tools button,
+  .halftone-tools label {
+    transition: none;
+  }
+
+  .halftone-tools [aria-busy='true']::before {
+    animation: none;
+  }
 }
 
 /* ---------------------------------------------------------------------------

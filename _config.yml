@@ -155,6 +155,11 @@ pwa:
     # shares the same domain name as the current website.
     deny_paths:
       # - "/example"  # URLs match `<SITE_URL>/example/*` will not be cached by the PWA
+      # The theme's worker matches these on any host's paths: the halftone's
+      # depth model (Hugging Face) and the libraries it fetches (jsDelivr) are
+      # cached by the page itself, and would only be copied again here.
+      - "/onnx-community/"
+      - "/npm/"
 
 paginate: 10
 

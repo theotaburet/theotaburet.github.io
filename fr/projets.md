@@ -120,62 +120,55 @@ Les articles sont sur la page [publications]({{ '/fr/publications/' | relative_u
 
 *Une photo imprimée par une presse qui ne tient pas en place.*
 
-<canvas class="halftone" data-halftone="/assets/img/projects/halftone.jpg" data-depth="/assets/img/projects/halftone-depth.png" role="img" aria-label="Des cyclistes qui s'éloignent sur une route, imprimés en points cyan, magenta, jaune et noir"></canvas>
+<canvas class="halftone" data-halftone="/assets/img/projects/halftone.jpg" data-depth="/assets/img/projects/halftone-depth.png" role="img" aria-label="Des supporters agitent des drapeaux jaunes autour du bus du Stade Rochelais, sous la fumée rouge des fumigènes, imprimés en points cyan, magenta, jaune et noir"></canvas>
 
-<p class="halftone-tools" hidden><input type="file" accept="image/*" hidden><button type="button" class="btn btn-sm btn-outline-secondary" data-pick>Imprimer votre photo</button> <button type="button" class="btn btn-sm btn-outline-secondary" data-reprint>Nouveau tirage</button> <button type="button" class="btn btn-sm btn-outline-secondary" data-riso aria-pressed="false">Encres Riso</button> <button type="button" class="btn btn-sm btn-outline-secondary" data-gif>Télécharger le GIF</button> <button type="button" class="btn btn-sm btn-outline-secondary" data-video>Télécharger la vidéo</button> <small data-busy="Calcul de ce qui est près et de ce qui est loin…">Ou glissez ou collez une photo sur l'impression. Elle ne quitte pas votre navigateur.</small></p>
+<div class="halftone-tools" hidden>
+<p><span class="halftone-label">Photo</span><input type="file" accept="image/*" hidden><button type="button" data-pick>En choisir une</button><small aria-live="polite" data-busy="Calcul de ce qui est près et de ce qui est loin…">ou glissez-la ou collez-la sur l'impression. Elle ne quitte pas votre navigateur.</small></p>
+<p role="radiogroup" aria-label="Encres"><span class="halftone-label">Encres</span><label><input type="radio" name="inks" value="cmyk" checked><span></span>CMJN</label><label><input type="radio" name="inks" value="pink-blue"><span></span>Rose fluo, bleu</label><label><input type="radio" name="inks" value="pink-blue-yellow"><span></span>Rose fluo, bleu, jaune</label><label><input type="radio" name="inks" value="sunflower-black"><span></span>Tournesol, noir</label><label><input type="radio" name="inks" value="teal-orange"><span></span>Sarcelle, orange</label><label><input type="radio" name="inks" value="aqua-red"><span></span>Aqua, rouge</label></p>
+<p><span class="halftone-label">Presse</span><label>Points <input type="range" name="dots" min="1" max="4" step="0.5" value="1.5" data-unit=" px"><output></output></label><label>Désordre <input type="range" name="disorder" min="0" max="1" step="0.1" value="0.5"><output></output></label><label>Tremblement <input type="range" name="shake" min="0" max="2" step="0.25" value="1" data-unit="×"><output></output></label><label>Profondeur <input type="range" name="depth" min="0" max="2" step="0.25" value="1" data-unit="×"><output></output></label><label>Hors repère <input type="range" name="register" min="0" max="2" step="0.25" value="1" data-unit="×"><output></output></label><label>Usure <input type="range" name="wear" min="0" max="1" step="0.1" value="0.5"><output></output></label></p>
+<p><span class="halftone-label">Enregistrer</span><button type="button" data-gif>GIF</button><button type="button" data-video>MP4</button></p>
+</div>
 
-Matt DesLauriers a publié en 2021 [une photo reconstruite en plaques CMJN tramées](https://x.com/mattdesl/status/1402284658671378432)
-sans dire comment elle était faite, alors je l'ai reconstruite dans le navigateur, en mesurant sa vidéo image par image jusqu'à ce que la mienne bouge pareil.
+En 2021, Matt DesLauriers a publié [une photo reconstruite en plaques CMJN tramées](https://x.com/mattdesl/status/1402284658671378432).
+[En réponse à quelqu'un](https://x.com/mattdesl/status/1402318658941108224), il a donné la recette de l'image :
+séparer la photo en cyan, magenta, jaune et noir, tramer chaque couche jusqu'à n'avoir plus que des points, puis
+dessiner un cercle de l'encre correspondante sur chaque point, en multiplication. Il n'a pas dit comment ça
+bouge, et c'est le mouvement qui donne la profondeur. Je l'ai refait dans le navigateur, en mesurant sa vidéo
+image par image jusqu'à ce que la mienne bouge pareil.
 
-### Comment c'est fait
+L'image fixe suit sa recette, avec Floyd-Steinberg pour le tramage. Les cercles débordent un peu de leur
+cellule, comme l'encre qui s'étale, donc chaque plaque est tramée un peu plus claire pour compenser. Les
+couleurs sont celles des encres d'imprimerie plutôt que celles de l'écran, sur un papier blanc cassé.
 
-1. **Quatre plaques.** La photo est séparée naïvement en cyan, magenta et jaune,
-   chacun le négatif d'un canal (le cyan est là où le rouge manque), avec un peu
-   de noir sous les couleurs les plus sombres. Une vraie presse retire la couleur
-   que son noir remplace ; celle-ci non, et ça fait partie du rendu.
-2. **Tramage.** Chaque plaque devient une grille de cellules, encrées ou nues,
-   par diffusion d'erreur de Floyd-Steinberg : chaque cellule est arrondie à
-   « encre » ou « pas d'encre », et l'erreur d'arrondi est reportée sur les
-   voisines pas encore tracées, si bien que chaque petite zone garde son ton. Le
-   seuil est bruité pour que les points ne s'alignent jamais en rangées, et chaque
-   plaque est tramée depuis un coin différent pour que les quatre grains ne
-   coïncident pas, ce que font les angles de trame sur une vraie presse.
-3. **L'encre sur le papier.** Chaque cellule encrée reçoit un point rond un peu
-   plus large qu'elle, comme l'encre qui s'étale, et les plaques sont tramées un
-   peu plus claires pour compenser. Les quatre plaques se multiplient sur une
-   feuille blanc cassé à peine texturée, aux couleurs des encres d'imprimerie : là
-   où deux se chevauchent, chacune filtre la lumière que l'autre laisse passer,
-   c'est toute la synthèse soustractive.
-4. **Le tremblement.** Douze fois par seconde, la feuille saute de moins d'une
-   cellule dans une nouvelle direction, et chaque plaque dérive un peu de son
-   côté, hors repère. Les mouvements sont un bruit lisse plutôt que des cercles,
-   aux amplitudes et aux rythmes de la vidéo.
-5. **La profondeur.** La partie que le tweet ne montre pas. Une carte de
-   profondeur, calculée par Depth Anything, un réseau de neurones qui devine les
-   distances sur une seule image, dit à quelle distance est chaque point. Chaque
-   plaque est dessinée comme vue depuis son propre point de vue, un peu à l'écart
-   de celui des autres et qui se promène : le proche glisse d'un côté, le lointain
-   de l'autre, et le plan du milieu reste immobile. L'œil lit ce désaccord comme
-   du relief, un peu comme il lit les deux images de nos deux yeux. Ajusté sur la
-   vidéo, le glissement suit la proximité à la puissance 0,3, et les plaques
-   bougent par demi-cellules entières, si bien que les points sautent au lieu de
-   baver.
-6. **L'usure.** Des rayures verticales pointillées montrent où une plaque n'a
-   pas imprimé, et une dernière passe floute la couleur plus que la lumière, comme
-   l'a fait la compression vidéo du tweet.
-7. **Deux tirages ne se ressemblent jamais.** Chaque photo, et chaque *Nouveau
-   tirage*, a sa propre presse, tirée autour de ce que montre la vidéo : elle
-   tremble plus ou moins fort, repère plus ou moins mal ses plaques, bave et se
-   raye plus ou moins, et trame chaque plaque depuis un autre coin. *Encres Riso*
-   remplace les encres d'imprimerie par le rose fluo, le bleu et le jaune d'un
-   risographe, pour lesquels la séparation n'a jamais été faite.
-8. **Votre photo.** Elle est lue dans votre navigateur, et sa carte de
-   profondeur y est calculée aussi, par le même réseau (environ 27 Mo,
-   téléchargés une fois). Le GIF, pour une page web, fait 24 images dont les
-   mouvements reviennent à leur point de départ, si bien qu'il boucle sans saut,
-   avec autour la marge de papier du tweet. La vidéo, pour les réseaux sociaux,
-   est la même boucle jouée trois fois, chaque point doublé pour survivre à leur
-   compression.
+Douze fois par seconde, toute la feuille tremble de moins d'un point, et chaque plaque dérive un peu de son
+côté. Les deux sont mesurés sur la vidéo. La profondeur vient d'une carte de profondeur estimée par Depth
+Anything, un réseau de neurones qui devine les distances à partir d'une seule image. Chaque plaque est
+dessinée comme vue de son propre point de vue, un peu à l'écart des autres et qui se promène : ce qui est
+proche glisse d'un côté, ce qui est loin de l'autre, et le plan du milieu ne bouge pas. Sur la vidéo, le
+décalage suit la proximité à la puissance 0,3. Chaque tirage a sa propre presse : tremblement, repérage et
+rayures sont tirés au hasard autour de ces valeurs.
+
+Deux choses ont mal tourné en route. La première, c'est le moiré. Floyd-Steinberg n'est pas aléatoire : il
+s'installe dans des chaînes de points et, autour de la moitié d'encre, dans des damiers, et chaque plaque a
+les siens. Superposés, deux motifs presque réguliers battent en ondes lentes, qui avancent quand les plaques
+bougent. Du bruit sur le seuil cassait les rangées, pas les chaînes. Maintenant le seuil ondule en bruit
+bleu : une tuile de seuils classés pour que les cellules sous chacun soient réparties le plus régulièrement
+possible (le void-and-cluster d'Ulichney), lue à un endroit différent par chaque plaque. La diffusion
+d'erreur garde la tonalité et les contours, les points se répartissent de façon homogène, et les plaques
+n'ont plus de motif commun qui puisse battre. Les points sont aussi un peu décalés du centre de leur
+cellule : sur une grille commune, le recouvrement de deux plaques dépend de leur écart, et cet écart change
+avec la profondeur.
+
+La seconde, c'est au bord des objets proches. Déplacer chaque point selon la profondeur sous lui empilait
+les points d'un côté d'un drapeau et ouvrait un trou de l'autre, et ces trous s'ouvraient et se refermaient
+au gré des points de vue. Maintenant chaque pixel va chercher son encre là où la profondeur sous lui
+l'indique : rien ne peut s'empiler ni se déchirer. Seul, ça laisserait le fond grignoter le bord du
+drapeau, donc la carte de profondeur est d'abord gonflée un peu au-delà de la silhouette de chaque objet
+proche, puis adoucie : le drapeau bouge d'un bloc, et la plaque s'étire sur ce qui est juste derrière lui.
+
+Les jeux Riso sont deux ou trois encres de risographe sur papier crème. Le cyan, le magenta et le jaune ne
+veulent rien dire pour elles, alors chaque jeu a sa propre séparation : la quantité de chaque encre qui
+reconstruit le mieux la couleur, par moindres carrés sur leurs densités optiques.
 
 <p class="stack"><span>WebGL2</span><span>GLSL</span><span>JavaScript</span></p>
 
