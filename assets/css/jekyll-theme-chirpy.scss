@@ -1008,7 +1008,12 @@ body {
     line-height: 1.45;
   }
 
-  /* a slider: its name and value on a line, the slider under them */
+  /* a slider: its name and value on a line, the slider under them, and a
+     little room before the next one */
+  small + label {
+    margin-top: 0.5rem;
+  }
+
   > label {
     display: grid;
     grid-template-columns: 1fr auto;

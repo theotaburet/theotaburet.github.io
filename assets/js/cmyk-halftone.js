@@ -926,8 +926,9 @@ onmessage = async ({ data: { id, blob } }) => {
 
   /* Beside the print, or under it on a narrow screen: a panel that shows one
      thing at a time. Its root lists the photo and six topics, each with what
-     it is set to; a topic goes through its settings a step at a time, back
-     and forth or straight to one by its dot, and the export through the file,
+     it is set to; a topic goes through its choices a step at a time, its
+     sliders together on one, back and forth or straight to a step by its
+     dot, and the export through the file,
      its size, its loops if it is a video and a recap, each choice tapped
      moving on to the next. The photo is the visitor's own if they like,
      picked, dropped on the print or pasted, read locally (nothing is sent
@@ -1052,8 +1053,10 @@ onmessage = async ({ data: { id, blob } }) => {
       recap.querySelector("[data-length]").textContent = mp4 ? length.textContent : 24 / fx.params.fps + " s, " + recap.querySelector("[data-length]").dataset.gif;
       bar.querySelectorAll("[data-open]").forEach(function (row) {
         row.lastChild.textContent = steps(bar.querySelector("[data-topic=" + row.dataset.open + "]")).map(function (s) {
-          var c = s.querySelector(":checked"), r = s.querySelector("[type=range]");
-          return s === loops ? length.textContent : c ? c.parentNode.textContent : r ? s.querySelector("span").textContent.toLowerCase() + " " + r.nextElementSibling.textContent : "";
+          var c = s.querySelector(":checked");
+          return s === loops ? length.textContent : c ? c.parentNode.textContent : [].map.call(s.querySelectorAll("[type=range]"), function (r) {
+            return r.previousElementSibling.textContent.toLowerCase() + " " + r.nextElementSibling.textContent;
+          }).join(" · ");
         }).filter(Boolean).join(" · ");
       });
     };
@@ -1085,6 +1088,7 @@ onmessage = async ({ data: { id, blob } }) => {
         if (s === step) dot.setAttribute("aria-current", "step");
         dot.onclick = function () { show(topic, s); };
       });
+      prev.hidden = !i; // the way back to the root is up top
       next.hidden = !!step.querySelector("[data-save]");
       next.textContent = i === all.length - 1 ? next.dataset.done : next.dataset.next;
       (step.querySelector(":checked, input, button") || step).focus({ preventScroll: true });
