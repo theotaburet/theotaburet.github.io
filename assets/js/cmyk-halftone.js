@@ -908,17 +908,34 @@ onmessage = async ({ data: { id, blob } }) => {
   // Or two or three drums drawn at random, also on cream: a dark one, so the
   // print keeps its shadows, and one or two bright ones, none too like
   // another for the separation to tell them apart.
-  var DARK = ["0078bf", "3255a4", "3d5588", "00838a", "00a95c", "765ba7", "914e72", "407060", "1d1d1b", "484d7a", "925f52", "6c5d80", "235ba8", "2f6165"].map(hex);
-  var BRIGHT = ["ff48b0", "ffe800", "ffb511", "ff6c2f", "5ec8e5", "ff665e", "f15060", "ff7477", "62a8e5", "82d8d5", "e3ed55", "f984ca", "9d7ad2", "67b346", "ffae3b", "00aa93"].map(hex);
+  // Each by its name on the page's language.
+  var fr = /^fr/.test(document.documentElement.lang);
+  var drums = function (list) { return list.map(function (d) { return { ink: hex(d[0]), name: d[fr ? 2 : 1] }; }); };
+  var DARK = drums([
+    ["0078bf", "blue", "bleu"], ["3255a4", "medium blue", "bleu moyen"], ["3d5588", "federal blue", "bleu fédéral"],
+    ["00838a", "teal", "sarcelle"], ["00a95c", "green", "vert"], ["765ba7", "purple", "pourpre"],
+    ["914e72", "burgundy", "bordeaux"], ["407060", "hunter green", "vert chasseur"], ["1d1d1b", "black", "noir"],
+    ["484d7a", "indigo", "indigo"], ["925f52", "brown", "brun"], ["6c5d80", "grape", "raisin"],
+    ["235ba8", "lake", "lac"], ["2f6165", "lagoon", "lagon"]
+  ]);
+  var BRIGHT = drums([
+    ["ff48b0", "fluo pink", "rose fluo"], ["ffe800", "yellow", "jaune"], ["ffb511", "sunflower", "tournesol"],
+    ["ff6c2f", "orange", "orange"], ["5ec8e5", "aqua", "aqua"], ["ff665e", "red", "rouge"],
+    ["f15060", "bright red", "rouge vif"], ["ff7477", "fluo orange", "orange fluo"], ["62a8e5", "cornflower", "bleuet"],
+    ["82d8d5", "mint", "menthe"], ["e3ed55", "light lime", "citron vert"], ["f984ca", "bubble gum", "chewing-gum"],
+    ["9d7ad2", "violet", "violet"], ["67b346", "kelly green", "vert prairie"], ["ffae3b", "melon", "melon"],
+    ["00aa93", "turquoise", "turquoise"]
+  ]);
   var any = function (a) { return a[Math.floor(Math.random() * a.length)]; };
   var near = function (a, b) { return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) < 0.35; };
   function draw() {
-    var inks = [any(DARK)], n = Math.random() < 0.5 ? 2 : 3;
-    while (inks.length < n) {
-      var ink = any(BRIGHT);
-      if (!inks.some(function (i) { return near(i, ink); })) inks.unshift(ink);
+    var picks = [any(DARK)], n = Math.random() < 0.5 ? 2 : 3;
+    while (picks.length < n) {
+      var p = any(BRIGHT);
+      if (!picks.some(function (q) { return near(q.ink, p.ink); })) picks.unshift(p);
     }
-    return { inks: inks, paper: CREAM };
+    var names = picks.map(function (p) { return p.name; }).join(", ");
+    return { inks: picks.map(function (p) { return p.ink; }), paper: CREAM, names: names[0].toUpperCase() + names.slice(1) };
   }
 
   // What each slider sets in the renderer's settings, from its value.
@@ -1003,6 +1020,7 @@ onmessage = async ({ data: { id, blob } }) => {
         chips.textContent = "";
         chips.style.background = css(set.paper);
         set.inks.forEach(function (ink) { chips.appendChild(document.createElement("i")).style.background = css(ink); });
+        if (set.names) radio.dataset.names = set.names;
       };
       var use = function () {
         Object.assign(fx.base, set);
@@ -1018,6 +1036,7 @@ onmessage = async ({ data: { id, blob } }) => {
           paint();
         }
         use();
+        tell();
       };
     });
     bar.querySelectorAll("input[name=format]").forEach(function (radio) {
@@ -1073,8 +1092,11 @@ onmessage = async ({ data: { id, blob } }) => {
       bar.querySelector("[name=file][value=mp4]").parentNode.hidden = true;
       bar.querySelector("[name=file][value=gif]").checked = true;
     }
+    var drawn = bar.querySelector("[data-drawn]");
     var tell = function () {
-      var mp4 = val("file").value === "mp4", f = frame(fx.aspect, +val("size").value);
+      var mp4 = val("file").value === "mp4", f = frame(fx.aspect, +val("size").value), inks = val("inks");
+      drawn.hidden = !inks.dataset.names;
+      drawn.lastChild.textContent = inks.dataset.names || "";
       loops.hidden = !mp4;
       length.textContent = (fx.base.loops * 24) / fx.params.fps + " s";
       recap.querySelector("[data-file]").textContent = val("file").parentNode.textContent;
@@ -1083,7 +1105,7 @@ onmessage = async ({ data: { id, blob } }) => {
       bar.querySelectorAll("[data-open]").forEach(function (row) {
         row.lastChild.textContent = steps(bar.querySelector("[data-topic=" + row.dataset.open + "]")).map(function (s) {
           return s === loops ? length.textContent : [].map.call(s.querySelectorAll(":checked, [type=range]"), function (i) {
-            return i.type === "radio" ? i.parentNode.textContent : i.previousElementSibling.textContent.toLowerCase() + " " + i.nextElementSibling.textContent;
+            return i.type === "radio" ? i.dataset.names || i.parentNode.textContent : i.previousElementSibling.textContent.toLowerCase() + " " + i.nextElementSibling.textContent;
           }).join(" · ");
         }).filter(Boolean).join(" · ");
       });
