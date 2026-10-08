@@ -603,12 +603,12 @@ void main() {
 
   // Every print gets its own press, drawn around the reference's values: how
   // hard it shakes, how far each plate wanders and sits off register, how much
-  // the colour bleeds, and how scratched it is.
+  // how scratched it is. The colours bleed alike on every one.
   function press() {
     var r = function (a, b) { return a + Math.random() * (b - a); };
     return {
       seed: r(0, 1000), shake: r(0.6, 1.5), drift: r(0.6, 1.6), depth: r(0.7, 1.4), depthDiff: r(0.7, 1.4),
-      register: [0, 0, 0, 0, 0, 0, 0, 0].map(function () { return r(-1, 1); }), chroma: r(0.6, 1.4), scratches: r(0, 2)
+      register: [0, 0, 0, 0, 0, 0, 0, 0].map(function () { return r(-1, 1); }), scratches: r(0, 2)
     };
   }
   function pressed(P, d) {
@@ -620,7 +620,7 @@ void main() {
       ampDepthDiff: P.ampDepthDiff * d.depthDiff * P.motion,
       register: d.register.map(function (v) { return v * P.misregister; }),
       lumaBlur: P.lumaBlur * P.soft,
-      chromaBlur: P.chromaBlur * d.chroma * P.soft,
+      chromaBlur: P.chromaBlur * P.soft,
       scratchesMean: 4 * P.scratches * d.scratches,
       rough: 0.6 * P.starve
     };
@@ -861,11 +861,13 @@ onmessage = async ({ data: { id, blob } }) => {
   // The loop three times over as an H.264 MP4, encoded frame by frame
   // (WebCodecs), not recorded as it plays, so no frame is lost at either end.
   // About 16 bits a dot a frame, whatever the size: what costs is the dots.
+  // ponytail: held to 40 Mbit/s (the default's 33 and some), since asking a
+  // hardware encoder for the 280 that 960 dots came to hung a Mac outright.
   async function video(fx, R) {
     var M = await import("https://cdn.jsdelivr.net/npm/mediabunny@1.61.3/dist/bundles/mediabunny.min.mjs");
     var c = copy(fx, R), fps = fx.params.fps, dots = fx.plates.width * fx.plates.height;
     var out = new M.Output({ format: new M.Mp4OutputFormat(), target: new M.BufferTarget() });
-    var track = new M.CanvasSource(c.ctx.canvas, { codec: "avc", bitrate: 16 * dots * fps, keyFrameInterval: 2 });
+    var track = new M.CanvasSource(c.ctx.canvas, { codec: "avc", bitrate: Math.min(16 * dots * fps, 40e6), keyFrameInterval: 2 });
     out.addVideoTrack(track, { frameRate: fps });
     await out.start();
     for (var i = 0; i < 72; i++) {
