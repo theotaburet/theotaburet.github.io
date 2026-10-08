@@ -654,10 +654,11 @@ void main() {
   }
 
   /* -------------------------------------------------------------------------
-     Page: one renderer per canvas, its dots 1.5 CSS px unless the visitor says
-     otherwise (finer than the reference's 2) and a whole number of device
-     pixels, its moves still the reference's size on screen. Animated only
-     while on screen, and never for someone who asked for less motion.
+     Page: one renderer per canvas. A card's dots are 1.5 CSS px (finer than
+     the reference's 2) and a whole number of device pixels; the print under
+     its project has as many dots across its sheet on a phone as on a desktop.
+     Animated only while on screen, and never for someone who asked for less
+     motion.
      ---------------------------------------------------------------------- */
   var still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var dpr = Math.max(1, Math.round(window.devicePixelRatio || 1));
@@ -667,6 +668,14 @@ void main() {
   function sizes(dots, dpr) {
     var cell = Math.max(2, Math.round(dots * dpr));
     return { dots: dots, cell: cell, scale: (2 * dpr) / cell, lumaBlur: 0.22 * cell, chromaBlur: 0.33 * cell };
+  }
+
+  // `dots` across a sheet `side` px on its short side, whatever the screen:
+  // the cell a fraction of the sheet, and the moves and the blur with it, as
+  // they were with 1.5 px dots on a 480 px sheet.
+  function ruling(dots, side) {
+    var cell = side / dots;
+    return { cell: cell, scale: (2 * dots) / 480, lumaBlur: 0.22 * cell, chromaBlur: 0.33 * cell };
   }
 
   document.querySelectorAll("canvas[data-halftone]").forEach(function (canvas) {
@@ -791,12 +800,14 @@ onmessage = async ({ data: { id, blob } }) => {
   // The sheet as wide as its canvas, in the format's shape or else the photo's,
   // and the whole photo on it in whole cells, at least `padding` of its short
   // side from every edge, the rest bare paper. The one under its project fits
-  // inside its canvas's fixed box, so the controls below never move, and is
-  // sized to its device pixels so no dot is resampled; a card's is blurred anyway.
+  // inside its canvas's fixed box, so the controls below never move, sized to
+  // its device pixels, its dots a share of the sheet; a card's is blurred anyway.
   function print(fx, img) {
     var P = fx.base, p = P.padding || 0, r = img.width / img.height, b = p / (1 - 2 * p), c = fx.canvas;
+    var tool = c.classList.contains("halftone");
     fx.aspect = P.aspect || (Math.max(r, 1) + 2 * b) / (Math.max(1 / r, 1) + 2 * b);
-    var W = Math.floor(Math.min(c.clientWidth, c.classList.contains("halftone") ? c.clientHeight * fx.aspect : Infinity) * dpr), H = Math.round(W / fx.aspect);
+    var W = Math.floor(Math.min(c.clientWidth, tool ? c.clientHeight * fx.aspect : Infinity) * dpr), H = Math.round(W / fx.aspect);
+    if (tool) Object.assign(P, ruling(P.dots, Math.min(W, H))), fx.update();
     var m = p * Math.min(W, H), k = Math.min((W - 2 * m) / img.width, (H - 2 * m) / img.height) / P.cell;
     fx.image = img;
     fx.setPlates(buildPlates(img, { width: Math.ceil(img.width * k), height: Math.ceil(img.height * k), margin: P.margin, gain: Math.PI * P.radius * P.radius, inks: P.inks, paper: P.paper }), W, H);
@@ -890,7 +901,6 @@ onmessage = async ({ data: { id, blob } }) => {
 
   // What each slider sets in the renderer's settings, from its value.
   var KNOBS = {
-    dots: function (v) { return sizes(v, dpr); },
     disorder: function (v) { return { jitter: v }; },
     // shake is how much the press moves at all, and at 0 the print holds still;
     // off register is how far the plates sit and wander apart, depth how far
