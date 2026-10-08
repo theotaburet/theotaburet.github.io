@@ -905,6 +905,22 @@ onmessage = async ({ data: { id, blob } }) => {
   };
   var css = function (c) { return "rgb(" + c.map(function (v) { return Math.round(v * 255); }) + ")"; };
 
+  // Or two or three drums drawn at random, also on cream: a dark one, so the
+  // print keeps its shadows, and one or two bright ones, none too like
+  // another for the separation to tell them apart.
+  var DARK = ["0078bf", "3255a4", "3d5588", "00838a", "00a95c", "765ba7", "914e72", "407060", "1d1d1b", "484d7a", "925f52", "6c5d80", "235ba8", "2f6165"].map(hex);
+  var BRIGHT = ["ff48b0", "ffe800", "ffb511", "ff6c2f", "5ec8e5", "ff665e", "f15060", "ff7477", "62a8e5", "82d8d5", "e3ed55", "f984ca", "9d7ad2", "67b346", "ffae3b", "00aa93"].map(hex);
+  var any = function (a) { return a[Math.floor(Math.random() * a.length)]; };
+  var near = function (a, b) { return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) < 0.35; };
+  function draw() {
+    var inks = [any(DARK)], n = Math.random() < 0.5 ? 2 : 3;
+    while (inks.length < n) {
+      var ink = any(BRIGHT);
+      if (!inks.some(function (i) { return near(i, ink); })) inks.unshift(ink);
+    }
+    return { inks: inks, paper: CREAM };
+  }
+
   // What each slider sets in the renderer's settings, from its value.
   var KNOBS = {
     // the ones in % are shares of the renderer's 1
@@ -979,16 +995,29 @@ onmessage = async ({ data: { id, blob } }) => {
     canvas.ondrop = function (e) { e.preventDefault(); load(e.dataTransfer.files[0]); };
     document.addEventListener("paste", function (e) { load(e.clipboardData.files[0]); });
 
-    // each ink set shows its inks overprinted on its paper
+    // each ink set shows its inks overprinted on its paper; the random one
+    // the draw it will print, and a new one at each click once printed
     bar.querySelectorAll("input[name=inks]").forEach(function (radio) {
-      var set = INKS[radio.value], chips = radio.nextElementSibling;
-      chips.style.background = css(set.paper);
-      set.inks.forEach(function (ink) { chips.appendChild(document.createElement("i")).style.background = css(ink); });
-      if (radio.checked) Object.assign(fx.base, set);
-      radio.onchange = function () {
+      var set = INKS[radio.value] || draw(), chips = radio.nextElementSibling;
+      var paint = function () {
+        chips.textContent = "";
+        chips.style.background = css(set.paper);
+        set.inks.forEach(function (ink) { chips.appendChild(document.createElement("i")).style.background = css(ink); });
+      };
+      var use = function () {
         Object.assign(fx.base, set);
         fx.update();
         print(fx, fx.image);
+      };
+      paint();
+      if (radio.checked) Object.assign(fx.base, set);
+      if (INKS[radio.value]) return (radio.onchange = use);
+      radio.onclick = function () {
+        if (fx.base.inks === set.inks) {
+          set = draw();
+          paint();
+        }
+        use();
       };
     });
     bar.querySelectorAll("input[name=format]").forEach(function (radio) {
@@ -1053,9 +1082,8 @@ onmessage = async ({ data: { id, blob } }) => {
       recap.querySelector("[data-length]").textContent = mp4 ? length.textContent : 24 / fx.params.fps + " s, " + recap.querySelector("[data-length]").dataset.gif;
       bar.querySelectorAll("[data-open]").forEach(function (row) {
         row.lastChild.textContent = steps(bar.querySelector("[data-topic=" + row.dataset.open + "]")).map(function (s) {
-          var c = s.querySelector(":checked");
-          return s === loops ? length.textContent : c ? c.parentNode.textContent : [].map.call(s.querySelectorAll("[type=range]"), function (r) {
-            return r.previousElementSibling.textContent.toLowerCase() + " " + r.nextElementSibling.textContent;
+          return s === loops ? length.textContent : [].map.call(s.querySelectorAll(":checked, [type=range]"), function (i) {
+            return i.type === "radio" ? i.parentNode.textContent : i.previousElementSibling.textContent.toLowerCase() + " " + i.nextElementSibling.textContent;
           }).join(" · ");
         }).filter(Boolean).join(" · ");
       });
@@ -1069,7 +1097,10 @@ onmessage = async ({ data: { id, blob } }) => {
     var prev = bar.querySelector("[data-prev]"), next = bar.querySelector("[data-next]"), on = null, at = null;
     next.dataset.next = next.textContent;
     var steps = function (topic) { return [].filter.call(topic.querySelectorAll(".step"), function (s) { return !s.hidden; }); };
-    bar.querySelectorAll(".step").forEach(function (s) { s.inert = true; });
+    // the panel as tall as the root or the topic last opened, whichever is
+    // taller, and a topic's steps all as tall as its tallest
+    var topics = bar.querySelectorAll("[data-topic]");
+    topics.forEach(function (t) { t.hidden = true; });
     var show = function (topic, step) {
       var left = on;
       on = topic;
@@ -1077,6 +1108,7 @@ onmessage = async ({ data: { id, blob } }) => {
       root.inert = !!topic;
       view.inert = !topic;
       bar.querySelectorAll(".step").forEach(function (s) { s.inert = s !== step; });
+      if (topic) topics.forEach(function (t) { t.hidden = t !== topic; });
       if (!topic) return bar.querySelector("[data-open=" + left.dataset.topic + "]").focus({ preventScroll: true });
       var all = steps(topic), i = all.indexOf(step);
       title.textContent = bar.querySelector("[data-open=" + topic.dataset.topic + "] b").textContent;

@@ -998,8 +998,22 @@ body {
   padding: 1rem 1rem 0.4rem;
 
   > span,
-  > label > span {
+  > label > span,
+  > div > span {
     font-weight: 600;
+  }
+
+  /* a choice or a slider among others, a little room before it */
+  > div,
+  > label {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  > div + div,
+  > div + label,
+  small + label {
+    margin-top: 0.5rem;
   }
 
   small {
@@ -1008,12 +1022,7 @@ body {
     line-height: 1.45;
   }
 
-  /* a slider: its name and value on a line, the slider under them, and a
-     little room before the next one */
-  small + label {
-    margin-top: 0.5rem;
-  }
-
+  /* a slider: its name and value on a line, the slider under them */
   > label {
     display: grid;
     grid-template-columns: 1fr auto;
