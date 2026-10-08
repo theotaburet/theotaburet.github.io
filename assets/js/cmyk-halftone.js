@@ -1001,13 +1001,18 @@ onmessage = async ({ data: { id, blob } }) => {
       var out = input.nextElementSibling, show = function () { out.textContent = input.value + (input.dataset.unit || ""); };
       show();
       Object.assign(fx.base, knob(input.name, +input.value));
-      input.oninput = function () {
-        show();
+      var redither = input.name === "dots" || input.name === "padding"; // new cells, a new dither
+      var set = function () {
         Object.assign(fx.base, knob(input.name, +input.value));
         fx.update();
-        if (input.name === "dots" || input.name === "padding") print(fx, fx.image); // new cells, a new dither
+        if (redither) print(fx, fx.image);
         else fx.render();
       };
+      input.oninput = function () {
+        show();
+        if (!redither) set();
+      };
+      if (redither) input.onchange = set; // once let go: a new dither at every step of a drag flickers like static
     });
     fx.update();
 
