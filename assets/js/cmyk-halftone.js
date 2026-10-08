@@ -31,7 +31,6 @@ uniform float uCell;            // size of a cell in pixels
 uniform float uRadius;          // dot radius in cells
 uniform vec2  uOffsets[4];      // offset of each plate in cells
 uniform sampler2D uDepth;       // nearness, 0 far to 1 near
-uniform vec2  uDepthCrop;       // how much of the depth map the plates cover, about its centre
 uniform float uDepthCurve;      // the parallax follows nearness to this power
 uniform float uPivot;           // and stands still at this value of it
 uniform vec2  uCam[4];          // each plate's viewpoint: cells of shift per unit of nearness
@@ -41,6 +40,7 @@ uniform float uJitter;          // how far a dot may sit from its cell's centre,
 uniform float uRough;           // how much of the ink fails to take, in patches the size of a dot
 uniform float uGrain;           // how much the sheet's fibres and clouds show
 uniform vec2  uBorder;          // px of bare paper left and below the print (as much right and above)
+uniform vec4  uGround;          // a flat colour round the print instead of the sheet, if alpha is 1
 
 // vertical scratches: A = (x px, y0 px, y1 px, width px); B = (plate bitmask, strength, seed, 0)
 uniform int   uScratchCount;
@@ -76,7 +76,7 @@ float inked(ivec2 c, int plate) {
 // and its viewpoint over the depth there, smoothly, so that two dots side by
 // side never jump apart along a line of the depth map
 vec2 shiftAt(vec2 at, int plate) {
-  float z = pow(texture(uDepth, 0.5 + ((at + uMargin) / uPlateSize - 0.5) * uDepthCrop).r, uDepthCurve) - uPivot;
+  float z = pow(texture(uDepth, at / (uPlateSize - 2.0 * uMargin)).r, uDepthCurve) - uPivot;
   return floor(uOffsets[plate] * 2.0 + 0.5) / 2.0 + z * uCam[plate];
 }
 
@@ -138,7 +138,7 @@ void main() {
   vec2 fragPx = gl_FragCoord.xy - uBorder;
   vec3 color = uPaper * sheet(gl_FragCoord.xy / uCell);
   if (any(lessThan(fragPx, vec2(0.0))) || any(greaterThanEqual(fragPx, (uPlateSize - 2.0 * uMargin) * uCell))) {
-    fragColor = vec4(color, 1.0);
+    fragColor = vec4(mix(color, uGround.rgb, uGround.a), 1.0);
     return;
   }
   for (int p = 0; p < 4; p++)
@@ -233,10 +233,9 @@ void main() {
     return out;
   }
 
-  // Resampled to the plane through a 2D canvas (bilinear), cropped to its shape.
+  // The whole photo resampled to `width` x `height` cells through a 2D canvas
+  // (bilinear), its edges carried out over `margin` more cells each side.
   function buildPlates(image, opts) {
-    opts = opts || {};
-    var planeWidth = opts.planeWidth || 320;
     // fitted on the reference video
     var kWeight = opts.kWeight != null ? opts.kWeight : 0.3;
     var contrast = opts.contrast || 1.1;
@@ -248,25 +247,25 @@ void main() {
     var spread = 1 / (opts.gain || 1);
     var riso = opts.inks && opts.inks.length < 4 && separate(opts.inks, opts.paper);
 
-    var w = planeWidth;
-    var h = opts.planeHeight || Math.max(1, Math.round((planeWidth * image.height) / image.width));
-    var s = Math.min(image.width / w, image.height / h); // px of photo a cell, cropped to the plane about its centre
+    var cw = opts.width, ch = opts.height, mg = opts.margin;
+    var w = cw + 2 * mg, h = ch + 2 * mg;
 
     var cv = document.createElement("canvas");
-    cv.width = w;
-    cv.height = h;
+    cv.width = cw;
+    cv.height = ch;
     var ctx = cv.getContext("2d", { willReadFrequently: true });
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
-    ctx.drawImage(image, (image.width - w * s) / 2, (image.height - h * s) / 2, w * s, h * s, 0, 0, w, h);
-    var px = ctx.getImageData(0, 0, w, h).data;
+    ctx.drawImage(image, 0, 0, cw, ch);
+    var px = ctx.getImageData(0, 0, cw, ch).data;
 
     var n = w * h;
     var planes = [0, 1, 2, 3].map(function () { return new Float32Array(n); });
     var c = planes[0], m = planes[1], y = planes[2], k = planes[3];
 
     for (var i = 0; i < n; i++) {
-      var r = (px[i * 4] / 255) * balance[0], g = (px[i * 4 + 1] / 255) * balance[1], b = (px[i * 4 + 2] / 255) * balance[2];
+      var at = (Math.min(ch - 1, Math.max(0, ((i / w) | 0) - mg)) * cw + Math.min(cw - 1, Math.max(0, (i % w) - mg))) * 4;
+      var r = (px[at] / 255) * balance[0], g = (px[at + 1] / 255) * balance[1], b = (px[at + 2] / 255) * balance[2];
       // light grade: saturation around luminance, then contrast around 0.5
       var l = 0.299 * r + 0.587 * g + 0.114 * b;
       r = l + (r - l) * saturation; g = l + (g - l) * saturation; b = l + (b - l) * saturation;
@@ -291,7 +290,7 @@ void main() {
       var bits = floydSteinberg(planes[p], w, h, f[p], noise);
       for (var j = 0; j < n; j++) data[j * 4 + p] = bits[j] * 255;
     }
-    return { width: w, height: h, data: data, crop: [(w * s) / image.width, (h * s) / image.height] };
+    return { width: w, height: h, data: data };
   }
 
   // A risograph's drums get their own separation: as much of each ink as best
@@ -384,7 +383,7 @@ void main() {
 
       this.progA = this.link(VERT, HALFTONE_FRAG);
       this.progB = this.link(VERT, CHROMA_FRAG);
-      for (const n of ["uPlates", "uPlateSize", "uMargin", "uCell", "uRadius", "uOffsets", "uDepth", "uDepthCrop", "uCam", "uDepthCurve", "uPivot", "uInks", "uPaper", "uBorder", "uJitter", "uRough", "uGrain", "uScratchCount", "uScratchA", "uScratchB"])
+      for (const n of ["uPlates", "uPlateSize", "uMargin", "uCell", "uRadius", "uOffsets", "uDepth", "uCam", "uDepthCurve", "uPivot", "uInks", "uPaper", "uBorder", "uGround", "uJitter", "uRough", "uGrain", "uScratchCount", "uScratchA", "uScratchB"])
         this.uA[n] = gl.getUniformLocation(this.progA, n);
       for (const n of ["uTex", "uTexel", "uLumaBlur", "uChromaBlur"]) this.uB[n] = gl.getUniformLocation(this.progB, n);
 
@@ -559,7 +558,7 @@ void main() {
       gl.uniform3fv(this.uA.uInks, new Float32Array(P.inks.concat([[1, 1, 1], [1, 1, 1], [1, 1, 1]]).slice(0, 4).flat())); // no ink on the drums a set lacks
       gl.uniform3f(this.uA.uPaper, P.paper[0], P.paper[1], P.paper[2]);
       gl.uniform2fv(this.uA.uBorder, this.border);
-      gl.uniform2fv(this.uA.uDepthCrop, this.plates.crop);
+      gl.uniform4fv(this.uA.uGround, P.ground ? P.ground.concat(1) : [0, 0, 0, 0]);
       gl.uniform1f(this.uA.uJitter, P.jitter);
       gl.uniform1f(this.uA.uRough, P.rough);
       gl.uniform1f(this.uA.uGrain, P.grain);
@@ -791,8 +790,8 @@ onmessage = async ({ data: { id, blob } }) => {
   }
 
   // The sheet `width` CSS px wide, in the format's shape or else the photo's,
-  // `padding` of its short side bare paper on every side, and the print in
-  // whole cells over the rest, the photo cropped to them. The one under its
+  // and the whole photo on it in whole cells, at least `padding` of its short
+  // side from every edge, the rest bare paper. The one under its
   // project is no taller than 80% of the screen and is sized to its device
   // pixels so no dot is resampled; a card's is blurred anyway.
   function print(fx, img, width) {
@@ -800,11 +799,11 @@ onmessage = async ({ data: { id, blob } }) => {
     var tool = fx.canvas.classList.contains("halftone");
     fx.aspect = P.aspect || (Math.max(r, 1) + 2 * b) / (Math.max(1 / r, 1) + 2 * b);
     var W = Math.floor(Math.min(width, tool ? innerHeight * 0.8 * fx.aspect : Infinity) * dpr), H = Math.round(W / fx.aspect);
-    var m = p * Math.min(W, H), cx = Math.ceil((W - 2 * m) / P.cell), cy = Math.ceil((H - 2 * m) / P.cell);
+    var m = p * Math.min(W, H), k = Math.min((W - 2 * m) / img.width, (H - 2 * m) / img.height) / P.cell;
     fx.image = img;
     fx.width = width;
     if (tool) fx.canvas.style.width = W / dpr + "px";
-    fx.setPlates(buildPlates(img, { planeWidth: cx + 2 * P.margin, planeHeight: cy + 2 * P.margin, gain: Math.PI * P.radius * P.radius, inks: P.inks, paper: P.paper }), W, H);
+    fx.setPlates(buildPlates(img, { width: Math.ceil(img.width * k), height: Math.ceil(img.height * k), margin: P.margin, gain: Math.PI * P.radius * P.radius, inks: P.inks, paper: P.paper }), W, H);
   }
 
   // The sheet on screen, scaled up to `R` px on its short side and an even
@@ -912,8 +911,8 @@ onmessage = async ({ data: { id, blob } }) => {
 
   /* Under the print: the visitor's own photo, picked, dropped on the print or
      pasted, read locally (nothing is sent anywhere); then four drawers, the
-     ink sets, the press, its analogue flaws, and the sheet's format and paper
-     round the print, shown on screen, with the sheet as a GIF or a video at
+     ink sets, the press, its analogue flaws, and the sheet's format, padding
+     and colour round the print, shown on screen, with the sheet as a GIF or a video at
      three sizes, named after the photo. The settings are read off the
      controls first, so a form the browser restored still says what is
      printed. */
@@ -978,6 +977,18 @@ onmessage = async ({ data: { id, blob } }) => {
         fx.base.aspect = FORMATS[radio.value];
         print(fx, fx.image, fx.width);
       };
+    });
+    // round the print, the sheet itself or a flat colour, the last one picked
+    bar.querySelectorAll("input[name=ground]").forEach(function (radio) {
+      var color = radio.parentNode.querySelector("[type=color]");
+      var set = function () {
+        fx.base.ground = color ? hex(color.value.slice(1)) : { paper: null, white: [1, 1, 1], black: [0, 0, 0] }[radio.value];
+        fx.update();
+        fx.render();
+      };
+      if (radio.checked) set();
+      radio.onchange = set;
+      if (color) color.oninput = function () { radio.checked = true; set(); };
     });
     bar.querySelectorAll("input[type=range]").forEach(function (input) {
       var out = input.nextElementSibling, show = function () { out.textContent = input.value + (input.dataset.unit || ""); };

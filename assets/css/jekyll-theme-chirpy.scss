@@ -928,6 +928,36 @@ body {
   aspect-ratio: 4 / 5;
 }
 
+/* a colour round the print shows as a dot of it, the picker's too */
+.halftone-tools [name='ground'] + span,
+.halftone-tools [type='color'] {
+  width: 0.9rem;
+  height: 0.9rem;
+  padding: 0;
+  border: 1px solid var(--text-muted-color);
+  border-radius: 50%;
+}
+
+.halftone-tools [type='color'] {
+  background: none;
+  cursor: pointer;
+
+  &::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+
+  /* one rule each: a browser drops a whole list for a selector it doesn't know */
+  &::-webkit-color-swatch {
+    border: none;
+    border-radius: 50%;
+  }
+
+  &::-moz-color-swatch {
+    border: none;
+    border-radius: 50%;
+  }
+}
+
 /* While a photo's depth is worked out, or a file made: the pointer says so
    over the print and its controls, and a small ring turns by the note. */
 .halftone[aria-busy='true'],
