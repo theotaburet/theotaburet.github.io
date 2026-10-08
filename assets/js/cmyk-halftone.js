@@ -656,7 +656,7 @@ void main() {
   /* -------------------------------------------------------------------------
      Page: one renderer per canvas. A card's dots are 1.5 CSS px (finer than
      the reference's 2) and a whole number of device pixels; the print under
-     its project has as many dots across its sheet on a phone as on a desktop.
+     its project has as many dots across its photo on a phone as on a desktop.
      Animated only while on screen, and never for someone who asked for less
      motion.
      ---------------------------------------------------------------------- */
@@ -670,9 +670,9 @@ void main() {
     return { dots: dots, cell: cell, scale: (2 * dpr) / cell, lumaBlur: 0.22 * cell, chromaBlur: 0.33 * cell };
   }
 
-  // `dots` across a sheet `side` px on its short side, whatever the screen:
-  // the cell a fraction of the sheet, and the moves and the blur with it, as
-  // they were with 1.5 px dots on a 480 px sheet.
+  // `dots` across a photo `side` px on its short side, whatever the screen or
+  // the sheet round it: the cell a fraction of the photo, and the moves and
+  // the blur with it, as they were with 1.5 px dots on a 480 px photo.
   function ruling(dots, side) {
     var cell = side / dots;
     return { cell: cell, scale: (2 * dots) / 480, lumaBlur: 0.22 * cell, chromaBlur: 0.33 * cell };
@@ -801,16 +801,19 @@ onmessage = async ({ data: { id, blob } }) => {
   // and the whole photo on it in whole cells, at least `padding` of its short
   // side from every edge, the rest bare paper. The one under its project fits
   // inside its canvas's fixed box, so the controls below never move, sized to
-  // its device pixels, its dots a share of the sheet; a card's is blurred anyway.
-  function print(fx, img) {
+  // its device pixels, its dots a share of the photo: its plates are then the
+  // photo's alone, and a new format or padding lays the same ones out again
+  // (`keep`), smaller or larger, with no new dither. A card's is blurred anyway.
+  function print(fx, img, keep) {
     var P = fx.base, p = P.padding || 0, r = img.width / img.height, b = p / (1 - 2 * p), c = fx.canvas;
     var tool = c.classList.contains("halftone");
     fx.aspect = P.aspect || (Math.max(r, 1) + 2 * b) / (Math.max(1 / r, 1) + 2 * b);
     var W = Math.floor(Math.min(c.clientWidth, tool ? c.clientHeight * fx.aspect : Infinity) * dpr), H = Math.round(W / fx.aspect);
-    if (tool) Object.assign(P, ruling(P.dots, Math.min(W, H))), fx.update();
-    var m = p * Math.min(W, H), k = Math.min((W - 2 * m) / img.width, (H - 2 * m) / img.height) / P.cell;
+    var m = p * Math.min(W, H), s = Math.min((W - 2 * m) / img.width, (H - 2 * m) / img.height);
+    if (tool) Object.assign(P, ruling(P.dots, s * Math.min(img.width, img.height))), fx.update();
+    var k = s / P.cell;
     fx.image = img;
-    fx.setPlates(buildPlates(img, { width: Math.ceil(img.width * k), height: Math.ceil(img.height * k), margin: P.margin, gain: Math.PI * P.radius * P.radius, inks: P.inks, paper: P.paper }), W, H);
+    fx.setPlates((keep && fx.plates) || buildPlates(img, { width: Math.ceil(img.width * k), height: Math.ceil(img.height * k), margin: P.margin, gain: Math.PI * P.radius * P.radius, inks: P.inks, paper: P.paper }), W, H);
   }
 
   // The sheet on screen, scaled up to `R` px on its short side and an even
@@ -858,7 +861,7 @@ onmessage = async ({ data: { id, blob } }) => {
     return new Blob([enc.bytes()], { type: "image/gif" });
   }
 
-  // The loop three times over as an H.264 MP4, encoded frame by frame
+  // The loop `loops` times over as an H.264 MP4, encoded frame by frame
   // (WebCodecs), not recorded as it plays, so no frame is lost at either end.
   // About 16 bits a dot a frame, whatever the size: what costs is the dots.
   // ponytail: held to 40 Mbit/s (the default's 33 and some), since asking a
@@ -870,7 +873,7 @@ onmessage = async ({ data: { id, blob } }) => {
     var track = new M.CanvasSource(c.ctx.canvas, { codec: "avc", bitrate: Math.min(16 * dots * fps, 40e6), keyFrameInterval: 2 });
     out.addVideoTrack(track, { frameRate: fps });
     await out.start();
-    for (var i = 0; i < 72; i++) {
+    for (var i = 0; i < 24 * fx.base.loops; i++) {
       c.draw(i);
       await track.add(i / fps, 1 / fps);
     }
@@ -982,7 +985,7 @@ onmessage = async ({ data: { id, blob } }) => {
       if (radio.checked) fx.base.aspect = FORMATS[radio.value];
       radio.onchange = function () {
         fx.base.aspect = FORMATS[radio.value];
-        print(fx, fx.image);
+        print(fx, fx.image, true);
       };
     });
     // round the print, the sheet itself or a flat colour, the last one picked
@@ -1001,13 +1004,13 @@ onmessage = async ({ data: { id, blob } }) => {
       var out = input.nextElementSibling, show = function () { out.textContent = input.value + (input.dataset.unit || ""); };
       show();
       Object.assign(fx.base, knob(input.name, +input.value));
-      var redither = input.name === "dots" || input.name === "padding"; // new cells, a new dither
+      var redither = input.name === "dots", relay = input.name === "padding"; // new cells, a new dither; the same, smaller
       var applied = input.value, last = 0;
       var set = function () {
         applied = input.value;
         Object.assign(fx.base, knob(input.name, +input.value));
         fx.update();
-        if (redither) print(fx, fx.image);
+        if (redither || relay) print(fx, fx.image, relay);
         else fx.render();
       };
       // a new dither at every step of a drag flickers like static: four a
