@@ -1002,17 +1002,23 @@ onmessage = async ({ data: { id, blob } }) => {
       show();
       Object.assign(fx.base, knob(input.name, +input.value));
       var redither = input.name === "dots" || input.name === "padding"; // new cells, a new dither
+      var applied = input.value, last = 0;
       var set = function () {
+        applied = input.value;
         Object.assign(fx.base, knob(input.name, +input.value));
         fx.update();
         if (redither) print(fx, fx.image);
         else fx.render();
       };
+      // a new dither at every step of a drag flickers like static: four a
+      // second at most, and the last one when let go
       input.oninput = function () {
         show();
-        if (!redither) set();
+        if (redither && performance.now() - last < 250) return;
+        last = performance.now();
+        set();
       };
-      if (redither) input.onchange = set; // once let go: a new dither at every step of a drag flickers like static
+      input.onchange = function () { if (input.value !== applied) set(); };
     });
     fx.update();
 
