@@ -906,7 +906,7 @@ onmessage = async ({ data: { id, blob } }) => {
     padding: function (v) { return { padding: v / 100 }; }
   };
   // the sheet's width over its height; 0 for the photo's own
-  var FORMATS = { photo: 0, square: 1, landscape: 16 / 9, portrait: 9 / 16 };
+  var FORMATS = { photo: 0, square: 1, landscape: 16 / 9, portrait: 4 / 5 };
   // the others set the setting they are named after
   var knob = function (name, v) { var o = {}; o[name] = v; return (KNOBS[name] || function () { return o; })(v); };
 
