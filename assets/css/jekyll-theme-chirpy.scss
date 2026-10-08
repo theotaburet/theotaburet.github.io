@@ -804,7 +804,8 @@ body {
 
 /* the sliders in columns, each its name, its slider and its value */
 #halftone-press,
-#halftone-analog {
+#halftone-analog,
+#halftone-padding {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
   gap: 0 1.5rem;
@@ -904,6 +905,27 @@ body {
       margin-left: -0.3rem;
     }
   }
+}
+
+/* a format shows the shape of its sheet, the photo's the photo's */
+.halftone-tools [name='format'] + span {
+  height: 0.75rem;
+  aspect-ratio: 3 / 2;
+  padding: 0;
+  border: 1.5px solid currentColor;
+  border-radius: 2px;
+}
+
+.halftone-tools [value='square'] + span {
+  aspect-ratio: 1;
+}
+
+.halftone-tools [value='landscape'] + span {
+  aspect-ratio: 16 / 9;
+}
+
+.halftone-tools [value='portrait'] + span {
+  aspect-ratio: 9 / 16;
 }
 
 /* While a photo's depth is worked out, or a file made: the pointer says so
