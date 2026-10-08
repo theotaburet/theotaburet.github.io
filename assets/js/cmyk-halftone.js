@@ -800,7 +800,7 @@ onmessage = async ({ data: { id, blob } }) => {
   // The sheet as wide as its canvas, in the format's shape or else the photo's,
   // and the whole photo on it in whole cells, at least `padding` of its short
   // side from every edge, the rest bare paper. The one under its project fits
-  // inside its canvas's fixed box, so the controls below never move, sized to
+  // inside its canvas's fixed box, so the panel by it never moves, sized to
   // its device pixels, its dots a share of the photo: its plates are then the
   // photo's alone, and a new format or padding lays the same ones out again
   // (`keep`), smaller or larger, with no new dither. A card's is blurred anyway.
@@ -821,14 +821,15 @@ onmessage = async ({ data: { id, blob } }) => {
   // with its press, inks, settings and depth. `draw(i)` puts its frame `i` on
   // `ctx`. Its moves come round again every 24 frames, so they loop without a
   // jump.
+  var frame = function (a, R) { return a < 1 ? [R, 2 * Math.round(R / a / 2)] : [2 * Math.round((R * a) / 2), R]; };
   function copy(fx, R) {
-    var g = new CMYKHalftone(document.createElement("canvas"), fx.base), a = fx.aspect;
+    var g = new CMYKHalftone(document.createElement("canvas"), fx.base), f = frame(fx.aspect, R);
     var k = R / Math.min(fx.canvas.width, fx.canvas.height);
     ["cell", "lumaBlur", "chromaBlur"].forEach(function (n) { g.base[n] *= k; });
     g.base.loop = 24;
     g.dice = fx.dice;
     g.update();
-    g.setPlates(fx.plates, a < 1 ? R : 2 * Math.round((R * a) / 2), a < 1 ? 2 * Math.round(R / a / 2) : R);
+    g.setPlates(fx.plates, f[0], f[1]);
     g.setDepth(fx.depth);
     var ctx = Object.assign(document.createElement("canvas"), { width: g.canvas.width, height: g.canvas.height }).getContext("2d", { willReadFrequently: true });
     return {
@@ -882,7 +883,7 @@ onmessage = async ({ data: { id, blob } }) => {
     return new Blob([out.target.buffer], { type: "video/mp4" });
   }
 
-  function save(blob, name) {
+  function download(blob, name) {
     var a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = name;
@@ -906,7 +907,10 @@ onmessage = async ({ data: { id, blob } }) => {
 
   // What each slider sets in the renderer's settings, from its value.
   var KNOBS = {
-    disorder: function (v) { return { jitter: v }; },
+    // the ones in % are shares of the renderer's 1
+    disorder: function (v) { return { jitter: v / 100 }; },
+    scratchStrength: function (v) { return { scratchStrength: v / 100 }; },
+    starve: function (v) { return { starve: v / 100 }; },
     // shake is how much the press moves at all, and at 0 the print holds still;
     // off register is how far the plates sit and wander apart, depth how far
     // they part by depth as it moves
@@ -920,19 +924,24 @@ onmessage = async ({ data: { id, blob } }) => {
   // the others set the setting they are named after
   var knob = function (name, v) { var o = {}; o[name] = v; return (KNOBS[name] || function () { return o; })(v); };
 
-  /* Under the print: the visitor's own photo, picked, dropped on the print or
-     pasted, read locally (nothing is sent anywhere); then four drawers, the
-     ink sets, the press, its analogue flaws, and the sheet's format, padding
-     and colour round the print, shown on screen, with the sheet as a GIF or a video at
-     three sizes, named after the photo. The settings are read off the
-     controls first, so a form the browser restored still says what is
-     printed. */
+  /* Beside the print, or under it on a narrow screen: a panel that shows one
+     thing at a time. Its root lists the photo and six topics, each with what
+     it is set to; a topic goes through its settings a step at a time, back
+     and forth or straight to one by its dot, and the export through the file,
+     its size, its loops if it is a video and a recap, each choice tapped
+     moving on to the next. The photo is the visitor's own if they like,
+     picked, dropped on the print or pasted, read locally (nothing is sent
+     anywhere). The settings are read off the controls first, so a form the
+     browser restored still says what is printed. */
   function tools(bar, canvas, fx) {
-    var file = bar.querySelector("input[type=file]");
-    var note = bar.querySelector("small[data-busy]"), said = note.textContent, photos = 0;
+    var file = bar.querySelector("input[type=file]"), pick = bar.querySelector("[data-pick]");
+    var note = canvas.parentNode.querySelector("small[data-busy]"), said = note.textContent, photos = 0;
     var busy = function (on) { [canvas, bar, note].forEach(function (e) { e.setAttribute("aria-busy", on); }); };
     var photoChip = bar.querySelector("[name=format][value=photo] + span");
-    var named = function (path) { fx.name = path.split("/").pop().replace(/\.[^.]*$/, "") || "halftone"; };
+    var named = function (path) {
+      fx.name = path.split("/").pop().replace(/\.[^.]*$/, "") || "halftone";
+      pick.lastChild.textContent = fx.name;
+    };
     named(canvas.getAttribute("data-halftone"));
     var load = function (f) {
       if (!f || !/^image\//.test(f.type)) return;
@@ -963,7 +972,7 @@ onmessage = async ({ data: { id, blob } }) => {
         if (mine === photos) busy(false); // not an image the browser can read
       });
     };
-    bar.querySelector("[data-pick]").onclick = function () { file.click(); };
+    pick.onclick = function () { file.click(); };
     file.onchange = function () { load(file.files[0]); };
     canvas.ondragover = function (e) { e.preventDefault(); };
     canvas.ondrop = function (e) { e.preventDefault(); load(e.dataTransfer.files[0]); };
@@ -1000,8 +1009,9 @@ onmessage = async ({ data: { id, blob } }) => {
       radio.onchange = set;
       if (color) color.oninput = function () { radio.checked = true; set(); };
     });
+    var lang = document.documentElement.lang;
     bar.querySelectorAll("input[type=range]").forEach(function (input) {
-      var out = input.nextElementSibling, show = function () { out.textContent = input.value + (input.dataset.unit || ""); };
+      var out = input.nextElementSibling, show = function () { out.textContent = (+input.value).toLocaleString(lang) + (input.dataset.unit || ""); };
       show();
       Object.assign(fx.base, knob(input.name, +input.value));
       var redither = input.name === "dots", relay = input.name === "padding"; // new cells, a new dither; the same, smaller
@@ -1025,32 +1035,105 @@ onmessage = async ({ data: { id, blob } }) => {
     });
     fx.update();
 
-    // one drawer open at a time
-    var drawers = bar.querySelectorAll("[aria-controls]");
-    drawers.forEach(function (btn) {
-      btn.onclick = function () {
-        var open = btn.getAttribute("aria-expanded") !== "true";
-        drawers.forEach(function (d) {
-          d.setAttribute("aria-expanded", d === btn && open);
-          document.getElementById(d.getAttribute("aria-controls")).hidden = !(d === btn && open);
-        });
-      };
-    });
+    // What it is set to, said where it is shown: the file the export will
+    // make, how long, and on the root what each topic is set to.
+    var val = function (name) { return bar.querySelector("[name=" + name + "]:checked"); };
+    var loops = bar.querySelector("[data-video]"), length = bar.querySelector("[data-length]"), recap = bar.querySelector("dl");
+    if (!window.VideoEncoder) {
+      bar.querySelector("[name=file][value=mp4]").parentNode.hidden = true;
+      bar.querySelector("[name=file][value=gif]").checked = true;
+    }
+    var tell = function () {
+      var mp4 = val("file").value === "mp4", f = frame(fx.aspect, +val("size").value);
+      loops.hidden = !mp4;
+      length.textContent = (fx.base.loops * 24) / fx.params.fps + " s";
+      recap.querySelector("[data-file]").textContent = val("file").parentNode.textContent;
+      recap.querySelector("[data-px]").textContent = val("size").parentNode.textContent + " · " + f[0] + "×" + f[1];
+      recap.querySelector("[data-length]").textContent = mp4 ? length.textContent : 24 / fx.params.fps + " s, " + recap.querySelector("[data-length]").dataset.gif;
+      bar.querySelectorAll("[data-open]").forEach(function (row) {
+        row.lastChild.textContent = steps(bar.querySelector("[data-topic=" + row.dataset.open + "]")).map(function (s) {
+          var c = s.querySelector(":checked"), r = s.querySelector("[type=range]");
+          return s === loops ? length.textContent : c ? c.parentNode.textContent : r ? s.querySelector("span").textContent.toLowerCase() + " " + r.nextElementSibling.textContent : "";
+        }).filter(Boolean).join(" · ");
+      });
+    };
+    bar.addEventListener("input", tell);
+    bar.addEventListener("change", tell);
 
-    // a button per format and size, each idle until its file is ready
-    bar.querySelectorAll("[data-format] button").forEach(function (btn) {
-      var format = btn.parentNode.dataset.format, make = format === "gif" ? gif : video;
-      if (format === "mp4" && !window.VideoEncoder) btn.parentNode.hidden = true;
-      btn.onclick = function () {
-        var name = fx.name + "-" + btn.textContent + "." + format;
-        btn.disabled = true;
-        btn.setAttribute("aria-busy", true);
-        make(fx, +btn.value).then(function (blob) { save(blob, name); }, function (e) { console.warn("No " + name + ":", e); }).finally(function () {
-          btn.disabled = false;
-          btn.setAttribute("aria-busy", false);
-        });
+    // The panel: the root, or a topic at one of its steps.
+    var root = bar.querySelector("[data-view=root]"), view = bar.querySelector("[data-view=topic]");
+    var title = view.querySelector("b"), dots = view.querySelector("p > span");
+    var prev = bar.querySelector("[data-prev]"), next = bar.querySelector("[data-next]"), on = null, at = null;
+    next.dataset.next = next.textContent;
+    var steps = function (topic) { return [].filter.call(topic.querySelectorAll(".step"), function (s) { return !s.hidden; }); };
+    bar.querySelectorAll(".step").forEach(function (s) { s.inert = true; });
+    var show = function (topic, step) {
+      var left = on;
+      on = topic;
+      at = step;
+      root.inert = !!topic;
+      view.inert = !topic;
+      bar.querySelectorAll(".step").forEach(function (s) { s.inert = s !== step; });
+      if (!topic) return bar.querySelector("[data-open=" + left.dataset.topic + "]").focus({ preventScroll: true });
+      var all = steps(topic), i = all.indexOf(step);
+      title.textContent = bar.querySelector("[data-open=" + topic.dataset.topic + "] b").textContent;
+      dots.textContent = "";
+      if (all.length > 1) all.forEach(function (s) {
+        var dot = dots.appendChild(document.createElement("button"));
+        dot.type = "button";
+        dot.setAttribute("aria-label", s.querySelector("span").textContent);
+        if (s === step) dot.setAttribute("aria-current", "step");
+        dot.onclick = function () { show(topic, s); };
+      });
+      next.hidden = !!step.querySelector("[data-save]");
+      next.textContent = i === all.length - 1 ? next.dataset.done : next.dataset.next;
+      (step.querySelector(":checked, input, button") || step).focus({ preventScroll: true });
+    };
+    var go = function (d) {
+      var all = steps(on), s = all[all.indexOf(at) + d];
+      show(s ? on : null, s);
+    };
+    bar.querySelectorAll("[data-open]").forEach(function (row) {
+      row.onclick = function () {
+        var topic = bar.querySelector("[data-topic=" + row.dataset.open + "]");
+        show(topic, steps(topic)[0]);
       };
     });
-    bar.hidden = false;
+    bar.querySelector("[data-back]").onclick = function () { show(null); };
+    prev.onclick = function () { go(-1); };
+    next.onclick = function () { go(1); };
+    bar.onkeydown = function (e) { if (e.key === "Escape" && on) show(null); };
+    // the export is a cascade: a choice tapped, even the one already made,
+    // and on to the next; the arrow keys only move it, so a keyboard can look
+    var tapped = 0;
+    bar.onpointerdown = function () { tapped = Date.now(); };
+    bar.onclick = function (e) {
+      if (e.target.type === "radio" && e.target.closest("[data-cascade]") && Date.now() - tapped < 1000) setTimeout(go, 180, 1);
+    };
+
+    bar.querySelector("[data-reroll]").onclick = function () { fx.reroll(); fx.render(); };
+    // the form puts every control back as the page had it; each then says so
+    bar.onreset = function () {
+      setTimeout(function () {
+        bar.querySelectorAll("input:checked, input[type=range]").forEach(function (i) {
+          if (i.type === "range") i.dispatchEvent(new Event("input", { bubbles: true }));
+          i.dispatchEvent(new Event("change", { bubbles: true }));
+        });
+      });
+    };
+
+    var save = bar.querySelector("[data-save]");
+    save.onclick = function () {
+      var format = val("file").value, make = format === "gif" ? gif : video, name = fx.name + "-" + val("size").parentNode.textContent + "." + format;
+      save.disabled = true;
+      save.setAttribute("aria-busy", true);
+      make(fx, +val("size").value).then(function (blob) { download(blob, name); }, function (e) { console.warn("No " + name + ":", e); }).finally(function () {
+        save.disabled = false;
+        save.setAttribute("aria-busy", false);
+        save.focus({ preventScroll: true }); // a disabled button drops it
+      });
+    };
+    tell();
+    bar.hidden = note.parentNode.hidden = false;
   }
 })();

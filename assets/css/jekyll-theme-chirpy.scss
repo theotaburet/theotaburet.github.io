@@ -380,9 +380,7 @@ $amber: #f8b862;
   .content > h2,
   .content > h3,
   .content > h4,
-  .content > .table-wrapper,
-  .content > .halftone,
-  .content > .halftone-tools {
+  .content > .table-wrapper {
     max-width: 46rem;
   }
 
@@ -744,144 +742,361 @@ body {
   }
 }
 
-/* The live print under its project: a 3:2 box like the photograph, no taller
-   than 80% of the screen, that every format fits inside, so the space is held
-   while the plates are dithered and the controls stay put when it changes. */
+/* The live print under its project and the panel that sets it: side by side
+   where the column is wide enough, else the print, its note and the panel
+   one under the other. The print's box is 3:2 like the photograph, no taller
+   than 80% of the screen, and every format fits inside it, so the space is
+   held while the plates are dithered and nothing round it moves. */
+.halftone-studio {
+  display: grid;
+  grid-template-areas: 'print' 'note' 'panel';
+  gap: 0.5rem 1.5rem;
+  max-width: 46rem;
+  margin: 1.5rem 0 2rem;
+}
+
+@media (min-width: 1250px) {
+  .halftone-studio {
+    grid-template: 'print panel' auto 'note panel' 1fr / minmax(0, 46rem) 19rem;
+    max-width: 66.5rem;
+  }
+}
+
 .halftone {
+  grid-area: print;
   display: block;
   width: 100%;
   aspect-ratio: 3 / 2;
   max-height: 80vh;
   object-fit: contain;
-  margin: 1.5rem 0;
   border-radius: 2px;
 }
 
-/* Its controls, in the article figures' manner: a bar of outlined pills, the
-   photo picker and four drawers, one open at a time under the bar. An ink
-   set shows its inks overprinted on its own paper, the chosen set and the
-   open drawer ringed in the heading's colour. */
+.halftone-note {
+  grid-area: note;
+  margin: 0;
+  color: var(--text-muted-color);
+  font-size: 0.8rem;
+}
+
+/* The panel: one view at a time, the root or a topic, and in a topic one
+   step. They all share one cell of a grid, so the tallest holds the height
+   and nothing under the panel moves as they change. */
 .halftone-tools {
-  margin: -0.5rem 0 2rem;
-  font-size: 0.85rem;
+  grid-area: panel;
+  display: grid;
+  align-self: start;
+  overflow: hidden;
+  border: 1px solid var(--main-border-color);
+  border-radius: 10px;
+  background: var(--card-bg);
+  font-size: 0.9rem;
 
   &[hidden],
   [hidden] {
     display: none;
   }
 
-  p {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.45rem 0.6rem;
-    margin: 0 0 0.6rem;
+  [inert] {
+    visibility: hidden;
   }
 
-  /* every control a line of the same height */
-  label,
-  button {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    min-height: 1.9rem;
+  > [data-view] {
+    grid-area: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    transition:
+      transform 0.2s,
+      opacity 0.2s;
+  }
+
+  /* the root goes off to the left, a topic to the right */
+  > [inert] {
+    opacity: 0;
+    transform: translateX(8%);
+  }
+
+  > [data-view='root'][inert] {
+    transform: translateX(-8%);
+  }
+
+  p {
     margin: 0;
   }
 
-  small,
-  output,
-  [role='group'] > span {
+  button {
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  button:focus-visible,
+  label:has(:focus-visible),
+  [type='range']:focus-visible {
+    outline: 2px solid var(--link-color);
+    outline-offset: -2px;
+  }
+}
+
+/* the root: a row a topic, what it is set to, a chevron to go in */
+.halftone-tools [data-view='root'] > button {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 2.9rem;
+  padding: 0.45rem 1rem;
+  border-bottom: 1px solid var(--main-border-color);
+  text-align: left;
+
+  &:hover {
+    background: var(--highlight-bg-color);
+  }
+
+  b {
+    font-weight: 600;
+  }
+
+  span {
+    overflow: hidden;
     color: var(--text-muted-color);
+    font-size: 0.82rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.halftone-tools [data-open]::after,
+.halftone-tools [data-back]::before {
+  content: '';
+  width: 0.42em;
+  height: 0.42em;
+  border: solid currentColor;
+  border-width: 1.5px 1.5px 0 0;
+  transform: rotate(45deg);
+}
+
+.halftone-tools [data-open]::after {
+  color: var(--text-muted-color);
+}
+
+.halftone-tools [data-open='export'] {
+  background: var(--chip-bg);
+
+  b {
+    color: var(--link-color);
+  }
+}
+
+.halftone-tools [data-view='root'] > p {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+  padding: 0.6rem 1rem;
+  color: var(--text-muted-color);
+}
+
+/* a topic: back, its name, a dot a step; the step; previous and next */
+.halftone-tools [data-view='topic'] {
+  > p:first-child {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.6rem 0.4rem 1rem;
+    border-bottom: 1px solid var(--main-border-color);
+
+    b {
+      font-weight: 600;
+    }
+
+    > span {
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+
+  > div {
+    display: grid;
+    flex: 1;
+  }
+
+  > p:last-child {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.6rem;
+  }
+}
+
+.halftone-tools [data-back] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  justify-self: start;
+  min-height: 2rem;
+  color: var(--text-muted-color);
+
+  &::before {
+    transform: rotate(-135deg);
+  }
+}
+
+.halftone-tools [data-view='topic'] > p > span > button {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 2rem;
+
+  &::before {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    border: 1.5px solid var(--text-muted-color);
+    border-radius: 50%;
+  }
+
+  &[aria-current]::before {
+    border-color: var(--heading-color);
+    background: var(--heading-color);
+  }
+}
+
+.halftone-tools [data-prev],
+.halftone-tools [data-next],
+.halftone-tools [data-save] {
+  min-height: 2.3rem;
+  padding: 0 1.1rem;
+  border: 1px solid var(--main-border-color);
+  border-radius: 999px;
+}
+
+.halftone-tools [data-next],
+.halftone-tools [data-save] {
+  border-color: var(--heading-color);
+  background: var(--heading-color);
+  color: var(--card-bg);
+  font-weight: 600;
+}
+
+.halftone-tools [data-next] {
+  margin-left: auto;
+}
+
+[data-topic] {
+  display: contents;
+}
+
+.halftone-tools .step {
+  grid-area: 1 / 1;
+  display: grid;
+  align-content: start;
+  gap: 0.7rem;
+  padding: 1rem 1rem 0.4rem;
+
+  > span,
+  > label > span {
+    font-weight: 600;
+  }
+
+  small {
+    color: var(--text-muted-color);
+    font-size: 0.82rem;
+    line-height: 1.45;
+  }
+
+  /* a slider: its name and value on a line, the slider under them */
+  > label {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    gap: 0.4rem 0.6rem;
   }
 
   output {
+    font-size: 1.35rem;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
+    line-height: 1;
   }
 
   [type='range'] {
+    grid-row: 2;
+    grid-column: 1 / -1;
     width: 100%;
+    margin: 0;
     accent-color: var(--heading-color);
   }
-}
 
-/* the sliders in columns, each its name, its slider and its value */
-#halftone-press,
-#halftone-analog,
-#halftone-padding {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
-  gap: 0 1.5rem;
+  /* how long the video will run, as the loops are chosen */
+  > p:has(output) {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    background: var(--chip-bg);
+  }
 
-  label {
+  dl {
     display: grid;
-    grid-template-columns: 7.5rem 1fr 2.8rem;
+    grid-template-columns: auto 1fr;
+    gap: 0.25rem 1rem;
+    margin: 0;
+  }
+
+  dt {
+    color: var(--text-muted-color);
+    font-weight: 400;
+  }
+
+  dd {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  [data-save] {
+    min-height: 2.8rem;
+    font-size: 1rem;
   }
 }
 
-/* a format, then its sizes */
-.halftone-tools [role='group'] {
+/* the choices: outlined pills, the chosen one ringed in the heading's colour */
+.halftone-tools [role='radiogroup'] > p {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.halftone-tools label:has([type='radio']) {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  margin-right: 1rem;
-
-  > span {
-    font-size: 0.7rem;
-    letter-spacing: 0.08em;
-  }
-}
-
-.halftone-tools button,
-.halftone-tools label:has([type='radio']) {
-  padding: 0 0.75rem;
+  min-height: 2.3rem;
+  margin: 0;
+  padding: 0 0.85rem;
   border: 1px solid var(--main-border-color);
   border-radius: 999px;
-  background: none;
-  color: inherit;
-  font: inherit;
   cursor: pointer;
+  white-space: nowrap;
   transition: border-color 0.15s;
 
   &:hover {
     border-color: var(--text-muted-color);
   }
-}
 
-.halftone-tools button:disabled {
-  opacity: 0.5;
-  cursor: progress;
-}
+  &:has(> span, > [type='color']) {
+    padding-left: 0.45rem;
+  }
 
-.halftone-tools label:has([type='radio']) {
-  padding-left: 0.3rem;
-}
-
-.halftone-tools label:has(:checked),
-.halftone-tools [aria-expanded='true'] {
-  border-color: var(--heading-color);
-  box-shadow: inset 0 0 0 1px var(--heading-color);
-}
-
-/* a drawer's chevron points down when shut, up when open */
-.halftone-tools [aria-expanded]::after {
-  content: '';
-  width: 0.4em;
-  height: 0.4em;
-  border: solid currentColor;
-  border-width: 0 1.5px 1.5px 0;
-  transform: translateY(-0.15em) rotate(45deg);
-  transition: transform 0.15s;
-}
-
-.halftone-tools [aria-expanded='true']::after {
-  transform: translateY(0.1em) rotate(-135deg);
-}
-
-.halftone-tools button:focus-visible,
-.halftone-tools label:has(:focus-visible) {
-  outline: 2px solid var(--link-color);
-  outline-offset: 2px;
+  &:has(:checked) {
+    border-color: var(--heading-color);
+    box-shadow: inset 0 0 0 1px var(--heading-color);
+  }
 }
 
 /* the radio itself stays for the keyboard and screen readers, out of sight */
@@ -892,6 +1107,7 @@ body {
   opacity: 0;
 }
 
+/* an ink set shows its inks overprinted on its own paper */
 .halftone-tools [type='radio'] + span {
   display: inline-flex;
   padding: 2px;
@@ -962,12 +1178,14 @@ body {
 }
 
 /* While a photo's depth is worked out, or a file made: the pointer says so
-   over the print and its controls, and a small ring turns by the note. */
+   over the print and its panel, and a small ring turns by the note or on the
+   button. */
 .halftone[aria-busy='true'],
 .halftone-tools[aria-busy='true'] {
   cursor: progress;
 }
 
+.halftone-note [aria-busy='true']::before,
 .halftone-tools [aria-busy='true']::before {
   content: '';
   display: inline-block;
@@ -981,6 +1199,11 @@ body {
   animation: halftone-turn 0.8s linear infinite;
 }
 
+.halftone-tools [data-save]:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
 @keyframes halftone-turn {
   to {
     transform: rotate(1turn);
@@ -988,12 +1211,12 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .halftone-tools button,
-  .halftone-tools label,
-  .halftone-tools [aria-expanded]::after {
+  .halftone-tools > [data-view],
+  .halftone-tools label {
     transition: none;
   }
 
+  .halftone-note [aria-busy='true']::before,
   .halftone-tools [aria-busy='true']::before {
     animation: none;
   }
