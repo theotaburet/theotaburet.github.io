@@ -744,12 +744,15 @@ body {
   }
 }
 
-/* The live print under its project: 3:2 like the photograph, so the space is
-   held while the plates are being dithered. */
+/* The live print under its project: a 3:2 box like the photograph, no taller
+   than 80% of the screen, that every format fits inside, so the space is held
+   while the plates are dithered and the controls stay put when it changes. */
 .halftone {
   display: block;
   width: 100%;
   aspect-ratio: 3 / 2;
+  max-height: 80vh;
+  object-fit: contain;
   margin: 1.5rem 0;
   border-radius: 2px;
 }

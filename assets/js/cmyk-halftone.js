@@ -436,7 +436,6 @@ void main() {
       this.canvas.width = W;
       this.canvas.height = H;
       this.border = [(W - (plates.width - 2 * m) * cell) / 2, (H - (plates.height - 2 * m) * cell) / 2];
-      this.canvas.style.aspectRatio = W + " / " + H;
 
       if (!this.platesTex) this.platesTex = gl.createTexture();
       gl.bindTexture(gl.TEXTURE_2D, this.platesTex);
@@ -678,7 +677,7 @@ void main() {
       var fx = new CMYKHalftone(canvas, sizes(1.5, dpr));
       var next = canvas.nextElementSibling;
       if (next && next.classList.contains("halftone-tools")) tools(next, canvas, fx);
-      print(fx, img, canvas.clientWidth);
+      print(fx, img);
       var depth = new Image();
       depth.src = canvas.getAttribute("data-depth") || "";
       depth.decode().then(function () { fx.setDepth(dilate(depth)); }, function () {});
@@ -789,20 +788,17 @@ onmessage = async ({ data: { id, blob } }) => {
     });
   }
 
-  // The sheet `width` CSS px wide, in the format's shape or else the photo's,
+  // The sheet as wide as its canvas, in the format's shape or else the photo's,
   // and the whole photo on it in whole cells, at least `padding` of its short
-  // side from every edge, the rest bare paper. The one under its
-  // project is no taller than 80% of the screen and is sized to its device
-  // pixels so no dot is resampled; a card's is blurred anyway.
-  function print(fx, img, width) {
-    var P = fx.base, p = P.padding || 0, r = img.width / img.height, b = p / (1 - 2 * p);
-    var tool = fx.canvas.classList.contains("halftone");
+  // side from every edge, the rest bare paper. The one under its project fits
+  // inside its canvas's fixed box, so the controls below never move, and is
+  // sized to its device pixels so no dot is resampled; a card's is blurred anyway.
+  function print(fx, img) {
+    var P = fx.base, p = P.padding || 0, r = img.width / img.height, b = p / (1 - 2 * p), c = fx.canvas;
     fx.aspect = P.aspect || (Math.max(r, 1) + 2 * b) / (Math.max(1 / r, 1) + 2 * b);
-    var W = Math.floor(Math.min(width, tool ? innerHeight * 0.8 * fx.aspect : Infinity) * dpr), H = Math.round(W / fx.aspect);
+    var W = Math.floor(Math.min(c.clientWidth, c.classList.contains("halftone") ? c.clientHeight * fx.aspect : Infinity) * dpr), H = Math.round(W / fx.aspect);
     var m = p * Math.min(W, H), k = Math.min((W - 2 * m) / img.width, (H - 2 * m) / img.height) / P.cell;
     fx.image = img;
-    fx.width = width;
-    if (tool) fx.canvas.style.width = W / dpr + "px";
     fx.setPlates(buildPlates(img, { width: Math.ceil(img.width * k), height: Math.ceil(img.height * k), margin: P.margin, gain: Math.PI * P.radius * P.radius, inks: P.inks, paper: P.paper }), W, H);
   }
 
@@ -929,11 +925,10 @@ onmessage = async ({ data: { id, blob } }) => {
       busy(true); // from now: decoding and dithering a big photo take a moment too
       img.src = URL.createObjectURL(f);
       img.decode().then(function () {
-        canvas.style.width = "";
         canvas.setAttribute("aria-label", f.name || "");
         named(f.name || "");
         fx.reroll();
-        print(fx, img, canvas.clientWidth);
+        print(fx, img);
         photoChip.style.aspectRatio = img.width + " / " + img.height;
         fx.setDepth(fx.flat()); // until its depth is known
         URL.revokeObjectURL(img.src);
@@ -968,14 +963,14 @@ onmessage = async ({ data: { id, blob } }) => {
       radio.onchange = function () {
         Object.assign(fx.base, set);
         fx.update();
-        print(fx, fx.image, fx.width);
+        print(fx, fx.image);
       };
     });
     bar.querySelectorAll("input[name=format]").forEach(function (radio) {
       if (radio.checked) fx.base.aspect = FORMATS[radio.value];
       radio.onchange = function () {
         fx.base.aspect = FORMATS[radio.value];
-        print(fx, fx.image, fx.width);
+        print(fx, fx.image);
       };
     });
     // round the print, the sheet itself or a flat colour, the last one picked
@@ -998,7 +993,7 @@ onmessage = async ({ data: { id, blob } }) => {
         show();
         Object.assign(fx.base, knob(input.name, +input.value));
         fx.update();
-        if (input.name === "dots" || input.name === "padding") print(fx, fx.image, fx.width); // new cells, a new dither
+        if (input.name === "dots" || input.name === "padding") print(fx, fx.image); // new cells, a new dither
         else fx.render();
       };
     });
