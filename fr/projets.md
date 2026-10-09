@@ -4,11 +4,12 @@ lang: fr-FR
 title: Projets
 permalink: /fr/projets/
 description: >-
-  Projets de Théo Taburet : diapason, une radio de groupe jouée en synchro
-  depuis les téléphones, dans le navigateur ; Ravitools, des points d'intérêt
-  hors ligne pour les traces GPX à vélo ; la recherche en stéganographie
-  naturelle ; une photo imprimée en quatre encres tremblantes, en WebGL ; et
-  Boomerang, une vidéo en boucle tirée d'une rafale de photos.
+  Projets de Théo Taburet : diapason, radio de groupe synchronisée sur les
+  téléphones ; Ravitools, pour les traces GPX ; stéganographie naturelle ;
+  trame CMJN ; Boomerang.
+image:
+  path: /assets/img/og/projects.jpg
+  alt: diapason, Ravitools, la stéganographie naturelle et Boomerang, en grille de deux sur deux
 ---
 
 <div class="lede wide-page">
@@ -127,8 +128,9 @@ côté.
 Un schéma d'insertion qui modélise le bruit de capteur d'un appareil photo, pour qu'une
 charge cachée soit statistiquement indiscernable du bruit photonique qui était déjà là.
 Ces travaux établissent une forme close de la matrice de covariance du signal stégo dans
-le domaine DCT, et atteignent une sécurité élevée (P<sub>E</sub> ≥ 40 %) à plus de
-2 bpnzAC.
+le domaine DCT. À la qualité JPEG 100, le schéma transporte environ deux bits par
+coefficient AC non nul, et un détecteur se trompe encore plus de 40 % du temps
+(P<sub>E</sub> ≥ 40 %), quand un pile ou face se tromperait 50 % du temps.
 
 <p class="stack"><span>Python</span><span>MATLAB</span><span>DCT</span><span>Stéganalyse</span></p>
 

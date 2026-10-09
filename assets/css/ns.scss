@@ -76,6 +76,12 @@
   }
 }
 
+// The image in the front matter is the preview a shared link shows. The theme
+// also puts it above the article, which opens on a figure of its own.
+div:has(> .preview-img) {
+  display: none;
+}
+
 // Who wrote it and what it explains, between two rules, as on Distill.
 .ns-byline {
   display: grid;

@@ -2,10 +2,12 @@
 icon: fas fa-diagram-project
 order: 4
 description: >-
-  Projects by Théo Taburet: diapason, a group radio played in sync from phones
-  in the browser; Ravitools, offline points of interest for cycling GPX files;
-  research on natural steganography; a photograph printed in four trembling
-  inks, in WebGL; and Boomerang, a looping video made from a burst of photos.
+  Projects by Théo Taburet: diapason, a group radio synced across phones;
+  Ravitools, for cycling GPX files; natural steganography; a CMYK halftone
+  press; Boomerang.
+image:
+  path: /assets/img/og/projects.jpg
+  alt: diapason, Ravitools, natural steganography and Boomerang, in a two-by-two grid
 ---
 
 <div class="lede wide-page">
@@ -119,7 +121,9 @@ takes a server, so the demo leaves that step out.
 Steganographic embedding that models the sensor noise of a camera, so a hidden
 payload is statistically indistinguishable from photonic noise that was always
 there. The work derives a closed-form covariance matrix of the stego signal in the
-DCT domain, reaching high security (P<sub>E</sub> ≥ 40%) at over 2 bpnzAC.
+DCT domain. At JPEG quality 100 it carries about two bits per non-zero AC
+coefficient, and a detector still errs more than 40% of the time
+(P<sub>E</sub> ≥ 40%), where a coin toss would err 50%.
 
 <p class="stack"><span>Python</span><span>MATLAB</span><span>DCT</span><span>Steganalysis</span></p>
 

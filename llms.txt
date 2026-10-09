@@ -2,14 +2,14 @@
 
 > Data scientist at Ezako in Antibes, France: YOLO and RF-DETR style detectors to annotate underwater sound, and anomaly detection on MEMS sensors with quantised 1D CNNs on STM32 microcontrollers. Before that, PhD in applied mathematics (steganography) from École Centrale de Lille, 2020. Postdoctoral researcher in image forensics and document fraud detection at Université de La Rochelle (L3i laboratory, with Yooz), 2021–2023.
 
-Research, 2017–2023: natural steganography in the JPEG domain (embedding that mimics camera sensor noise, so a payload is statistically indistinguishable from it), steganalysis, double JPEG compression detection and receipt forgery detection. Projects outside work: diapason, a group radio broadcast from a phone and played in sync on every speaker around it, in the browser; Ravitools, offline points of interest for long-distance cycling GPX files.
+Research, 2017–2023: natural steganography in the JPEG domain (embedding that mimics camera sensor noise, so a payload is statistically indistinguishable from it), steganalysis, double JPEG compression detection and receipt forgery detection. Projects outside work: diapason, a group radio broadcast from a phone and played in sync on every speaker around it, in the browser; Ravitools, offline points of interest for long-distance cycling GPX files; a CMYK and risograph halftone press with depth, in WebGL; Boomerang, a looping video made from a burst of photos, encoded in the browser.
 
 ## Pages
 
 - [About](https://theotaburet.github.io/): background, current work, contact
 - [CV](https://theotaburet.github.io/cv/): experience, education, skills, languages
 - [Publications](https://theotaburet.github.io/publications/): papers with authors, venues, DOIs and open-access PDFs
-- [Projects](https://theotaburet.github.io/projects/): diapason, Ravitools, natural steganography, CMYK halftone
+- [Projects](https://theotaburet.github.io/projects/): diapason, Ravitools, natural steganography, CMYK halftone, Boomerang
 
 ## Articles
 

@@ -1,7 +1,7 @@
 ---
 layout: page
 lang: fr-FR
-title: À propos
+title: Data scientist
 permalink: /fr/
 description: >-
   Théo Taburet est data scientist chez Ezako à Antibes : détection de sons
@@ -15,17 +15,22 @@ description: >-
 <p class="eyebrow"><span class="emo">🔍</span> Théo&nbsp;Taburet &middot; data&nbsp;science &middot; Antibes</p>
 
 Je suis **Théo Taburet**, data scientist chez [Ezako](https://www.ezako.com/) à Antibes.
+Je construis des modèles qui trouvent la seule chose à regarder : un son dans des
+heures d'enregistrements sous-marins, un capteur dont le signal cesse d'avoir l'air
+normal, une retouche dans une photo.
 </div>
 </div>
 
-Chez Ezako, j'implémente des détecteurs de type **YOLO et RF-DETR** pour annoter des
-sons sous-marins, et de la **détection d'anomalies sur capteurs MEMS** : des CNN 1D,
-quantifiés pour tourner sur un microcontrôleur STM32.
+Chez Ezako, je construis des détecteurs de la famille **YOLO et RF-DETR** qui
+annotent des sons sous-marins, et de la **détection d'anomalies pour capteurs MEMS** :
+des CNN 1D, quantifiés jusqu'à tenir sur un microcontrôleur STM32.
 
-Avant ça, six ans d'images : une thèse de mathématiques appliquées à l'École Centrale
-de Lille sur la stéganographie, cacher un message dans une photo pour qu'il passe pour
-du bruit de capteur, puis un post-doc à l'Université de La Rochelle sur l'autre face de
-la pièce : repérer les tickets retouchés et les JPEG doublement compressés.
+Avant ça, six ans d'images. Une thèse de mathématiques appliquées à l'École Centrale
+de Lille sur la stéganographie : cacher un message dans une photo pour qu'il passe
+pour le bruit de l'appareil lui-même. Puis un post-doc à l'Université de La Rochelle,
+de l'autre côté de la pièce : repérer les tickets retouchés et les JPEG doublement
+compressés. Le résultat principal de la thèse a maintenant
+[son article explicatif interactif]({{ '/posts/natural-steganography-jpeg/' | relative_url }}) (en anglais).
 
 ## Ce sur quoi je travaille
 
@@ -40,7 +45,10 @@ la pièce : repérer les tickets retouchés et les JPEG doublement compressés.
 téléphone. Une personne choisit la musique, tout le monde autour scanne un QR code et
 la joue à voix haute sur sa propre enceinte portable, en synchro, sans rien installer.
 Un serveur Rust, un client WebAssembly, et beaucoup de soin apporté aux horloges.
-[En savoir plus]({{ '/fr/projets/' | relative_url }}).
+
+La [page projets]({{ '/fr/projets/' | relative_url }}) le présente en entier, avec le
+reste : une photo imprimée en quatre encres tremblantes, et une rafale de photos
+changée en vidéo qui boucle, les deux dans le navigateur.
 
 ## Loin de l'écran
 

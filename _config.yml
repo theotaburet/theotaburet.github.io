@@ -43,6 +43,12 @@ social:
     - https://scholar.google.com/citations?user=J-upUW8AAAAJ
     - https://orcid.org/0000-0001-8165-6826
 
+# The author jekyll-seo-tag names in every page's JSON-LD and meta tags. The
+# theme reads social.name above, the SEO plugin only this.
+author:
+  name: Théo Taburet
+  url: https://theotaburet.github.io/
+
 # Site Verification Settings
 webmaster_verifications:
   google: # fill in your Google verification code

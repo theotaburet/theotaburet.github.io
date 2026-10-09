@@ -34,15 +34,14 @@ Download as PDF: [English]({{ '/assets/pdf/CV_TABURET_Theo_English.pdf' | relati
 
 ### Postdoctoral Researcher in Computer Vision and Image Processing
 
-**[Université de La Rochelle, Laboratoire L3I](https://www.univ-larochelle.fr/) / Yooz** · 2021-2023
+**[Université de La Rochelle, L3i laboratory](https://www.univ-larochelle.fr/) / Yooz** · 2021-2023
 
-Detection of fraud in company documents using deep learning. Focused on detecting
-double compression through Siamese CNNs, and on steganalysis to identify image
-manipulations and anomalies.
+Deep learning to detect forged business documents, with Yooz.
 
-- Fraud detection using deep learning
-- Double compression detection with Siamese CNNs
-- Integration of algorithms with FastAPI
+- Double JPEG compression detection with Siamese CNNs
+- Steganalysis to locate manipulations in an image
+- A receipt dataset for document forgery detection, published at ICDAR 2023
+- FastAPI services to integrate the models
 
 ### Teaching Assistant
 
@@ -55,16 +54,17 @@ manipulations and anomalies.
 
 **[Synerlink S.A.](https://www.synerlink.com/)** · 2014-2017
 
-Design and dimensioning of thermoforming molds, optimising the process for
-production. Involved in R&D project management.
+Designed and sized thermoforming moulds, and tuned the process for production.
+Took part in managing R&D projects.
 
 ## Education
 
 ### PhD, Applied Mathematics (Steganography)
 
-**[École Centrale de Lille](https://www.centralelille.fr/), Laboratoire CRISTAL**, Lille, France · 2017-2020
+**[École Centrale de Lille](https://www.centralelille.fr/), CRIStAL laboratory**, Lille, France · 2017-2020
 
-Thesis: *Méthodes de stéganographie fondées sur la prise en compte du bruit de capteur.*{:lang="fr"}
+Thesis: *Méthodes de stéganographie fondées sur la prise en compte du bruit de capteur*{:lang="fr"}
+(steganography methods based on sensor noise), defended in October 2020.
 
 ### MSc, Digital Signal and Image Processing
 
@@ -80,8 +80,9 @@ Multidisciplinary engineering: mechanical, electronics, and computer science.
 
 | Area | Skills |
 |---|---|
-| **Machine Learning** | Deep Learning · CNNs · Anomaly Detection · Object Detection · Segmentation · Fraud Detection |
-| **Computer Vision** | Image Processing · Steganography · Image Manipulation Detection · Object Tracking · Segmentation |
+| **Machine Learning** | Deep Learning · CNNs · Object Detection (YOLO, RF-DETR) · Anomaly Detection · Segmentation · Fraud Detection |
+| **Embedded ML** | 1D CNNs · Quantisation · STM32 Microcontrollers · MEMS Sensors |
+| **Signals and Images** | Signal Processing · Image Processing · Steganography · Steganalysis · Image Forensics · Object Tracking |
 | **Languages** | Python · C/C++ · HTML/CSS/JS · SQL · MATLAB · Bash |
 | **Frameworks** | PyTorch · TensorFlow · Keras · OpenCV · FastAPI · scikit-learn |
 | **Tooling** | Git · Docker · CI/CD · GitHub Actions · GitLab CI/CD |
@@ -104,7 +105,7 @@ GPX enrichment with offline points of interest for long-distance cyclists.
 
 ## Volunteering
 
-### Co-Organiser & Founder, [Pignon des Charentes](https://www.instagram.com/pignon_des_charentes/){: data-cursor="wheel"}
+### Co-founder and organiser, [Pignon des Charentes](https://www.instagram.com/pignon_des_charentes/){: data-cursor="wheel"}
 
 La Rochelle, France · since 2023
 

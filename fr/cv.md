@@ -38,13 +38,12 @@ Télécharger en PDF : [Français]({{ '/assets/pdf/CV_TABURET_Theo_French.pdf' |
 
 **[Université de La Rochelle, laboratoire L3i](https://www.univ-larochelle.fr/) / Yooz** · 2021-2023
 
-Détection de fraude dans les documents d'entreprise par apprentissage profond. Travaux
-centrés sur la détection de double compression par réseaux siamois, et sur la
-stéganalyse pour identifier retouches et anomalies dans les images.
+Détection de documents d'entreprise falsifiés par apprentissage profond, avec Yooz.
 
-- Détection de fraude par apprentissage profond
-- Détection de double compression par CNN siamois
-- Intégration des algorithmes avec FastAPI
+- Détection de double compression JPEG par CNN siamois
+- Stéganalyse pour localiser les retouches dans une image
+- Un jeu de données de tickets de caisse pour la détection de fraude documentaire, publié à ICDAR 2023
+- Intégration des modèles via des services FastAPI
 
 ### Chargé de travaux dirigés
 
@@ -57,8 +56,8 @@ stéganalyse pour identifier retouches et anomalies dans les images.
 
 **[Synerlink S.A.](https://www.synerlink.com/)** · 2014-2017
 
-Conception et dimensionnement de moules de thermoformage, optimisation du procédé pour
-la production. Participation à la gestion de projets R&D.
+Conception et dimensionnement de moules de thermoformage, réglage du procédé pour la
+production. Participation à la gestion de projets R&D.
 
 ## Formation
 
@@ -66,7 +65,8 @@ la production. Participation à la gestion de projets R&D.
 
 **[École Centrale de Lille](https://www.centralelille.fr/), laboratoire CRIStAL**, Lille · 2017-2020
 
-Thèse : *Méthodes de stéganographie fondées sur la prise en compte du bruit de capteur.*
+Thèse : *Méthodes de stéganographie fondées sur la prise en compte du bruit de capteur*,
+soutenue en octobre 2020.
 
 ### MSc Digital Signal and Image Processing
 
@@ -82,8 +82,9 @@ Formation pluridisciplinaire : mécanique, électronique et informatique.
 
 | Domaine | Compétences |
 |---|---|
-| **Apprentissage automatique** | Deep learning · CNN · Détection d'anomalies · Détection d'objets · Segmentation · Détection de fraude |
-| **Vision par ordinateur** | Traitement d'image · Stéganographie · Détection de manipulations · Suivi d'objets · Segmentation |
+| **Apprentissage automatique** | Deep learning · CNN · Détection d'objets (YOLO, RF-DETR) · Détection d'anomalies · Segmentation · Détection de fraude |
+| **IA embarquée** | CNN 1D · Quantification · Microcontrôleurs STM32 · Capteurs MEMS |
+| **Signal et image** | Traitement du signal · Traitement d'image · Stéganographie · Stéganalyse · Investigation d'image · Suivi d'objets |
 | **Langages** | Python · C/C++ · HTML/CSS/JS · SQL · MATLAB · Bash |
 | **Frameworks** | PyTorch · TensorFlow · Keras · OpenCV · FastAPI · scikit-learn |
 | **Outils** | Git · Docker · CI/CD · GitHub Actions · GitLab CI/CD |
@@ -107,7 +108,7 @@ au long cours.
 
 ## Bénévolat
 
-### Cofondateur et co-organisateur, [Pignon des Charentes](https://www.instagram.com/pignon_des_charentes/){: data-cursor="wheel"}
+### Cofondateur et organisateur, [Pignon des Charentes](https://www.instagram.com/pignon_des_charentes/){: data-cursor="wheel"}
 
 La Rochelle · depuis 2023
 

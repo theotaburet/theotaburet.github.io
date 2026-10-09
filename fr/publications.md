@@ -9,7 +9,14 @@ description: >-
   ACM IH&MMSec et ICDAR.
 ---
 
-Également sur [Google Scholar](https://scholar.google.com/citations?user=J-upUW8AAAAJ).
+Cacher, puis trouver. Pendant ma thèse à l'École Centrale de Lille (2017-2020), la
+stéganographie naturelle : cacher un message dans une photo JPEG sous la forme d'un
+bruit que l'appareil aurait pu produire lui-même. Pendant mon post-doc à l'Université
+de La Rochelle (2021-2023), l'investigation : repérer le ticket falsifié, et l'image
+compressée deux fois. Le résultat principal, publié dans IEEE TIFS, a
+[sa page explicative interactive]({{ '/posts/natural-steganography-jpeg/' | relative_url }}) (en anglais).
+
+Également sur [Google Scholar](https://scholar.google.com/citations?user=J-upUW8AAAAJ) et [ORCID](https://orcid.org/0000-0001-8165-6826).
 
 ## 2024
 
@@ -28,11 +35,11 @@ description: >-
 
 - **Natural steganography in JPEG domain with a linear development pipeline**{:lang="en"}. Théo Taburet, Patrick Bas, Wadih Sawaya, Jessica Fridrich. *IEEE Transactions on Information Forensics and Security*, vol. 16. [DOI](https://doi.org/10.1109/TIFS.2020.3007354) · [PDF](https://hal.science/hal-02910206/file/TIFS_final.pdf) · [Lire l'article explicatif (en anglais)]({{ '/posts/natural-steganography-jpeg/' | relative_url }})
 - **JPEG steganography and synchronization of DCT coefficients for a given development pipeline**{:lang="en"}. Théo Taburet, Patrick Bas, Wadih Sawaya, Rémi Cogranne. *ACM Workshop on Information Hiding and Multimedia Security*. [DOI](https://doi.org/10.1145/3369412.3395074) · [PDF](https://hal.science/hal-02553023/document)
-- **Stéganographie naturelle pour images JPEG**. Théo Taburet, Patrick Bas, Wadih Sawaya, Jessica Fridrich. *GRETSI'19*. [PDF](https://hal.science/hal-02165880/document)
 - **Méthodes de stéganographie fondées sur la prise en compte du bruit de capteur**. Théo Taburet. Thèse de doctorat, École Centrale de Lille. [HAL](https://hal.science/tel-04393785)
 
 ## 2019
 
+- **Stéganographie naturelle pour images JPEG**. Théo Taburet, Patrick Bas, Wadih Sawaya, Jessica Fridrich. *GRETSI'19*. [PDF](https://hal.science/hal-02165880/document)
 - **Computing dependencies between DCT coefficients for natural steganography in JPEG domain**{:lang="en"}. Théo Taburet, Patrick Bas, Jessica Fridrich, Wadih Sawaya. *ACM Workshop on Information Hiding and Multimedia Security*. [DOI](https://doi.org/10.1145/3335203.3335715) · [PDF](https://hal.science/hal-02165866/document)
 - **A natural steganography embedding scheme dedicated to color sensors in the JPEG domain**{:lang="en"}. Théo Taburet, Patrick Bas, Wadih Sawaya, Jessica Fridrich. *Electronic Imaging 2019*, Society for Imaging Science and Technology. [PDF](https://hal.science/hal-02005407/file/EI-2019.pdf)
 - **An empirical study of steganography and steganalysis of color images in the JPEG domain**{:lang="en"}. Théo Taburet, Louis Filstroff, Patrick Bas, Wadih Sawaya. *IWDW 2018*, Springer. [PDF](https://hal.science/hal-01904482/file/iwdw_version.pdf)

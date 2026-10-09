@@ -1,6 +1,6 @@
 ---
 layout: page
-title: About
+title: Data scientist
 description: >-
   Théo Taburet is a data scientist at Ezako in Antibes, France: detection models
   for underwater sound, and anomaly detection on microcontrollers. Previously
@@ -13,17 +13,21 @@ description: >-
 <p class="eyebrow"><span class="emo">🔍</span> Théo&nbsp;Taburet &middot; data&nbsp;science &middot; Antibes</p>
 
 I'm **Théo Taburet**, a data scientist at [Ezako](https://www.ezako.com/) in Antibes, France.
+I build models that find the one thing worth looking at: a sound in hours of
+underwater recordings, a sensor whose signal stops looking normal, a retouched
+patch in a photograph.
 </div>
 </div>
 
-At Ezako I implement **YOLO and RF-DETR** style detectors to annotate underwater
-sound, and **anomaly detection on MEMS sensors**: 1D CNNs, quantised to run on an
-STM32 microcontroller.
+At Ezako I build detectors of the **YOLO and RF-DETR** family that annotate
+underwater sound, and **anomaly detection for MEMS sensors**: 1D CNNs, quantised
+until they fit on an STM32 microcontroller.
 
-Before that it was images, for six years: a PhD in applied mathematics at École
-Centrale de Lille on steganography, hiding a message in a photograph so that it
-passes for sensor noise, then a postdoc at Université de La Rochelle on the other
-side of the coin, spotting retouched receipts and double-compressed JPEGs.
+Before that, six years of images. A PhD in applied mathematics at École Centrale
+de Lille on steganography: hiding a message in a photograph so that it passes for
+the camera's own noise. Then a postdoc at Université de La Rochelle on the other
+side of the coin: spotting retouched receipts and double-compressed JPEGs. The
+thesis's main result now has [an interactive explainer]({{ '/posts/natural-steganography-jpeg/' | relative_url }}).
 
 ## What I work on
 
@@ -38,7 +42,10 @@ side of the coin, spotting retouched receipts and double-compressed JPEGs.
 person picks the music, everyone around scans a QR code and plays it out loud on
 their own portable speaker, in sync, with nothing to install. A Rust server, a
 WebAssembly client, and a lot of care about clocks.
-[More about it]({{ '/projects/' | relative_url }}).
+
+The [projects page]({{ '/projects/' | relative_url }}) has it in full, with the
+rest: a photograph printed in four trembling inks, and a burst of photos turned
+into a looping video, both in the browser.
 
 ## Away from the screen
 

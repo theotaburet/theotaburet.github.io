@@ -3,6 +3,9 @@ title: "Hiding a message in the noise of a camera"
 description: "How natural steganography hides data in JPEG photographs by adding the noise of a higher ISO: from the sensor through demosaicking to the DCT, the dependencies that creates, and how to draw a signal that respects them."
 math: true
 ns: true
+image:
+  path: /assets/img/og/natural-steganography.jpg
+  alt: A crop of a photograph of patterned cloth, in grey, its noise visible
 ---
 
 Two photographs of the same piece of cloth. One was taken at ISO 200. The other was taken at ISO 100, then given the noise it lacked to pass for ISO 200, drawn so that it could carry a payload. Can you tell which?
